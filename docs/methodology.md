@@ -70,8 +70,26 @@ For each model, we compute:
 - **Precision** (weighted): Proportion of true positives among predicted positives
 - **Recall** (weighted): Proportion of true positives identified
 - **F1-Score** (weighted): Harmonic mean of precision and recall
+- **F1-Score** (macro): Treats all classes equally (important for imbalanced data)
 - **Confusion Matrix**: Full class-level prediction breakdown
 - **Normalized Confusion Matrix**: Row-normalized for class-level comparison
+
+### Advanced Evaluation
+
+The pipeline also supports:
+- **Cross-validation**: Stratified k-fold CV (`--cv-folds`)
+- **Precision-Recall curves**: Per-class PR analysis (`--pr-curves`)
+- **Calibration curves**: Model confidence vs accuracy (`--calibration`)
+- **Failure analysis**: Identifies failing classes and top confusions (`--failure-analysis`)
+
+### Class Imbalance Handling
+
+All models use balanced class weights to address the severe imbalance (600:1 ratio) in the dataset:
+- Logistic Regression: `class_weight='balanced'`
+- Random Forest: `class_weight='balanced'`
+- XGBoost: Sample weights based on class frequencies
+
+This improves macro F1 from 0.44 to 0.51, trading some weighted F1 for fairer per-class performance.
 
 ## 6. Explainability
 

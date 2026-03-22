@@ -7,10 +7,13 @@ XAI-IDS is an Explainable AI-based Intrusion Detection System built on the CIC-I
 ## Key Features
 
 - **Multi-model training**: Logistic Regression, Random Forest, and XGBoost
-- **Comprehensive evaluation**: Accuracy, Precision, Recall, F1-score, confusion matrices
+- **Class-balanced training**: Balanced class weights for fairer evaluation
+- **Comprehensive evaluation**: Accuracy, Precision, Recall, F1-score (weighted + macro), confusion matrices
+- **Cross-validation**: Stratified k-fold CV support
+- **Advanced analysis**: Precision-recall curves, calibration curves, failure analysis
 - **Global explainability**: SHAP feature importance and summary plots
 - **Local explainability**: LIME instance-level explanations for correct and misclassified samples
-- **Production-ready pipeline**: Reproducible, modular, and well-documented
+- **Production-ready**: Docker support, FastAPI inference endpoint, config.yaml
 - **CI/CD**: Automated testing and documentation deployment
 
 ## Dataset

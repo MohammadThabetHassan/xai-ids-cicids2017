@@ -118,13 +118,17 @@ python run_pipeline.py --sample-size 5000 --skip-explain
 
 | Flag | Description |
 |------|-------------|
-| `--download` | Download real CIC-IDS-2017 data |
+| `--download` | Download real CIC-IDS-2017 data (via Zenodo fallback) |
 | `--sample-size N` | Synthetic dataset size (default: 50000) |
 | `--skip-explain` | Skip SHAP and LIME analysis |
 | `--skip-shap` | Skip SHAP only |
 | `--skip-lime` | Skip LIME only |
 | `--models lr rf xgb` | Select specific models |
 | `--shap-samples N` | Samples for SHAP (default: 500) |
+| `--cv-folds N` | Run N-fold cross-validation (0 to skip) |
+| `--pr-curves` | Generate precision-recall curves |
+| `--calibration` | Generate calibration curves |
+| `--failure-analysis` | Generate failure analysis report |
 
 ### Using Make
 
@@ -338,6 +342,38 @@ Tests include:
 - Results shown are from a 50K synthetic dataset (not the full 2.8M+ CIC-IDS-2017)
 - The synthetic dataset approximates but does not perfectly replicate real network traffic distributions
 - SHAP KernelExplainer for Logistic Regression is computationally expensive on large datasets
+
+---
+
+## Deployment
+
+### Docker
+
+```bash
+# Build the container
+docker build -t xai-ids .
+
+# Run the pipeline
+docker run -v $(pwd)/outputs:/app/outputs xai-ids
+```
+
+### FastAPI Inference
+
+```bash
+# Start the API server
+uvicorn api.app:app --host 0.0.0.0 --port 8000
+
+# Test the API
+curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{"features": [0.0] * 78}'
+```
+
+### Configuration
+
+The project includes `config.yaml` with default settings. This serves as a reference for pipeline configuration.
+
+---
 
 ### Future Work
 - Evaluate on the full CIC-IDS-2017 dataset
