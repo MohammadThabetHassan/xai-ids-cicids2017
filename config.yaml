@@ -1,0 +1,100 @@
+# XAI-IDS Configuration File
+# Default settings for the pipeline
+
+# Data Configuration
+data:
+  # Path to raw CSV files
+  raw_dir: "data/raw"
+  # Path to processed data
+  processed_dir: "data/processed"
+  # Number of samples for synthetic data (when real data unavailable)
+  sample_size: 50000
+  # Random seed for reproducibility
+  seed: 42
+
+# Preprocessing Configuration
+preprocessing:
+  # Remove infinite values
+  remove_inf: true
+  # Remove rows with NaN
+  remove_nan: true
+  # Remove duplicate rows
+  remove_duplicates: true
+  # Test set proportion
+  test_size: 0.2
+  # Validation set proportion
+  val_size: 0.1
+  # Use stratified split
+  stratify: true
+  # Feature scaling method
+  scaling: "standard"  # standard, minmax, or robust
+
+# Model Configuration
+models:
+  # Models to train
+  enabled:
+    - logistic_regression
+    - random_forest
+    - xgb
+
+  logistic_regression:
+    max_iter: 1000
+    solver: "lbfgs"
+    C: 1.0
+    class_weight: "balanced"
+
+  random_forest:
+    n_estimators: 100
+    max_depth: 20
+    min_samples_split: 5
+    min_samples_leaf: 2
+    class_weight: "balanced"
+
+  xgboost:
+    n_estimators: 100
+    max_depth: 8
+    learning_rate: 0.1
+    tree_method: "hist"
+
+# Evaluation Configuration
+evaluation:
+  # Generate precision-recall curves
+  pr_curves: false
+  # Generate calibration curves
+  calibration: false
+  # Generate failure analysis
+  failure_analysis: false
+  # Number of CV folds (0 to disable)
+  cv_folds: 0
+
+# Explainability Configuration
+explainability:
+  # Enable SHAP analysis
+  enable_shap: true
+  # Enable LIME analysis
+  enable_lime: true
+  # Number of samples for SHAP
+  shap_samples: 500
+  # SHAP backend: kernel, tree, or linear
+  shap_method: "auto"
+  # Number of LIME samples
+  lime_samples: 5000
+
+# Output Configuration
+output:
+  # Base output directory
+  base_dir: "outputs"
+  # Save models
+  save_models: true
+  # Save figures
+  save_figures: true
+  # Save reports
+  save_reports: true
+  # Save logs
+  save_logs: true
+
+# Logging Configuration
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  format: "%(asctime)s | %(name)s | %(levelname)s | %(message)s"
+  file: "outputs/logs/pipeline.log"
