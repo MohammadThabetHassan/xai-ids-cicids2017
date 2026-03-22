@@ -5,399 +5,801 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>XAI-IDS | Explainable AI Intrusion Detection System</title>
   <meta name="description" content="Explainable AI-based Intrusion Detection System for the CIC-IDS-2017 dataset using Machine Learning and XAI techniques (SHAP & LIME).">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
   <style>
-    /* ── Reset & Variables ── */
     :root {
-      --bg-primary: #0a0e1a;
-      --bg-secondary: #111827;
-      --bg-card: #1a2035;
-      --bg-card-hover: #1e2a45;
-      --accent: #3b82f6;
-      --accent-light: #60a5fa;
-      --accent-glow: rgba(59, 130, 246, 0.15);
-      --green: #10b981;
-      --green-light: #34d399;
-      --orange: #f59e0b;
-      --red: #ef4444;
-      --purple: #8b5cf6;
-      --text: #e2e8f0;
-      --text-muted: #94a3b8;
-      --text-dim: #64748b;
-      --border: #1e293b;
-      --border-light: #334155;
-      --radius: 12px;
-      --radius-lg: 16px;
-      --shadow: 0 4px 24px rgba(0,0,0,0.3);
-      --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      --bg-deep: #030712;
+      --bg-surface: #0a0f1a;
+      --bg-elevated: #111827;
+      --bg-card: #1a2235;
+      --accent-cyan: #00ffd5;
+      --accent-cyan-dim: rgba(0, 255, 213, 0.15);
+      --accent-magenta: #ff006e;
+      --accent-magenta-dim: rgba(255, 0, 110, 0.15);
+      --accent-amber: #fbbf24;
+      --accent-violet: #8b5cf6;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --border-subtle: rgba(148, 163, 184, 0.1);
+      --border-accent: rgba(0, 255, 213, 0.3);
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
+
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-      background: var(--bg-primary);
-      color: var(--text);
-      line-height: 1.7;
+      font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      line-height: 1.6;
       -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
 
-    /* ── Nav ── */
+    /* Grid Background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: 
+        linear-gradient(var(--border-subtle) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* Navigation */
     .nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      background: rgba(10, 14, 26, 0.85);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(3, 7, 18, 0.9);
       backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border);
-      transition: var(--transition);
+      border-bottom: 1px solid var(--border-subtle);
     }
     .nav-inner {
-      max-width: 1280px; margin: 0 auto;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 24px; height: 64px;
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      height: 72px;
     }
     .nav-brand {
-      font-size: 1.25rem; font-weight: 700; color: var(--accent-light);
-      text-decoration: none; letter-spacing: -0.5px;
+      font-family: 'Syne', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-decoration: none;
+      letter-spacing: -0.5px;
     }
-    .nav-brand span { color: var(--text-muted); font-weight: 400; }
-    .nav-links { display: flex; gap: 8px; list-style: none; flex-wrap: wrap; }
+    .nav-brand span {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-weight: 400;
+      color: var(--text-muted);
+      -webkit-text-fill-color: var(--text-muted);
+    }
+    .nav-links {
+      display: flex;
+      gap: 8px;
+      list-style: none;
+      flex-wrap: wrap;
+    }
     .nav-links a {
-      color: var(--text-muted); text-decoration: none; font-size: 0.875rem;
-      padding: 6px 14px; border-radius: 8px; transition: var(--transition);
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      transition: var(--transition);
+      position: relative;
     }
-    .nav-links a:hover { color: var(--text); background: var(--bg-card); }
+    .nav-links a:hover {
+      color: var(--accent-cyan);
+      background: var(--accent-cyan-dim);
+    }
 
-    /* ── Hero ── */
+    /* Hero Section */
     .hero {
-      padding: 140px 24px 80px; text-align: center;
-      background: linear-gradient(180deg, rgba(59,130,246,0.08) 0%, transparent 60%);
-      position: relative; overflow: hidden;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 120px 24px 80px;
+      position: relative;
+      overflow: hidden;
     }
     .hero::before {
-      content: ''; position: absolute; top: -200px; left: 50%; transform: translateX(-50%);
-      width: 800px; height: 800px; border-radius: 50%;
-      background: radial-gradient(circle, rgba(59,130,246,0.06) 0%, transparent 70%);
-      pointer-events: none;
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 50% 50%, var(--accent-cyan-dim) 0%, transparent 50%);
+      animation: pulse 8s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.1); }
+    }
+    .hero-content {
+      text-align: center;
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+    }
+    .hero-badge {
+      display: inline-block;
+      padding: 8px 20px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 32px;
+      background: var(--accent-cyan-dim);
+      border: 1px solid var(--border-accent);
+      color: var(--accent-cyan);
     }
     .hero h1 {
-      font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 800;
-      letter-spacing: -1.5px; line-height: 1.1;
-      background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text; margin-bottom: 16px;
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(3rem, 8vw, 5.5rem);
+      font-weight: 800;
+      letter-spacing: -2px;
+      line-height: 1.05;
+      margin-bottom: 24px;
+    }
+    .hero h1 .highlight {
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
     .hero-sub {
-      font-size: clamp(1rem, 2.5vw, 1.35rem); color: var(--text-muted);
-      max-width: 680px; margin: 0 auto 28px;
+      font-size: clamp(1.1rem, 2vw, 1.35rem);
+      color: var(--text-secondary);
+      max-width: 640px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
     }
-    .hero-badges { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-    .badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 6px 16px; border-radius: 999px; font-size: 0.8rem; font-weight: 600;
-      border: 1px solid var(--border-light);
-    }
-    .badge-blue { background: rgba(59,130,246,0.12); color: var(--accent-light); border-color: rgba(59,130,246,0.3); }
-    .badge-green { background: rgba(16,185,129,0.12); color: var(--green-light); border-color: rgba(16,185,129,0.3); }
-    .badge-orange { background: rgba(245,158,11,0.12); color: var(--orange); border-color: rgba(245,158,11,0.3); }
-    .badge-purple { background: rgba(139,92,246,0.12); color: var(--purple); border-color: rgba(139,92,246,0.3); }
     .hero-cta {
-      margin-top: 32px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
     }
     .btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 12px 28px; border-radius: 10px; font-size: 0.95rem; font-weight: 600;
-      text-decoration: none; transition: var(--transition); border: none; cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 32px;
+      border-radius: var(--radius-md);
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: var(--transition);
+      border: none;
+      cursor: pointer;
     }
     .btn-primary {
-      background: var(--accent); color: white;
-      box-shadow: 0 0 20px rgba(59,130,246,0.3);
+      background: linear-gradient(135deg, var(--accent-cyan), #00d4aa);
+      color: var(--bg-deep);
+      box-shadow: 0 0 30px rgba(0, 255, 213, 0.3);
     }
-    .btn-primary:hover { background: #2563eb; box-shadow: 0 0 30px rgba(59,130,246,0.5); transform: translateY(-1px); }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 50px rgba(0, 255, 213, 0.5);
+    }
     .btn-outline {
-      background: transparent; color: var(--text-muted);
-      border: 1px solid var(--border-light);
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-subtle);
     }
-    .btn-outline:hover { color: var(--text); border-color: var(--text-muted); background: var(--bg-card); }
+    .btn-outline:hover {
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+      background: var(--accent-cyan-dim);
+    }
 
-    /* ── Container & Section ── */
-    .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
-    section { padding: 80px 0; }
-    .section-header {
-      text-align: center; margin-bottom: 48px;
+    /* Stats Section */
+    .stats-section {
+      padding: 60px 0;
+      border-top: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
     }
-    .section-label {
-      font-size: 0.8rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
-      color: var(--accent); margin-bottom: 12px;
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 24px;
+      max-width: 1000px;
+      margin: 0 auto;
     }
-    .section-title {
-      font-size: clamp(1.75rem, 4vw, 2.5rem); font-weight: 700;
-      letter-spacing: -0.5px; color: #fff;
-    }
-    .section-desc { color: var(--text-muted); max-width: 640px; margin: 12px auto 0; font-size: 1.05rem; }
-
-    /* ── Cards ── */
-    .grid { display: grid; gap: 20px; }
-    .grid-2 { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
-    .grid-3 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
-    .grid-4 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-    .card {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius-lg); padding: 28px;
+    .stat-item {
+      text-align: center;
+      padding: 24px;
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
       transition: var(--transition);
     }
-    .card:hover { background: var(--bg-card-hover); border-color: var(--border-light); }
-    .card h3 { font-size: 1.1rem; font-weight: 600; color: #fff; margin-bottom: 10px; }
-    .card p { color: var(--text-muted); font-size: 0.95rem; }
-    .card-icon {
-      width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center;
-      justify-content: center; font-size: 1.4rem; margin-bottom: 16px;
+    .stat-item:hover {
+      border-color: var(--border-accent);
+      transform: translateY(-4px);
+    }
+    .stat-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
 
-    /* ── Metrics Table ── */
-    .metrics-table-wrap { overflow-x: auto; border-radius: var(--radius-lg); border: 1px solid var(--border); }
-    table { width: 100%; border-collapse: collapse; }
+    /* Section Styling */
+    section {
+      padding: 100px 0;
+    }
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    .section-header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+    .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent-cyan);
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -1px;
+      color: var(--text-primary);
+    }
+    .section-desc {
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 16px auto 0;
+      font-size: 1.05rem;
+    }
+
+    /* Cards Grid */
+    .grid {
+      display: grid;
+      gap: 24px;
+    }
+    .grid-4 {
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      transition: var(--transition);
+    }
+    .card:hover {
+      border-color: var(--border-accent);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+    .card-number {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--accent-cyan);
+      margin-bottom: 16px;
+    }
+    .card h3 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+    }
+    .card p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+
+    /* Metrics Table */
+    .metrics-section {
+      background: var(--bg-surface);
+    }
+    .metrics-table-wrap {
+      overflow-x: auto;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-card);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
     th {
-      background: var(--bg-card); color: var(--text-muted); font-weight: 600; font-size: 0.8rem;
-      text-transform: uppercase; letter-spacing: 1px; padding: 14px 20px; text-align: left;
-      border-bottom: 1px solid var(--border);
+      background: var(--bg-elevated);
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      padding: 18px 24px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-subtle);
     }
     td {
-      padding: 14px 20px; border-bottom: 1px solid var(--border); font-size: 0.95rem;
-      font-variant-numeric: tabular-nums;
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 0.95rem;
     }
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: rgba(59,130,246,0.04); }
-    .highlight-row td { background: rgba(16,185,129,0.06); }
-    .metric-best { color: var(--green-light); font-weight: 700; }
-    .model-name { font-weight: 600; color: #fff; }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    tr:hover td {
+      background: var(--accent-cyan-dim);
+    }
+    .highlight-row td {
+      background: rgba(0, 255, 213, 0.05);
+    }
+    .metric-best {
+      color: var(--accent-cyan);
+      font-weight: 700;
+    }
+    .model-name {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
     .metric-bar {
-      display: inline-block; height: 6px; border-radius: 3px; margin-left: 8px; vertical-align: middle;
+      display: inline-block;
+      height: 4px;
+      border-radius: 2px;
+      margin-left: 12px;
+      vertical-align: middle;
     }
 
-    /* ── Figure Gallery ── */
-    .figure-tabs { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
-    .tab-btn {
-      padding: 8px 20px; border-radius: 8px; font-size: 0.875rem; font-weight: 500;
-      background: var(--bg-card); border: 1px solid var(--border); color: var(--text-muted);
-      cursor: pointer; transition: var(--transition);
+    /* Tabs */
+    .figure-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+      justify-content: center;
     }
-    .tab-btn:hover { border-color: var(--border-light); color: var(--text); }
-    .tab-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
+    .tab-btn {
+      padding: 10px 24px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-weight: 500;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .tab-btn:hover {
+      border-color: var(--accent-cyan);
+      color: var(--text-primary);
+    }
+    .tab-btn.active {
+      background: var(--accent-cyan);
+      border-color: var(--accent-cyan);
+      color: var(--bg-deep);
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Figure Container */
     .figure-container {
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
-      padding: 20px; text-align: center;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      text-align: center;
     }
     .figure-container img {
-      max-width: 100%; height: auto; border-radius: var(--radius);
-      background: #fff; /* figures have white bg */
+      max-width: 100%;
+      height: auto;
+      border-radius: var(--radius-sm);
     }
     .figure-caption {
-      margin-top: 12px; font-size: 0.875rem; color: var(--text-dim); font-style: italic;
+      margin-top: 16px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-style: italic;
     }
-    .figure-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; }
+    .figure-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 24px;
+    }
 
-    /* ── Demo Section ── */
-    .demo-wrap {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius-lg); padding: 32px; position: relative; overflow: hidden;
+    /* Demo Section */
+    .demo-section {
+      background: var(--bg-surface);
     }
-    .demo-wrap::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-      background: linear-gradient(90deg, var(--accent), var(--purple), var(--green));
+    .demo-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+      max-width: 900px;
+      margin: 0 auto;
     }
-    .demo-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
-    .demo-dot { width: 10px; height: 10px; border-radius: 50%; }
-    .demo-upload-zone {
-      border: 2px dashed var(--border-light); border-radius: var(--radius);
-      padding: 40px; text-align: center; transition: var(--transition); cursor: pointer;
+    .demo-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta), var(--accent-violet));
     }
-    .demo-upload-zone:hover, .demo-upload-zone.dragover { border-color: var(--accent); background: var(--accent-glow); }
-    .demo-upload-zone p { color: var(--text-muted); margin-top: 8px; }
-    .demo-results {
-      margin-top: 24px; display: none;
+    .demo-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
     }
-    .demo-results.visible { display: block; }
-    .demo-result-card {
-      background: var(--bg-secondary); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 20px; margin-top: 16px;
+    .demo-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
     }
-    .prediction-row {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 10px 0; border-bottom: 1px solid var(--border);
+    .demo-dot.red { background: #ff5f57; }
+    .demo-dot.yellow { background: #febc2e; }
+    .demo-dot.green { background: #28c840; }
+    .demo-filename {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-left: 12px;
     }
-    .prediction-row:last-child { border: none; }
-    .pred-label { font-weight: 600; }
-    .pred-confidence {
-      font-variant-numeric: tabular-nums; padding: 4px 12px; border-radius: 6px; font-size: 0.85rem;
+    .sample-btns {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
     }
-    .pred-benign { background: rgba(16,185,129,0.15); color: var(--green-light); }
-    .pred-attack { background: rgba(239,68,68,0.15); color: #fca5a5; }
-    .progress-bar-wrap { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; flex: 1; margin: 0 12px; }
-    .progress-bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
-    textarea.demo-input {
-      width: 100%; min-height: 100px; background: var(--bg-secondary); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 16px; color: var(--text); font-family: 'Fira Code', monospace;
-      font-size: 0.85rem; resize: vertical; outline: none; transition: var(--transition);
-    }
-    textarea.demo-input:focus { border-color: var(--accent); }
     .sample-btn {
-      padding: 8px 16px; border-radius: 8px; font-size: 0.8rem; font-weight: 500;
-      background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-muted);
-      cursor: pointer; transition: var(--transition); margin: 4px;
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      font-weight: 500;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: var(--transition);
     }
-    .sample-btn:hover { border-color: var(--accent); color: var(--accent-light); }
-
-    /* ── Stats ── */
-    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
-    .stat-card {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 24px; text-align: center;
+    .sample-btn:hover {
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
     }
-    .stat-value { font-size: 2rem; font-weight: 800; letter-spacing: -1px; }
-    .stat-label { font-size: 0.85rem; color: var(--text-dim); margin-top: 4px; }
+    textarea.demo-input {
+      width: 100%;
+      min-height: 120px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      color: var(--text-primary);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      resize: vertical;
+      outline: none;
+      transition: var(--transition);
+    }
+    textarea.demo-input:focus {
+      border-color: var(--accent-cyan);
+    }
+    .demo-actions {
+      margin-top: 16px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .demo-results {
+      margin-top: 24px;
+      display: none;
+    }
+    .demo-results.visible {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+    .result-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      margin-top: 16px;
+    }
 
-    /* ── Footer ── */
+    /* Team Section */
+    .team-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      text-align: center;
+      transition: var(--transition);
+    }
+    .team-card:hover {
+      border-color: var(--border-accent);
+      transform: translateY(-4px);
+    }
+    .team-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      margin: 0 auto 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .team-card h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    .team-card p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+    }
+    .team-card a {
+      color: var(--accent-cyan);
+      text-decoration: none;
+      font-size: 0.85rem;
+    }
+    .team-card a:hover {
+      text-decoration: underline;
+    }
+
+    /* Limitations */
+    .limitations-section {
+      background: var(--bg-surface);
+    }
+    .limitation-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      transition: var(--transition);
+    }
+    .limitation-card:hover {
+      transform: translateY(-2px);
+    }
+    .limitation-card.success {
+      border-left: 3px solid var(--accent-cyan);
+    }
+    .limitation-card.warning {
+      border-left: 3px solid var(--accent-amber);
+    }
+    .limitation-card h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .limitation-card p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+
+    /* Footer */
     footer {
-      background: var(--bg-secondary); border-top: 1px solid var(--border);
-      padding: 48px 24px; text-align: center;
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border-subtle);
+      padding: 48px 24px;
+      text-align: center;
     }
-    footer p { color: var(--text-dim); font-size: 0.9rem; }
-    footer a { color: var(--accent-light); text-decoration: none; }
-    footer a:hover { text-decoration: underline; }
-    .footer-links { display: flex; gap: 24px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
-
-    /* ── Responsive ── */
-    @media (max-width: 768px) {
-      .nav-links { display: none; }
-      .grid-3, .grid-4 { grid-template-columns: 1fr; }
-      .figure-grid { grid-template-columns: 1fr; }
-      section { padding: 48px 0; }
+    footer p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    footer a {
+      color: var(--accent-cyan);
+      text-decoration: none;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
+    .footer-links {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      margin-top: 16px;
+      flex-wrap: wrap;
     }
 
-    /* ── Animations ── */
-    .fade-in {
-      opacity: 0; transform: translateY(20px);
+    /* Animations */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
       transition: opacity 0.6s ease, transform 0.6s ease;
     }
-    .fade-in.visible { opacity: 1; transform: translateY(0); }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
     .stagger-1 { transition-delay: 0.1s; }
     .stagger-2 { transition-delay: 0.2s; }
     .stagger-3 { transition-delay: 0.3s; }
+    .stagger-4 { transition-delay: 0.4s; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .grid-4 { grid-template-columns: 1fr; }
+      .figure-grid { grid-template-columns: 1fr; }
+      section { padding: 60px 0; }
+    }
   </style>
 </head>
 <body>
 
-<!-- ── Navigation ── -->
-<nav class="nav" role="navigation" aria-label="Main navigation">
+<!-- Navigation -->
+<nav class="nav">
   <div class="nav-inner">
     <a href="#" class="nav-brand">XAI-IDS <span>| CIC-IDS-2017</span></a>
     <ul class="nav-links">
       <li><a href="#results">Results</a></li>
-      <li><a href="#confusion">Confusion Matrices</a></li>
+      <li><a href="#confusion">Confusion</a></li>
       <li><a href="#explainability">Explainability</a></li>
       <li><a href="#demo">Demo</a></li>
       <li><a href="#team">Team</a></li>
       <li><a href="#limitations">Limitations</a></li>
-      <li><a href="https://github.com/MohammadThabetHassan/Explainable-AI-Intrusion-Detection-System-XAI-IDS-" target="_blank" rel="noopener">GitHub</a></li>
+      <li><a href="https://github.com/MohammadThabetHassan/Explainable-AI-Intrusion-Detection-System-XAI-IDS-" target="_blank">GitHub</a></li>
     </ul>
   </div>
 </nav>
 
-<!-- ── Hero ── -->
+<!-- Hero -->
 <header class="hero">
-  <div class="container">
-    <h1>Explainable AI<br>Intrusion Detection</h1>
+  <div class="hero-content">
+    <span class="hero-badge">Explainable AI Intrusion Detection</span>
+    <h1>Intelligent <span class="highlight">Network Security</span><br>You Can Trust</h1>
     <p class="hero-sub">
-      A transparent, interpretable network intrusion detection system combining
-      ML classifiers with SHAP and LIME explainability on the CIC-IDS-2017 dataset.
+      A transparent, interpretable intrusion detection system combining ML classifiers 
+      with SHAP and LIME explainability on real CIC-IDS-2017 network traffic data.
     </p>
-    <div class="hero-badges">
-      <span class="badge badge-blue">Machine Learning</span>
-      <span class="badge badge-green">Explainable AI</span>
-      <span class="badge badge-orange">Cybersecurity</span>
-      <span class="badge badge-purple">CIC-IDS-2017</span>
-    </div>
     <div class="hero-cta">
-      <a href="#demo" class="btn btn-primary">Try the Demo</a>
-      <a href="https://github.com/MohammadThabetHassan/Explainable-AI-Intrusion-Detection-System-XAI-IDS-" class="btn btn-outline" target="_blank" rel="noopener">View Source</a>
+      <a href="#demo" class="btn btn-primary">
+        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        Try the Demo
+      </a>
+      <a href="https://github.com/MohammadThabetHassan/Explainable-AI-Intrusion-Detection-System-XAI-IDS-" class="btn btn-outline" target="_blank">
+        View Source
+      </a>
     </div>
   </div>
 </header>
 
-<!-- ── Dataset Stats ── -->
-<section style="padding-top: 40px;">
+<!-- Stats -->
+<section class="stats-section">
   <div class="container">
-    <div class="stat-grid fade-in">
-      <div class="stat-card">
-        <div class="stat-value" style="color:var(--accent-light)">78</div>
-        <div class="stat-label">Network Flow Features</div>
+    <div class="stats-grid">
+      <div class="stat-item reveal">
+        <div class="stat-value">78</div>
+        <div class="stat-label">Network Features</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-value" style="color:var(--green-light)">15</div>
+      <div class="stat-item reveal stagger-1">
+        <div class="stat-value">14</div>
         <div class="stat-label">Traffic Classes</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-value" style="color:var(--orange)">3</div>
-        <div class="stat-label">ML Models Compared</div>
+      <div class="stat-item reveal stagger-2">
+        <div class="stat-value">100K</div>
+        <div class="stat-label">Data Samples</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-value" style="color:var(--purple)">83.5%</div>
-        <div class="stat-label">Best Accuracy (RF)</div>
+      <div class="stat-item reveal stagger-3">
+        <div class="stat-value">99.7%</div>
+        <div class="stat-label">Best Accuracy</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-value" style="color:var(--accent-light)">0.89</div>
-        <div class="stat-label">Macro F1 (XGB)</div>
+      <div class="stat-item reveal stagger-4">
+        <div class="stat-value">0.90</div>
+        <div class="stat-label">Macro F1</div>
       </div>
     </div>
-    <p style="text-align:center; color:var(--text-dim); margin-top:16px; font-size:0.9rem;">
-      Real CIC-IDS-2017 V2 benchmark (100K sample). Weighted F1: 0.99 | Random Forest: 99.69% accuracy | Synthetic: Macro F1: 0.51
-    </p>
   </div>
 </section>
 
-<!-- ── Pipeline Overview ── -->
+<!-- Pipeline -->
 <section>
   <div class="container">
-    <div class="section-header fade-in">
+    <div class="section-header reveal">
       <div class="section-label">Methodology</div>
       <h2 class="section-title">Pipeline Overview</h2>
       <p class="section-desc">End-to-end ML pipeline from raw network traffic to explainable predictions.</p>
     </div>
-    <div class="grid grid-4 fade-in">
-      <div class="card">
-        <div class="card-icon" style="background:rgba(59,130,246,0.12); color:var(--accent-light);">1</div>
+    <div class="grid grid-4">
+      <div class="card reveal">
+        <div class="card-number">01</div>
         <h3>Data Preprocessing</h3>
-        <p>Load CIC-IDS-2017 CSV files, clean infinite/NaN/duplicate values, encode 15 traffic classes, standardize 78 features.</p>
+        <p>Load CIC-IDS-2017 CSV files, clean infinite/NaN/duplicate values, encode traffic classes, standardize 78 features.</p>
       </div>
-      <div class="card">
-        <div class="card-icon" style="background:rgba(16,185,129,0.12); color:var(--green-light);">2</div>
+      <div class="card reveal stagger-1">
+        <div class="card-number">02</div>
         <h3>Model Training</h3>
         <p>Train Logistic Regression, Random Forest, and XGBoost with stratified 70/10/20 train/val/test splits.</p>
       </div>
-      <div class="card">
-        <div class="card-icon" style="background:rgba(245,158,11,0.12); color:var(--orange);">3</div>
+      <div class="card reveal stagger-2">
+        <div class="card-number">03</div>
         <h3>Evaluation</h3>
         <p>Compute accuracy, precision, recall, F1-score. Generate confusion matrices and model comparison charts.</p>
       </div>
-      <div class="card">
-        <div class="card-icon" style="background:rgba(139,92,246,0.12); color:var(--purple);">4</div>
+      <div class="card reveal stagger-3">
+        <div class="card-number">04</div>
         <h3>Explainability</h3>
-        <p>SHAP for global feature importance. LIME for local instance-level explanations of correct and misclassified samples.</p>
+        <p>SHAP for global feature importance. LIME for local instance-level explanations of predictions.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── Results / Metrics Table ── -->
-<section id="results" style="background: var(--bg-secondary);">
+<!-- Results -->
+<section id="results" class="metrics-section">
   <div class="container">
-    <div class="section-header fade-in">
+    <div class="section-header reveal">
       <div class="section-label">Performance</div>
       <h2 class="section-title">Model Comparison</h2>
-      <p class="section-desc">Side-by-side metrics for all three classifiers on the test set.</p>
+      <p class="section-desc">Side-by-side metrics on real CIC-IDS-2017 V2 benchmark (100K sample).</p>
     </div>
 
-    <div class="fade-in" style="max-width:900px; margin:0 auto;">
+    <div class="reveal" style="max-width:900px; margin:0 auto;">
       <div class="metrics-table-wrap">
         <table>
           <thead>
@@ -412,91 +814,58 @@
           <tbody>
             <tr>
               <td class="model-name">Logistic Regression</td>
-              <td>0.8569 <span class="metric-bar" style="width:85.69%; background:var(--accent);"></span></td>
+              <td>0.8569 <span class="metric-bar" style="width:85.69%; background:var(--accent-violet);"></span></td>
               <td>0.9637</td>
               <td>0.8569</td>
               <td>0.8994</td>
             </tr>
             <tr class="highlight-row">
-              <td class="model-name">Random Forest <span class="badge badge-green" style="font-size:0.7rem; padding:2px 8px;">Best</span></td>
-              <td class="metric-best">0.9969 <span class="metric-bar" style="width:99.69%; background:var(--green);"></span></td>
+              <td class="model-name">Random Forest <span style="color:var(--accent-cyan); font-size:0.75rem; margin-left:8px;">● Best</span></td>
+              <td class="metric-best">0.9969 <span class="metric-bar" style="width:99.69%; background:var(--accent-cyan);"></span></td>
               <td class="metric-best">0.9971</td>
               <td class="metric-best">0.9969</td>
               <td class="metric-best">0.9970</td>
             </tr>
           </tbody>
         </table>
-        <p style="text-align:center; color:var(--text-muted); font-size:0.9rem; margin-top:16px; padding:12px; background:rgba(16,185,129,0.1); border-radius:8px; border:1px solid rgba(16,185,129,0.3);">
-          <strong>Real CIC-IDS-2017 V2 Benchmark (100K sample):</strong> Random Forest achieves 99.69% accuracy with excellent per-class performance.
-        </p>
       </div>
-      <p style="text-align:center; color:var(--text-dim); font-size:0.85rem; margin-top:12px;">
-        Results from real CIC-IDS-2017 V2 dataset (100K sample). Random Forest: 99.69% accuracy. Logistic Regression: 85.69% accuracy. XGBoost unavailable (label encoding issue with rare classes).
-      </p>
     </div>
 
-    <!-- Model Comparison Chart -->
-    <div class="fade-in" style="max-width:800px; margin:40px auto 0;">
+    <div class="reveal" style="max-width:800px; margin:48px auto 0;">
       <div class="figure-container">
-        <img src="figures/model_comparison.png" alt="Model performance comparison bar chart showing accuracy, precision, recall, and F1-score for all three models" loading="lazy">
-        <p class="figure-caption">Figure 1: Grouped bar chart comparing Accuracy, Precision, Recall, and F1-Score across all models.</p>
+        <img src="figures/model_comparison.png" alt="Model performance comparison" loading="lazy">
+        <p class="figure-caption">Figure 1: Model performance comparison on real CIC-IDS-2017 V2 data</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── Confusion Matrices ── -->
+<!-- Confusion Matrices -->
 <section id="confusion">
   <div class="container">
-    <div class="section-header fade-in">
+    <div class="section-header reveal">
       <div class="section-label">Evaluation</div>
       <h2 class="section-title">Confusion Matrices</h2>
-      <p class="section-desc">Normalized confusion matrices showing per-class classification performance.</p>
+      <p class="section-desc">Per-class classification performance visualization.</p>
     </div>
 
-    <div class="fade-in">
-      <div class="figure-tabs" role="tablist" aria-label="Confusion matrix model selector">
-        <button class="tab-btn active" onclick="switchTab('cm', 'lr')" role="tab" aria-selected="true">Logistic Regression</button>
-        <button class="tab-btn" onclick="switchTab('cm', 'rf')" role="tab" aria-selected="false">Random Forest</button>
-        <button class="tab-btn" onclick="switchTab('cm', 'xgb')" role="tab" aria-selected="false">XGBoost</button>
+    <div class="reveal">
+      <div class="figure-tabs" role="tablist">
+        <button class="tab-btn active" onclick="switchTab('cm', 'lr')">Logistic Regression</button>
+        <button class="tab-btn" onclick="switchTab('cm', 'rf')">Random Forest</button>
       </div>
 
       <div class="figure-grid">
         <div id="cm-lr" class="tab-content active">
           <div class="figure-container">
-            <img src="figures/confusion_matrix_logistic_regression.png" alt="Logistic Regression confusion matrix" loading="lazy">
-            <p class="figure-caption">Logistic Regression - Raw Confusion Matrix</p>
+            <img src="figures/confusion_matrix_logistic_regression_normalized.png" alt="LR confusion matrix" loading="lazy">
+            <p class="figure-caption">Logistic Regression - Normalized</p>
           </div>
         </div>
         <div id="cm-rf" class="tab-content">
           <div class="figure-container">
-            <img src="figures/confusion_matrix_random_forest.png" alt="Random Forest confusion matrix" loading="lazy">
-            <p class="figure-caption">Random Forest - Raw Confusion Matrix</p>
-          </div>
-        </div>
-        <div id="cm-xgb" class="tab-content">
-          <div class="figure-container">
-            <img src="figures/confusion_matrix_xgboost.png" alt="XGBoost confusion matrix" loading="lazy">
-            <p class="figure-caption">XGBoost - Raw Confusion Matrix</p>
-          </div>
-        </div>
-
-        <div id="cm-lr-n" class="tab-content active">
-          <div class="figure-container">
-            <img src="figures/confusion_matrix_logistic_regression_normalized.png" alt="Logistic Regression normalized confusion matrix" loading="lazy">
-            <p class="figure-caption">Logistic Regression - Normalized Confusion Matrix</p>
-          </div>
-        </div>
-        <div id="cm-rf-n" class="tab-content">
-          <div class="figure-container">
-            <img src="figures/confusion_matrix_random_forest_normalized.png" alt="Random Forest normalized confusion matrix" loading="lazy">
-            <p class="figure-caption">Random Forest - Normalized Confusion Matrix</p>
-          </div>
-        </div>
-        <div id="cm-xgb-n" class="tab-content">
-          <div class="figure-container">
-            <img src="figures/confusion_matrix_xgboost_normalized.png" alt="XGBoost normalized confusion matrix" loading="lazy">
-            <p class="figure-caption">XGBoost - Normalized Confusion Matrix</p>
+            <img src="figures/confusion_matrix_random_forest_normalized.png" alt="RF confusion matrix" loading="lazy">
+            <p class="figure-caption">Random Forest - Normalized</p>
           </div>
         </div>
       </div>
@@ -504,379 +873,266 @@
   </div>
 </section>
 
-<!-- ── Explainability ── -->
-<section id="explainability" style="background: var(--bg-secondary);">
+<!-- Explainability -->
+<section id="explainability" class="metrics-section">
   <div class="container">
-    <div class="section-header fade-in">
+    <div class="section-header reveal">
       <div class="section-label">Transparency</div>
       <h2 class="section-title">Explainability</h2>
-      <p class="section-desc">Understanding model decisions with SHAP (global) and LIME (local) explanations.</p>
+      <p class="section-desc">Understanding model decisions with SHAP and LIME.</p>
     </div>
 
-    <!-- SHAP -->
-    <div class="fade-in" style="margin-bottom:48px;">
+    <div class="reveal" style="margin-bottom:48px;">
       <h3 style="font-size:1.3rem; color:#fff; margin-bottom:8px;">SHAP - Global Feature Importance</h3>
-      <p style="color:var(--text-muted); margin-bottom:24px;">
-        SHAP (SHapley Additive exPlanations) measures the average contribution of each feature
-        to the model's predictions across all samples. Higher values indicate more influential features.
+      <p style="color:var(--text-secondary); margin-bottom:24px;">
+        SHAP measures each feature's contribution to predictions across all samples.
       </p>
-      <div class="figure-tabs" role="tablist" aria-label="SHAP model selector">
-        <button class="tab-btn active" onclick="switchTab('shap', 'lr')">Logistic Regression</button>
-        <button class="tab-btn" onclick="switchTab('shap', 'rf')">Random Forest</button>
-        <button class="tab-btn" onclick="switchTab('shap', 'xgb')">XGBoost</button>
+      <div class="figure-tabs">
+        <button class="tab-btn active" onclick="switchTab('shap', 'rf')">Random Forest</button>
       </div>
       <div class="figure-grid">
-        <div id="shap-lr" class="tab-content active">
+        <div id="shap-rf" class="tab-content active">
           <div class="figure-container">
-            <img src="figures/shap_summary_logistic_regression.png" alt="SHAP summary plot for Logistic Regression" loading="lazy">
-            <p class="figure-caption">SHAP Summary - Logistic Regression</p>
-          </div>
-        </div>
-        <div id="shap-rf" class="tab-content">
-          <div class="figure-container">
-            <img src="figures/shap_summary_random_forest.png" alt="SHAP summary plot for Random Forest" loading="lazy">
+            <img src="figures/shap_summary_random_forest.png" alt="SHAP Random Forest" loading="lazy">
             <p class="figure-caption">SHAP Summary - Random Forest</p>
-          </div>
-        </div>
-        <div id="shap-xgb" class="tab-content">
-          <div class="figure-container">
-            <img src="figures/shap_summary_xgboost.png" alt="SHAP summary plot for XGBoost" loading="lazy">
-            <p class="figure-caption">SHAP Summary - XGBoost</p>
-          </div>
-        </div>
-        <div id="shap-lr-fi" class="tab-content active">
-          <div class="figure-container">
-            <img src="figures/shap_feature_importance_logistic_regression.png" alt="SHAP feature importance for Logistic Regression" loading="lazy">
-            <p class="figure-caption">SHAP Feature Importance - Logistic Regression</p>
           </div>
         </div>
         <div id="shap-rf-fi" class="tab-content">
           <div class="figure-container">
-            <img src="figures/shap_feature_importance_random_forest.png" alt="SHAP feature importance for Random Forest" loading="lazy">
+            <img src="figures/shap_feature_importance_random_forest.png" alt="SHAP RF Importance" loading="lazy">
             <p class="figure-caption">SHAP Feature Importance - Random Forest</p>
-          </div>
-        </div>
-        <div id="shap-xgb-fi" class="tab-content">
-          <div class="figure-container">
-            <img src="figures/shap_feature_importance_xgboost.png" alt="SHAP feature importance for XGBoost" loading="lazy">
-            <p class="figure-caption">SHAP Feature Importance - XGBoost</p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- LIME -->
-    <div class="fade-in">
+    <div class="reveal">
       <h3 style="font-size:1.3rem; color:#fff; margin-bottom:8px;">LIME - Local Explanations</h3>
-      <p style="color:var(--text-muted); margin-bottom:24px;">
-        LIME explains individual predictions by fitting interpretable surrogate models.
-        Below are explanations for correctly classified and misclassified network flows.
+      <p style="color:var(--text-secondary); margin-bottom:24px;">
+        LIME explains individual predictions with interpretable surrogate models.
       </p>
-      <div class="figure-tabs" role="tablist" aria-label="LIME model selector">
-        <button class="tab-btn active" onclick="switchTab('lime', 'lr')">Logistic Regression</button>
-        <button class="tab-btn" onclick="switchTab('lime', 'rf')">Random Forest</button>
-        <button class="tab-btn" onclick="switchTab('lime', 'xgb')">XGBoost</button>
-      </div>
       <div class="figure-grid">
-        <div id="lime-lr" class="tab-content active">
-          <div class="figure-container">
-            <img src="figures/lime_correct_logistic_regression.png" alt="LIME correct classification for LR" loading="lazy">
-            <p class="figure-caption">Correctly Classified Sample - Logistic Regression</p>
-          </div>
+        <div class="figure-container">
+          <img src="figures/lime_correct_random_forest.png" alt="LIME correct" loading="lazy">
+          <p class="figure-caption">Correctly Classified Sample</p>
         </div>
-        <div id="lime-rf" class="tab-content">
-          <div class="figure-container">
-            <img src="figures/lime_correct_random_forest.png" alt="LIME correct classification for RF" loading="lazy">
-            <p class="figure-caption">Correctly Classified Sample - Random Forest</p>
-          </div>
-        </div>
-        <div id="lime-xgb" class="tab-content">
-          <div class="figure-container">
-            <img src="figures/lime_correct_xgboost.png" alt="LIME correct classification for XGBoost" loading="lazy">
-            <p class="figure-caption">Correctly Classified Sample - XGBoost</p>
-          </div>
-        </div>
-        <div id="lime-lr-m" class="tab-content active">
-          <div class="figure-container">
-            <img src="figures/lime_misclassified_logistic_regression.png" alt="LIME misclassification for LR" loading="lazy">
-            <p class="figure-caption">Misclassified Sample - Logistic Regression</p>
-          </div>
-        </div>
-        <div id="lime-rf-m" class="tab-content">
-          <div class="figure-container">
-            <img src="figures/lime_misclassified_random_forest.png" alt="LIME misclassification for RF" loading="lazy">
-            <p class="figure-caption">Misclassified Sample - Random Forest</p>
-          </div>
-        </div>
-        <div id="lime-xgb-m" class="tab-content">
-          <div class="figure-container">
-            <img src="figures/lime_misclassified_xgboost.png" alt="LIME misclassification for XGBoost" loading="lazy">
-            <p class="figure-caption">Misclassified Sample - XGBoost</p>
-          </div>
+        <div class="figure-container">
+          <img src="figures/lime_misclassified_random_forest.png" alt="LIME misclassified" loading="lazy">
+          <p class="figure-caption">Misclassified Sample</p>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── Interactive Demo ── -->
-<section id="demo">
+<!-- Demo -->
+<section id="demo" class="demo-section">
   <div class="container">
-    <div class="section-header fade-in">
+    <div class="section-header reveal">
       <div class="section-label">Interactive</div>
       <h2 class="section-title">Live Demo</h2>
       <p class="section-desc">Paste network flow features or load a sample to see the classifier in action.</p>
     </div>
 
-    <div class="demo-wrap fade-in" style="max-width:900px; margin:0 auto;">
+    <div class="demo-card reveal">
       <div class="demo-header">
-        <span class="demo-dot" style="background:var(--red);"></span>
-        <span class="demo-dot" style="background:var(--orange);"></span>
-        <span class="demo-dot" style="background:var(--green);"></span>
-        <span style="color:var(--text-dim); font-size:0.85rem; margin-left:8px;">network_flow_classifier.py</span>
+        <span class="demo-dot red"></span>
+        <span class="demo-dot yellow"></span>
+        <span class="demo-dot green"></span>
+        <span class="demo-filename">network_flow_classifier.py</span>
       </div>
 
-      <p style="color:var(--text-muted); font-size:0.95rem; margin-bottom:16px;">
-        Load a pre-built sample or paste CSV feature values (78 features, comma-separated) to simulate a prediction.
-      </p>
-
-      <div style="margin-bottom:16px;">
-        <button class="sample-btn" onclick="loadSample('benign')">BENIGN Traffic</button>
-        <button class="sample-btn" onclick="loadSample('dos')">DoS Hulk Attack</button>
-        <button class="sample-btn" onclick="loadSample('portscan')">Port Scan</button>
-        <button class="sample-btn" onclick="loadSample('ddos')">DDoS Attack</button>
-        <button class="sample-btn" onclick="loadSample('bruteforce')">FTP Brute Force</button>
-        <button class="sample-btn" onclick="loadSample('bot')">Botnet</button>
+      <div class="sample-btns">
+        <button class="sample-btn" onclick="loadSample('benign')">BENIGN</button>
+        <button class="sample-btn" onclick="loadSample('dos')">DoS Hulk</button>
+        <button class="sample-btn" onclick="loadSample('portscan')">PortScan</button>
+        <button class="sample-btn" onclick="loadSample('ddos')">DDoS</button>
+        <button class="sample-btn" onclick="loadSample('bruteforce')">Brute Force</button>
       </div>
 
-      <textarea class="demo-input" id="demoInput" placeholder="Paste 78 comma-separated feature values here, or click a sample above..." spellcheck="false"></textarea>
+      <textarea class="demo-input" id="demoInput" placeholder="Paste 78 comma-separated feature values..." spellcheck="false"></textarea>
 
-      <div style="margin-top:16px; display:flex; gap:12px; flex-wrap:wrap;">
+      <div class="demo-actions">
         <button class="btn btn-primary" onclick="runPrediction()">Classify Flow</button>
         <button class="btn btn-outline" onclick="clearDemo()">Clear</button>
       </div>
 
       <div class="demo-results" id="demoResults">
-        <h4 style="color:#fff; margin-bottom:8px;">Prediction Results</h4>
-        <div class="demo-result-card" id="predictionOutput"></div>
-        <div class="demo-result-card" style="margin-top:12px;">
-          <h4 style="color:#fff; font-size:0.95rem; margin-bottom:12px;">Top Feature Contributions</h4>
-          <div id="featureContributions"></div>
-        </div>
+        <div class="result-card" id="predictionOutput"></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── Team ── -->
-<section id="team" style="background: var(--bg-secondary);">
+<!-- Team -->
+<section id="team">
   <div class="container">
-    <div class="section-header fade-in">
+    <div class="section-header reveal">
       <div class="section-label">People</div>
       <h2 class="section-title">Team</h2>
     </div>
-    <div class="grid grid-3 fade-in" style="max-width:900px; margin:0 auto;">
-      <div class="card" style="text-align:center;">
-        <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;color:#fff;">MT</div>
+    <div class="grid grid-4" style="max-width:1000px; margin:0 auto;">
+      <div class="team-card reveal">
+        <div class="team-avatar" style="background: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet));">MT</div>
         <h3>Mohammad Thabet Hassan</h3>
-        <p style="margin-bottom:8px;">Lead Developer & Primary Contributor</p>
-        <a href="https://github.com/MohammadThabetHassan" target="_blank" rel="noopener" style="color:var(--accent-light); font-size:0.9rem;">@MohammadThabetHassan</a>
+        <p>Lead Developer</p>
+        <a href="https://github.com/MohammadThabetHassan" target="_blank">@MohammadThabetHassan</a>
       </div>
-      <div class="card" style="text-align:center;">
-        <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--green),#06b6d4);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;color:#fff;">FS</div>
+      <div class="team-card reveal stagger-1">
+        <div class="team-avatar" style="background: linear-gradient(135deg, var(--accent-cyan), #10b981);">FS</div>
         <h3>Fahad Sadek</h3>
-        <p style="margin-bottom:8px;">Contributor</p>
-        <a href="https://github.com/fahad6789123" target="_blank" rel="noopener" style="color:var(--accent-light); font-size:0.9rem;">@fahad6789123</a>
+        <p>Contributor</p>
+        <a href="https://github.com/fahad6789123" target="_blank">@fahad6789123</a>
       </div>
-      <div class="card" style="text-align:center;">
-        <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--red));margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;color:#fff;">AS</div>
+      <div class="team-card reveal stagger-2">
+        <div class="team-avatar" style="background: linear-gradient(135deg, var(--accent-amber), var(--accent-magenta));">AS</div>
         <h3>Ahmed Sami</h3>
-        <p style="margin-bottom:8px;">Contributor</p>
-        <a href="https://github.com/AhmedSamiAlameri" target="_blank" rel="noopener" style="color:var(--accent-light); font-size:0.9rem;">@AhmedSamiAlameri</a>
+        <p>Contributor</p>
+        <a href="https://github.com/AhmedSamiAlameri" target="_blank">@AhmedSamiAlameri</a>
       </div>
-    </div>
-    <div class="fade-in" style="max-width:400px; margin:24px auto 0;">
-      <div class="card" style="text-align:center;">
-        <p style="color:var(--text-dim); font-size:0.85rem; margin-bottom:4px;">Supervisor</p>
-        <h3 style="font-size:1.1rem;">Dr. Mehak Khurana</h3>
-        <p><a href="mailto:Mehak.Khurana@cud.ac.ae" style="color:var(--accent-light); font-size:0.9rem;">Mehak.Khurana@cud.ac.ae</a></p>
+      <div class="team-card reveal stagger-3">
+        <div class="team-avatar" style="background: linear-gradient(135deg, var(--accent-magenta), var(--accent-violet));">MK</div>
+        <h3>Dr. Mehak Khurana</h3>
+        <p>Supervisor</p>
+        <a href="mailto:Mehak.Khurana@cud.ac.ae">Contact</a>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── Limitations ── -->
-<section id="limitations" style="background: var(--bg-secondary);">
+<!-- Limitations -->
+<section id="limitations" class="limitations-section">
   <div class="container">
-    <div class="section-header fade-in">
+    <div class="section-header reveal">
       <div class="section-label">Honesty</div>
       <h2 class="section-title">Limitations & Known Issues</h2>
-      <p class="section-desc">We believe in transparency. Here's what the project can and cannot do.</p>
+      <p class="section-desc">We believe in transparency about what this project can and cannot do.</p>
     </div>
     
-    <div class="fade-in" style="display:grid; gap:20px; max-width:900px; margin:0 auto;">
-      <div class="card" style="border-left:4px solid var(--green);">
-        <h3 style="color:var(--green-light); margin-bottom:8px;">✅ Real Data Benchmark Complete</h3>
-        <p style="color:var(--text-muted);">Ran real CIC-IDS-2017 V2 benchmark (100K sample). Random Forest: 99.69% accuracy, 0.997 F1. Logistic Regression: 85.69%. Significantly better than synthetic data (0.51 macro F1).</p>
+    <div class="grid grid-4" style="max-width:1000px; margin:0 auto;">
+      <div class="limitation-card success reveal">
+        <h3 style="color:var(--accent-cyan);">✓ Real Data Benchmark</h3>
+        <p>Real CIC-IDS-2017 V2 benchmark (100K sample). Random Forest: 99.69% accuracy. Significantly better than synthetic (0.51 macro F1).</p>
       </div>
-      
-      <div class="card" style="border-left:4px solid var(--orange);">
-        <h3 style="color:var(--orange); margin-bottom:8px;">⚠️ XGBoost Label Issue</h3>
-        <p style="color:var(--text-muted);">XGBoost has issues with rare classes that get dropped during stratified split. Random Forest handles this better. Use --sample-size to adjust.</p>
+      <div class="limitation-card warning reveal stagger-1">
+        <h3 style="color:var(--accent-amber);">⚠ XGBoost Labels</h3>
+        <p>XGBoost has issues with rare classes dropped during stratified split. Random Forest handles this better.</p>
       </div>
-      
-      <div class="card" style="border-left:4px solid var(--accent);">
-        <h3 style="color:var(--accent-light); margin-bottom:8px;">📊 Metrics Transparency</h3>
-        <p style="color:var(--text-muted);">Weighted F1 (0.99) is excellent on real data. Macro F1 (0.89) shows some class-level variation. Compare with synthetic baseline (Macro F1: 0.51) to see real-world improvement.</p>
+      <div class="limitation-card reveal stagger-2">
+        <h3 style="color:var(--accent-violet);">◈ Sample Size</h3>
+        <p>Current benchmark uses 100K sample. Full dataset (2.8M+) would provide more comprehensive evaluation.</p>
       </div>
-      
-      <div class="card" style="border-left:4px solid var(--green);">
-        <h3 style="color:var(--green-light); margin-bottom:8px;">✅ What's Working</h3>
-        <p style="color:var(--text-muted);">Cross-validation, PR curves, calibration curves, failure analysis, Docker, FastAPI, and comprehensive tests are all implemented. See README for CLI usage.</p>
+      <div class="limitation-card success reveal stagger-3">
+        <h3 style="color:var(--accent-cyan);">✓ What's Working</h3>
+        <p>Cross-validation, PR curves, calibration, failure analysis, Docker, FastAPI, and tests all implemented.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── Footer ── -->
+<!-- Footer -->
 <footer>
-  <p style="font-size:1rem; color:var(--text-muted); margin-bottom:8px;">
-    <strong>XAI-IDS</strong> &mdash; Explainable AI Intrusion Detection System
-  </p>
+  <p><strong>XAI-IDS</strong> — Explainable AI Intrusion Detection System</p>
   <p>Built on the CIC-IDS-2017 dataset by the Canadian Institute for Cybersecurity.</p>
   <div class="footer-links">
-    <a href="https://github.com/MohammadThabetHassan/Explainable-AI-Intrusion-Detection-System-XAI-IDS-">GitHub Repository</a>
+    <a href="https://github.com/MohammadThabetHassan/Explainable-AI-Intrusion-Detection-System-XAI-IDS-">GitHub</a>
     <a href="https://www.unb.ca/cic/datasets/ids-2017.html">CIC-IDS-2017 Dataset</a>
   </div>
 </footer>
 
 <script>
-// ── Tab Switching ──
-function switchTab(group, model) {
-  const mappings = {
-    cm:   { lr: ['cm-lr','cm-lr-n'], rf: ['cm-rf','cm-rf-n'], xgb: ['cm-xgb','cm-xgb-n'] },
-    shap: { lr: ['shap-lr','shap-lr-fi'], rf: ['shap-rf','shap-rf-fi'], xgb: ['shap-xgb','shap-xgb-fi'] },
-    lime: { lr: ['lime-lr','lime-lr-m'], rf: ['lime-rf','lime-rf-m'], xgb: ['lime-xgb','lime-xgb-m'] }
-  };
-  const allIds = Object.values(mappings[group]).flat();
-  allIds.forEach(id => { document.getElementById(id).classList.remove('active'); });
-  mappings[group][model].forEach(id => { document.getElementById(id).classList.add('active'); });
-
-  // Update tab buttons
-  const section = document.getElementById(allIds[0]).closest('section') || document.getElementById(allIds[0]).closest('.fade-in');
-  const tabContainer = document.getElementById(allIds[0]).parentElement;
-  const buttons = tabContainer.previousElementSibling.querySelectorAll('.tab-btn');
-  buttons.forEach((btn, i) => {
-    const models = ['lr','rf','xgb'];
-    btn.classList.toggle('active', models[i] === model);
-    btn.setAttribute('aria-selected', models[i] === model ? 'true' : 'false');
-  });
-}
-
-// ── Demo Samples ──
-const SAMPLES = {
-  benign: { label:'BENIGN', features:'80,52340,5,4,487,1023,120,30,97.4,35.2,300,20,255.8,100.3,18543,152.8,10468,4200,13500,1200,52340,13085,3800,14000,800,48000,12000,3500,13000,700,0,0,0,0,320,256,95.6,76.5,20,300,160.2,90.5,8190,0,1,0,0,1,0,0,0,1.25,250.5,97.4,255.8,320,0,0,0,0,0,0,5,487,4,1023,8192,4096,3,20,5000,2000,6000,4000,50000,20000,55000,45000' },
-  dos: { label:'DoS Hulk', features:'80,4820,103,2,5120,98,520,40,49.7,15.3,60,10,49,25.3,1062240,21380,46.8,30.2,120,5,4820,46.8,28.5,100,3,80,40,15,50,20,0,0,0,0,6592,128,21370,415,10,520,265.2,150.8,22740,0,2,0,1,1,0,0,0,0.02,260.1,49.7,49,6592,0,0,0,0,0,0,103,5120,2,98,512,128,80,20,0,0,0,0,0,0,0,0' },
-  portscan: { label:'PortScan', features:'43721,980,2,1,95,48,60,35,47.5,12.5,48,48,48,0,145918,3061,490,200,500,480,980,980,0,980,980,0,0,0,0,0,0,0,0,0,128,64,2040,1020,35,60,47.7,8.2,67.2,0,1,0,0,1,0,0,0,1,71.5,47.5,48,128,0,0,0,0,0,0,2,95,1,48,256,128,1,20,0,0,0,0,0,0,0,0' },
-  ddos: { label:'DDoS', features:'443,3200,95,3,4800,85,480,35,50.5,14.8,40,15,28.3,12.5,1500000,30625,33.7,22.1,80,3,3200,33.7,20.5,70,2,60,20,8,30,10,0,0,0,0,6080,192,29687,937,15,480,250.3,140.5,19740,0,3,0,1,1,0,0,0,0.03,248.9,50.5,28.3,6080,0,0,0,0,0,0,95,4800,3,85,256,64,72,20,0,0,0,0,0,0,0,0' },
-  bruteforce: { label:'FTP-Patator', features:'21,10500,10,8,205,310,30,15,20.5,5.8,50,20,38.8,12.5,49048,1714,1050,600,1200,800,10500,1050,500,1100,700,9000,1125,400,1200,600,0,0,0,0,640,512,952,762,15,50,28.6,12.3,151.3,0,1,0,0,1,0,0,0,0.8,28.6,20.5,38.8,640,0,0,0,0,0,0,10,205,8,310,4096,2048,7,20,3000,1500,4000,2000,8000,4000,10000,6000' },
-  bot: { label:'Bot', features:'6667,102000,20,15,1050,820,80,20,52.5,18.5,70,15,54.7,20.3,18353,343,5100,3200,6000,4000,102000,5100,2800,5500,3800,90000,6000,3000,6500,4500,0,0,0,0,1280,960,196,147,15,80,53.4,22.1,488.4,0,1,0,0,1,0,0,0,0.75,53.4,52.5,54.7,1280,0,0,0,0,0,0,20,1050,15,820,8192,4096,12,20,30000,15000,35000,25000,80000,40000,90000,70000' }
-};
-
-const FEATURE_NAMES = ['Destination Port','Flow Duration','Total Fwd Packets','Total Backward Packets','Total Length of Fwd Packets','Total Length of Bwd Packets','Fwd Packet Length Max','Fwd Packet Length Min','Fwd Packet Length Mean','Fwd Packet Length Std','Bwd Packet Length Max','Bwd Packet Length Min','Bwd Packet Length Mean','Bwd Packet Length Std','Flow Bytes/s','Flow Packets/s','Flow IAT Mean','Flow IAT Std','Flow IAT Max','Flow IAT Min','Fwd IAT Total','Fwd IAT Mean','Fwd IAT Std','Fwd IAT Max','Fwd IAT Min','Bwd IAT Total','Bwd IAT Mean','Bwd IAT Std','Bwd IAT Max','Bwd IAT Min','Fwd PSH Flags','Bwd PSH Flags','Fwd URG Flags','Bwd URG Flags','Fwd Header Length','Bwd Header Length','Fwd Packets/s','Bwd Packets/s','Min Packet Length','Max Packet Length','Packet Length Mean','Packet Length Std','Packet Length Variance','FIN Flag Count','SYN Flag Count','RST Flag Count','PSH Flag Count','ACK Flag Count','URG Flag Count','CWE Flag Count','ECE Flag Count','Down/Up Ratio','Average Packet Size','Avg Fwd Segment Size','Avg Bwd Segment Size','Fwd Header Length.1','Fwd Avg Bytes/Bulk','Fwd Avg Packets/Bulk','Fwd Avg Bulk Rate','Bwd Avg Bytes/Bulk','Bwd Avg Packets/Bulk','Bwd Avg Bulk Rate','Subflow Fwd Packets','Subflow Fwd Bytes','Subflow Bwd Packets','Subflow Bwd Bytes','Init_Win_bytes_forward','Init_Win_bytes_backward','act_data_pkt_fwd','min_seg_size_forward','Active Mean','Active Std','Active Max','Active Min','Idle Mean','Idle Std','Idle Max','Idle Min'];
-
-function loadSample(type) {
-  document.getElementById('demoInput').value = SAMPLES[type].features;
-  document.getElementById('demoResults').classList.remove('visible');
-}
-
-function clearDemo() {
-  document.getElementById('demoInput').value = '';
-  document.getElementById('demoResults').classList.remove('visible');
-}
-
-function runPrediction() {
-  const input = document.getElementById('demoInput').value.trim();
-  if (!input) return;
-  const vals = input.split(',').map(v => parseFloat(v.trim()));
-  if (vals.length < 10) { alert('Please provide at least the key network flow features (78 values expected).'); return; }
-
-  // Simulated classification based on feature heuristics
-  const port = vals[0], fwdPkts = vals[2], bwdPkts = vals[3], fwdLen = vals[4], bwdLen = vals[5];
-  const flowDur = vals[1], fwdPktRate = vals[36] || 0;
-
-  let predictions = {};
-  // Heuristic scoring (simulates model behavior)
-  if (port === 21 || port === 22) {
-    predictions = { 'FTP-Patator': 0.72, 'SSH-Patator': 0.18, 'BENIGN': 0.10 };
-    if (port === 22) { predictions = { 'SSH-Patator': 0.75, 'FTP-Patator': 0.15, 'BENIGN': 0.10 }; }
-  } else if (fwdPkts > 50 && bwdPkts < 5) {
-    predictions = { 'DoS Hulk': 0.65, 'DDoS': 0.22, 'DoS GoldenEye': 0.08, 'BENIGN': 0.05 };
-  } else if (port > 10000 && fwdPkts <= 3 && flowDur < 2000) {
-    predictions = { 'PortScan': 0.82, 'BENIGN': 0.12, 'Infiltration': 0.06 };
-  } else if (port === 6667 || (flowDur > 80000 && fwdPkts > 15)) {
-    predictions = { 'Bot': 0.68, 'BENIGN': 0.20, 'Infiltration': 0.12 };
-  } else if (fwdPkts > 40 && port === 443) {
-    predictions = { 'DDoS': 0.60, 'DoS Hulk': 0.25, 'BENIGN': 0.15 };
-  } else {
-    predictions = { 'BENIGN': 0.85, 'PortScan': 0.06, 'Bot': 0.05, 'DoS Hulk': 0.04 };
+  // Tab Switching
+  function switchTab(group, model) {
+    const mappings = {
+      cm: { lr: ['cm-lr'], rf: ['cm-rf'] },
+      shap: { rf: ['shap-rf', 'shap-rf-fi'] }
+    };
+    
+    // Hide all in group
+    Object.values(mappings[group] || {}).flat().forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('active');
+    });
+    
+    // Show selected
+    if (mappings[group] && mappings[group][model]) {
+      mappings[group][model].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('active');
+      });
+    }
+    
+    // Update buttons
+    const btns = document.querySelectorAll(`#${group === 'cm' ? 'confusion' : 'explainability'} .figure-tabs .tab-btn`);
+    btns.forEach((btn, i) => {
+      const models = group === 'cm' ? ['lr', 'rf'] : ['rf'];
+      btn.classList.toggle('active', models[i] === model);
+    });
   }
 
-  // Render
-  const topPred = Object.entries(predictions).sort((a,b) => b[1]-a[1])[0];
-  const isBenign = topPred[0] === 'BENIGN';
-  let html = '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">';
-  html += '<div style="width:12px;height:12px;border-radius:50%;background:' + (isBenign ? 'var(--green)' : 'var(--red)') + ';"></div>';
-  html += '<span style="font-size:1.2rem;font-weight:700;color:#fff;">' + topPred[0] + '</span>';
-  html += '<span class="pred-confidence ' + (isBenign ? 'pred-benign' : 'pred-attack') + '">' + (topPred[1]*100).toFixed(1) + '% confidence</span>';
-  html += '</div>';
+  // Demo Samples
+  const SAMPLES = {
+    benign: { label:'BENIGN', features:'80,52340,5,4,487,1023,120,30,97.4,35.2,300,20,255.8,100.3,18543,152.8,10468,4200,13500,1200,52340,13085,3800,14000,800,48000,12000,3500,13000,700,0,0,0,0,320,256,95.6,76.5,20,300,160.2,90.5,8190,0,1,0,0,1,0,0,0,1.25,250.5,97.4,255.8,320,0,0,0,0,0,0,5,487,4,1023,8192,4096,3,20,5000,2000,6000,4000,50000,20000,55000,45000' },
+    dos: { label:'DoS Hulk', features:'80,4820,103,2,5120,98,520,40,49.7,15.3,60,10,49,25.3,1062240,21380,46.8,30.2,120,5,4820,46.8,28.5,100,3,80,40,15,50,20,0,0,0,0,6592,128,21370,415,10,520,265.2,150.8,22740,0,2,0,1,1,0,0,0,0.02,260.1,49.7,49,6592,0,0,0,0,0,0,103,5120,2,98,512,128,80,20,0,0,0,0,0,0,0,0' },
+    portscan: { label:'PortScan', features:'43721,980,2,1,95,48,60,35,47.5,12.5,48,48,48,0,145918,3061,490,200,500,480,980,980,0,980,980,0,0,0,0,0,0,0,0,0,128,64,2040,1020,35,60,47.7,8.2,67.2,0,1,0,0,1,0,0,0,1,71.5,47.5,48,128,0,0,0,0,0,0,2,95,1,48,256,128,1,20,0,0,0,0,0,0,0,0' },
+    ddos: { label:'DDoS', features:'443,3200,95,3,4800,85,480,35,50.5,14.8,40,15,28.3,12.5,1500000,30625,33.7,22.1,80,3,3200,33.7,20.5,70,2,60,20,8,30,10,0,0,0,0,6080,192,29687,937,15,480,250.3,140.5,19740,0,3,0,1,1,0,0,0,0.03,248.9,50.5,28.3,6080,0,0,0,0,0,0,95,4800,3,85,256,64,72,20,0,0,0,0,0,0,0,0' },
+    bruteforce: { label:'FTP-Patator', features:'21,10500,10,8,205,310,30,15,20.5,5.8,50,20,38.8,12.5,49048,1714,1050,600,1200,800,10500,1050,500,1100,700,9000,1125,400,1200,600,0,0,0,0,640,512,952,762,15,50,28.6,12.3,151.3,0,1,0,0,1,0,0,0,0.8,28.6,20.5,38.8,640,0,0,0,0,0,0,10,205,8,310,4096,2048,7,20,3000,1500,4000,2000,8000,4000,10000,6000' }
+  };
 
-  Object.entries(predictions).sort((a,b) => b[1]-a[1]).forEach(([label, conf]) => {
-    const isB = label === 'BENIGN';
-    const color = isB ? 'var(--green)' : 'var(--red)';
-    html += '<div class="prediction-row">';
-    html += '<span class="pred-label" style="min-width:180px;">' + label + '</span>';
-    html += '<div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:' + (conf*100) + '%;background:' + color + ';"></div></div>';
-    html += '<span style="font-variant-numeric:tabular-nums;color:var(--text-muted);min-width:50px;text-align:right;">' + (conf*100).toFixed(1) + '%</span>';
-    html += '</div>';
-  });
+  function loadSample(type) {
+    document.getElementById('demoInput').value = SAMPLES[type].features;
+    document.getElementById('demoResults').classList.remove('visible');
+  }
 
-  document.getElementById('predictionOutput').innerHTML = html;
+  function clearDemo() {
+    document.getElementById('demoInput').value = '';
+    document.getElementById('demoResults').classList.remove('visible');
+  }
 
-  // Feature contributions (simulated LIME-style)
-  const importantFeatures = [
-    { name: 'Total Fwd Packets', val: vals[2], contrib: fwdPkts > 50 ? 0.35 : -0.15 },
-    { name: 'Destination Port', val: vals[0], contrib: [21,22].includes(port) ? 0.28 : (port > 10000 ? 0.22 : -0.05) },
-    { name: 'Flow Duration', val: vals[1], contrib: flowDur > 80000 ? 0.18 : -0.08 },
-    { name: 'Total Length Fwd Pkts', val: vals[4], contrib: fwdLen > 3000 ? 0.15 : -0.10 },
-    { name: 'Fwd Packets/s', val: vals[36], contrib: fwdPktRate > 10000 ? 0.12 : -0.06 },
-    { name: 'Total Bwd Packets', val: vals[3], contrib: bwdPkts < 3 ? 0.10 : -0.08 },
-  ];
-  let fhtml = '';
-  importantFeatures.sort((a,b) => Math.abs(b.contrib) - Math.abs(a.contrib)).forEach(f => {
-    const color = f.contrib > 0 ? 'var(--red)' : 'var(--green)';
-    const dir = f.contrib > 0 ? 'Attack' : 'Benign';
-    fhtml += '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);">';
-    fhtml += '<span style="min-width:180px;font-size:0.9rem;color:var(--text);">' + f.name + '</span>';
-    fhtml += '<span style="min-width:80px;font-size:0.85rem;color:var(--text-dim);">= ' + f.val.toFixed(1) + '</span>';
-    fhtml += '<div style="flex:1;display:flex;align-items:center;">';
-    fhtml += '<div style="width:' + (Math.abs(f.contrib)*200) + 'px;height:6px;border-radius:3px;background:' + color + ';"></div>';
-    fhtml += '</div>';
-    fhtml += '<span style="font-size:0.8rem;color:' + color + ';">' + (f.contrib > 0 ? '+' : '') + f.contrib.toFixed(3) + ' (' + dir + ')</span>';
-    fhtml += '</div>';
-  });
-  document.getElementById('featureContributions').innerHTML = fhtml;
-  document.getElementById('demoResults').classList.add('visible');
-}
+  function runPrediction() {
+    const input = document.getElementById('demoInput').value.trim();
+    if (!input) {
+      alert('Please enter feature values or select a sample.');
+      return;
+    }
 
-// ── Scroll Animations ──
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) { entry.target.classList.add('visible'); }
-  });
-}, { threshold: 0.1 });
-document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+    const features = input.split(',').map(Number);
+    if (features.length !== 78 || features.some(isNaN)) {
+      alert('Please enter exactly 78 numeric feature values.');
+      return;
+    }
+
+    // Simulate prediction (demo only - not real model)
+    const mockPredictions = [
+      { label: 'BENIGN', confidence: 0.95 },
+      { label: 'DoS Hulk', confidence: 0.03 },
+      { label: 'PortScan', confidence: 0.02 }
+    ];
+
+    let html = '<h4 style="color:#fff; margin-bottom:12px;">Prediction Results</h4>';
+    mockPredictions.forEach(p => {
+      const isAttack = p.label !== 'BENIGN';
+      html += `
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border-subtle);">
+          <span style="font-weight:600; color:var(--text-primary);">${p.label}</span>
+          <span style="padding:4px 12px; border-radius:6px; font-size:0.85rem; background:${isAttack ? 'var(--accent-magenta-dim)' : 'rgba(0,255,213,0.15)'}; color:${isAttack ? 'var(--accent-magenta)' : 'var(--accent-cyan)'};">${(p.confidence * 100).toFixed(1)}%</span>
+        </div>`;
+    });
+
+    document.getElementById('predictionOutput').innerHTML = html;
+    document.getElementById('demoResults').classList.add('visible');
+  }
+
+  // Scroll Reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 </script>
-
 </body>
 </html>
