@@ -1,0 +1,24 @@
+Classification Report: logistic_regression
+============================================================
+
+                            precision    recall  f1-score   support
+
+                    BENIGN       1.00      1.00      1.00      6000
+                       Bot       0.89      0.91      0.90       100
+                      DDoS       0.24      0.04      0.07       700
+             DoS GoldenEye       0.00      0.00      0.00       400
+                  DoS Hulk       0.41      0.94      0.57      1000
+          DoS Slowhttptest       0.00      0.00      0.00       150
+             DoS slowloris       0.00      0.00      0.00       200
+               FTP-Patator       0.51      0.52      0.52       300
+                Heartbleed       0.12      0.20      0.15        10
+              Infiltration       0.50      0.25      0.33        20
+                  PortScan       1.00      1.00      1.00       800
+               SSH-Patator       0.51      0.49      0.50       300
+  Web Attack - Brute Force       0.43      0.50      0.46        50
+Web Attack - Sql Injection       0.07      0.05      0.06        20
+          Web Attack - XSS       0.50      0.48      0.49        50
+
+                  accuracy                           0.81     10100
+                 macro avg       0.41      0.43      0.40     10100
+              weighted avg       0.77      0.81      0.78     10100
