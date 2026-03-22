@@ -76,24 +76,49 @@ def compute_metrics(
 
     # Get actual labels present in both y_true and y_pred
     present_labels = sorted(set(y_true) | set(y_pred))
-    present_label_names = [label_names[i] for i in present_labels]
 
-    report = classification_report(
-        y_true,
-        y_pred,
-        labels=present_labels,
-        target_names=present_label_names,
-        zero_division=0,
-        output_dict=True,
-    )
+    # Handle label_names being None or having different length
+    if label_names is not None and len(present_labels) > 0:
+        max_label = max(present_labels)
+        if max_label < len(label_names):
+            present_label_names = [label_names[i] for i in present_labels]
+        else:
+            present_label_names = None
+    else:
+        present_label_names = None
 
-    report_str = classification_report(
-        y_true,
-        y_pred,
-        labels=present_labels,
-        target_names=present_label_names,
-        zero_division=0,
-    )
+    if present_label_names:
+        report = classification_report(
+            y_true,
+            y_pred,
+            labels=present_labels,
+            target_names=present_label_names,
+            zero_division=0,
+            output_dict=True,
+        )
+
+        report_str = classification_report(
+            y_true,
+            y_pred,
+            labels=present_labels,
+            target_names=present_label_names,
+            zero_division=0,
+        )
+    else:
+        report = classification_report(
+            y_true,
+            y_pred,
+            labels=present_labels,
+            zero_division=0,
+            output_dict=True,
+        )
+
+        report_str = classification_report(
+            y_true,
+            y_pred,
+            labels=present_labels,
+            zero_division=0,
+        )
 
     cm = confusion_matrix(y_true, y_pred)
 
