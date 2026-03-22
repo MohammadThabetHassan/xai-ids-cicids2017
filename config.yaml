@@ -1,5 +1,9 @@
 # XAI-IDS Configuration File
 # Default settings for the pipeline
+#
+# NOTE: This file serves as a reference for pipeline configuration.
+# Currently the pipeline uses CLI arguments. Future versions may
+# support loading from this file directly.
 
 # Data Configuration
 data:
