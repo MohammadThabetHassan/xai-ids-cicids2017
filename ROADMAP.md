@@ -70,13 +70,13 @@ This roadmap outlines the planned enhancements for the XAI-IDS project, organize
 
 | # | Task | Impact | Effort | Status |
 |---|------|--------|--------|--------|
-| 4.1 | Add comprehensive unit tests | MEDIUM | 4 hours | Pending |
+| 4.1 | Add comprehensive unit tests | MEDIUM | 4 hours | Complete |
 | 4.2 | Add regression tests for outputs | MEDIUM | 2 hours | Pending |
-| 4.3 | Create Dockerfile | MEDIUM | 2 hours | Pending |
-| 4.4 | Add FastAPI inference endpoint | MEDIUM | 3 hours | Pending |
+| 4.3 | Create Dockerfile | MEDIUM | 2 hours | Complete |
+| 4.4 | Add FastAPI inference endpoint | MEDIUM | 3 hours | Complete |
 | 4.5 | Replace simulated demo with real model API | HIGH | 3 hours | Pending |
 | 4.6 | Add input validation and error handling | MEDIUM | 2 hours | Pending |
-| 4.7 | Create configuration file (YAML/JSON) | LOW | 1 hour | Pending |
+| 4.7 | Create configuration file (YAML/JSON) | LOW | 1 hour | Complete |
 
 ---
 
@@ -89,7 +89,7 @@ This roadmap outlines the planned enhancements for the XAI-IDS project, organize
 | 5.1 | Add GitHub issue templates | LOW | 30 min | Pending |
 | 5.2 | Create CHANGELOG.md | LOW | 30 min | Pending |
 | 5.3 | Add architecture diagram | MEDIUM | 1 hour | Pending |
-| 5.4 | Create model card (like HuggingFace) | MEDIUM | 1 hour | Pending |
+| 5.4 | Create model card (like HuggingFace) | MEDIUM | 1 hour | Complete |
 | 5.5 | Add architecture documentation (MkDocs) | MEDIUM | 2 hours | Pending |
 | 5.6 | Create citation file (CITATION.cff) | LOW | 15 min | Pending |
 
