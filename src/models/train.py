@@ -14,6 +14,7 @@ import joblib
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.utils.class_weight import compute_class_weight
 from xgboost import XGBClassifier
 
 from src.utils.logger import get_logger
@@ -30,6 +31,7 @@ MODEL_CONFIGS = {
             "solver": "lbfgs",
             "n_jobs": -1,
             "C": 1.0,
+            "class_weight": "balanced",
         },
     },
     "random_forest": {
@@ -41,6 +43,7 @@ MODEL_CONFIGS = {
             "n_jobs": -1,
             "min_samples_split": 5,
             "min_samples_leaf": 2,
+            "class_weight": "balanced",
         },
     },
     "xgboost": {
@@ -67,6 +70,7 @@ def train_model(
     y_val: Optional[np.ndarray] = None,
     save_dir: str = "outputs/models",
     custom_params: Optional[Dict] = None,
+    use_balanced_weights: bool = True,
 ) -> Any:
     """
     Train a single model.
@@ -87,6 +91,8 @@ def train_model(
         Directory to save trained model.
     custom_params : Dict, optional
         Override default parameters.
+    use_balanced_weights : bool
+        Whether to use balanced class weights (default: True).
 
     Returns
     -------
@@ -111,13 +117,33 @@ def train_model(
 
     start_time = time.time()
 
-    if model_name == "xgboost" and X_val is not None:
-        model.fit(
-            X_train,
-            y_train,
-            eval_set=[(X_val, y_val)],
-            verbose=False,
+    sample_weight = None
+    if use_balanced_weights and model_name == "xgboost":
+        classes = np.unique(y_train)
+        class_weights = compute_class_weight("balanced", classes=classes, y=y_train)
+        sample_weight = np.array(
+            [class_weights[np.where(classes == y)[0][0]] for y in y_train]
         )
+        logger.info(f"  Using balanced sample weights for XGBoost")
+
+    if model_name == "xgboost" and X_val is not None:
+        if sample_weight is not None:
+            model.fit(
+                X_train,
+                y_train,
+                sample_weight=sample_weight,
+                eval_set=[(X_val, y_val)],
+                verbose=False,
+            )
+        else:
+            model.fit(
+                X_train,
+                y_train,
+                eval_set=[(X_val, y_val)],
+                verbose=False,
+            )
+    elif sample_weight is not None:
+        model.fit(X_train, y_train, sample_weight=sample_weight)
     else:
         model.fit(X_train, y_train)
 
