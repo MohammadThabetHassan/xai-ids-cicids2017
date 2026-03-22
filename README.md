@@ -162,41 +162,41 @@ Data Acquisition → Preprocessing → Model Training → Evaluation → Explain
 
 ## Results
 
-### Model Comparison
+### Model Comparison (with Balanced Class Weights)
 
-| Model | Accuracy | Precision | Recall | F1-Score (Weighted) |
-|-------|----------|-----------|--------|----------|
-| Logistic Regression | 0.8143 | 0.7744 | 0.8143 | 0.7790 |
-| Random Forest | **0.8450** | **0.8054** | **0.8450** | **0.8045** |
-| XGBoost | 0.8375 | 0.8125 | 0.8375 | 0.8149 |
+| Model | Accuracy | Precision | Recall | F1-Score (Weighted) | Macro F1 |
+|-------|----------|-----------|--------|---------------------|----------|
+| Logistic Regression | 0.7601 | 0.7866 | 0.7601 | 0.7651 | 0.48 |
+| Random Forest | 0.8347 | 0.8096 | 0.8347 | 0.8162 | 0.48 |
+| **XGBoost** | **0.8250** | **0.8158** | **0.8250** | **0.8193** | **0.51** |
 
-> **Important:** The weighted F1 scores above (0.80) mask significant class-level failures. The **macro F1 score is 0.44**, revealing poor performance on minority attack classes.
+> Class weighting improves fairness across classes. Macro F1 increased from 0.44 to 0.51, trading some weighted F1 for better minority class detection.
 
-### Per-Class Performance (Random Forest)
+### Per-Class Performance (XGBoost with Balanced Weights)
 
 | Class | Precision | Recall | F1-Score | Samples |
 |-------|-----------|--------|----------|---------|
 | BENIGN | 1.00 | 1.00 | 1.00 | 6000 |
-| Bot | 0.85 | 0.99 | 0.91 | 100 |
-| DDoS | 0.31 | 0.02 | 0.04 | 700 |
-| **DoS GoldenEye** | **0.00** | **0.00** | **0.00** | 400 |
-| DoS Hulk | 0.41 | 0.98 | 0.58 | 1000 |
-| **DoS Slowhttptest** | **0.00** | **0.00** | **0.00** | 150 |
-| **DoS slowloris** | **0.00** | **0.00** | **0.00** | 200 |
+| Bot | 0.93 | 0.95 | 0.94 | 100 |
+| DDoS | 0.28 | 0.31 | 0.29 | 700 |
+| DoS GoldenEye | 0.19 | 0.12 | 0.15 | 400 |
+| DoS Hulk | 0.41 | 0.50 | 0.45 | 1000 |
+| DoS Slowhttptest | 0.05 | 0.03 | 0.04 | 150 |
+| DoS slowloris | 0.07 | 0.04 | 0.05 | 200 |
 | FTP-Patator | 1.00 | 1.00 | 1.00 | 300 |
-| **Heartbleed** | **0.00** | **0.00** | **0.00** | 10 |
-| Infiltration | 0.50 | 0.25 | 0.33 | 20 |
-| PortScan | 1.00 | 0.99 | 1.00 | 800 |
-| SSH-Patator | 0.97 | 1.00 | 0.99 | 300 |
-| Web Attack - Brute Force | 0.37 | 0.30 | 0.33 | 50 |
+| Heartbleed | 0.33 | 0.20 | 0.25 | 10 |
+| Infiltration | 0.70 | 0.80 | 0.74 | 20 |
+| PortScan | 1.00 | 1.00 | 1.00 | 800 |
+| SSH-Patator | 0.99 | 1.00 | 1.00 | 300 |
+| Web Attack - Brute Force | 0.37 | 0.52 | 0.43 | 50 |
 | **Web Attack - Sql Injection** | **0.00** | **0.00** | **0.00** | 20 |
-| Web Attack - XSS | 0.42 | 0.52 | 0.46 | 50 |
+| Web Attack - XSS | 0.38 | 0.34 | 0.36 | 50 |
 
 **Summary Metrics:**
-- **Macro Avg F1:** 0.44 (treats all classes equally)
-- **Weighted Avg F1:** 0.80 (favors majority classes)
+- **Macro Avg F1:** 0.51 (treats all classes equally)
+- **Weighted Avg F1:** 0.82 (favors majority classes)
 
-> Results shown are from the 50K synthetic dataset. Performance on the full real dataset is expected to differ.
+> Results shown are from the 50K synthetic dataset with balanced class weights. Performance on the full real dataset is expected to differ.
 
 ### Model Comparison Chart
 
@@ -320,11 +320,13 @@ Tests include:
 
 ### Limitations
 
-**Critical Issues:**
+**Mitigated Issues:**
 
-1. **Severe Class Imbalance**: 5 of 14 attack types (DoS GoldenEye, DoS Slowhttptest, DoS slowloris, Heartbleed, SQL Injection) have **0% precision and recall**. The model completely fails to detect these attacks.
+1. **Class Imbalance (Improved)**: Added balanced class weights. Macro F1 improved from 0.44 to 0.51. Only SQL Injection (20 samples) remains at 0% detection.
 
-2. **Misleading Aggregate Metrics**: Weighted F1 (0.80) appears strong but macro F1 (0.44) reveals the true performance gap between majority and minority classes.
+**Remaining Issues:**
+
+2. **Misleading Aggregate Metrics**: Weighted F1 (0.82) appears strong but macro F1 (0.51) reveals the true performance gap between majority and minority classes.
 
 3. **Synthetic Data Only**: All current results are from synthetic data. The real CIC-IDS-2017 dataset download URL is no longer accessible (UNB server offline).
 
