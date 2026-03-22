@@ -1,23 +1,23 @@
 Classification Report: logistic_regression
 ============================================================
 
-                          precision    recall  f1-score   support
+                            precision    recall  f1-score   support
 
-                  BENIGN       1.00      0.81      0.89      7784
-                     Bot       0.01      1.00      0.01         4
-                    Comb       1.00      1.00      1.00       648
-                    DDoS       0.83      0.99      0.90       457
-           DoS GoldenEye       0.34      0.97      0.50        29
-                DoS Hulk       0.80      1.00      0.89       661
-        DoS Slowhttptest       0.43      1.00      0.60        24
-           DoS slowloris       0.20      1.00      0.34        19
-             FTP-Patator       0.28      1.00      0.44        22
-            Infiltration       0.00      0.00      0.00         0
-                PortScan       0.71      1.00      0.83       328
-             SSH-Patator       0.13      0.86      0.23        14
-Web Attack � Brute Force       0.00      0.00      0.00         5
-        Web Attack � XSS       0.06      1.00      0.12         3
+                    BENIGN       1.00      0.82      0.90     15542
+                       Bot       0.01      0.88      0.03        16
+                      Comb       1.00      1.00      1.00      1253
+                      DDoS       0.85      1.00      0.92       951
+             DoS GoldenEye       0.45      0.97      0.61        71
+                  DoS Hulk       0.83      0.99      0.90      1255
+          DoS Slowhttptest       0.30      1.00      0.46        43
+             DoS slowloris       0.25      0.94      0.40        33
+               FTP-Patator       0.36      1.00      0.53        42
+                  PortScan       0.74      0.99      0.85       743
+               SSH-Patator       0.12      0.97      0.21        30
+  Web Attack � Brute Force       0.01      0.33      0.02         9
+Web Attack � Sql Injection       0.00      0.00      0.00         0
+          Web Attack � XSS       0.03      1.00      0.05         4
 
-                accuracy                           0.85      9998
-               macro avg       0.41      0.83      0.48      9998
-            weighted avg       0.96      0.85      0.89      9998
+                  accuracy                           0.86     19992
+                 macro avg       0.42      0.85      0.49     19992
+              weighted avg       0.96      0.86      0.90     19992

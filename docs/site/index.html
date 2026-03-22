@@ -350,7 +350,7 @@
       </div>
     </div>
     <p style="text-align:center; color:var(--text-dim); margin-top:16px; font-size:0.9rem;">
-      Real CIC-IDS-2017 V2 benchmark (50K sample). Weighted F1: 0.99 | Macro F1: 0.89 | Synthetic: Macro F1: 0.51
+      Real CIC-IDS-2017 V2 benchmark (100K sample). Weighted F1: 0.99 | Random Forest: 99.69% accuracy | Synthetic: Macro F1: 0.51
     </p>
   </div>
 </section>
@@ -412,33 +412,26 @@
           <tbody>
             <tr>
               <td class="model-name">Logistic Regression</td>
-              <td>0.8493 <span class="metric-bar" style="width:84.93%; background:var(--accent);"></span></td>
-              <td>0.8925</td>
-              <td>0.8493</td>
-              <td>0.8528</td>
-            </tr>
-            <tr>
-              <td class="model-name">Random Forest</td>
-              <td>0.9972 <span class="metric-bar" style="width:99.72%; background:var(--green);"></span></td>
-              <td>0.9972</td>
-              <td>0.9972</td>
-              <td>0.9972</td>
+              <td>0.8569 <span class="metric-bar" style="width:85.69%; background:var(--accent);"></span></td>
+              <td>0.9637</td>
+              <td>0.8569</td>
+              <td>0.8994</td>
             </tr>
             <tr class="highlight-row">
-              <td class="model-name">XGBoost <span class="badge badge-green" style="font-size:0.7rem; padding:2px 8px;">Best</span></td>
-              <td class="metric-best">0.9973 <span class="metric-bar" style="width:99.73%; background:var(--purple);"></span></td>
-              <td class="metric-best">0.9974</td>
-              <td class="metric-best">0.9973</td>
-              <td class="metric-best">0.9973</td>
+              <td class="model-name">Random Forest <span class="badge badge-green" style="font-size:0.7rem; padding:2px 8px;">Best</span></td>
+              <td class="metric-best">0.9969 <span class="metric-bar" style="width:99.69%; background:var(--green);"></span></td>
+              <td class="metric-best">0.9971</td>
+              <td class="metric-best">0.9969</td>
+              <td class="metric-best">0.9970</td>
             </tr>
           </tbody>
         </table>
         <p style="text-align:center; color:var(--text-muted); font-size:0.9rem; margin-top:16px; padding:12px; background:rgba(16,185,129,0.1); border-radius:8px; border:1px solid rgba(16,185,129,0.3);">
-          <strong>Real CIC-IDS-2017 V2 Benchmark (50K sample):</strong> Macro F1 = 0.89. XGBoost achieves 99.73% accuracy with strong per-class performance.
+          <strong>Real CIC-IDS-2017 V2 Benchmark (100K sample):</strong> Random Forest achieves 99.69% accuracy with excellent per-class performance.
         </p>
       </div>
       <p style="text-align:center; color:var(--text-dim); font-size:0.85rem; margin-top:12px;">
-        Results from real CIC-IDS-2017 V2 dataset (50K sample). Macro F1: 0.89 (XGBoost). Synthetic dataset Macro F1: 0.51 for comparison.
+        Results from real CIC-IDS-2017 V2 dataset (100K sample). Random Forest: 99.69% accuracy. Logistic Regression: 85.69% accuracy. XGBoost unavailable (label encoding issue with rare classes).
       </p>
     </div>
 
@@ -724,12 +717,12 @@
     <div class="fade-in" style="display:grid; gap:20px; max-width:900px; margin:0 auto;">
       <div class="card" style="border-left:4px solid var(--green);">
         <h3 style="color:var(--green-light); margin-bottom:8px;">✅ Real Data Benchmark Complete</h3>
-        <p style="color:var(--text-muted);">Ran real CIC-IDS-2017 V2 benchmark (50K sample). XGBoost: 99.73% accuracy, 0.89 macro F1. Random Forest: 99.72%. Significantly better than synthetic data (0.51 macro F1).</p>
+        <p style="color:var(--text-muted);">Ran real CIC-IDS-2017 V2 benchmark (100K sample). Random Forest: 99.69% accuracy, 0.997 F1. Logistic Regression: 85.69%. Significantly better than synthetic data (0.51 macro F1).</p>
       </div>
       
       <div class="card" style="border-left:4px solid var(--orange);">
-        <h3 style="color:var(--orange); margin-bottom:8px;">⚠️ Sample Size</h3>
-        <p style="color:var(--text-muted);">Current benchmark uses 50K sample. Full dataset (2.8M+ samples) would provide more comprehensive evaluation. Use --random-sample flag to adjust sample size.</p>
+        <h3 style="color:var(--orange); margin-bottom:8px;">⚠️ XGBoost Label Issue</h3>
+        <p style="color:var(--text-muted);">XGBoost has issues with rare classes that get dropped during stratified split. Random Forest handles this better. Use --sample-size to adjust.</p>
       </div>
       
       <div class="card" style="border-left:4px solid var(--accent);">

@@ -3,20 +3,20 @@ Classification Report: random_forest
 
                           precision    recall  f1-score   support
 
-                  BENIGN       1.00      1.00      1.00      7784
-                     Bot       0.75      0.75      0.75         4
-                    Comb       1.00      1.00      1.00       648
-                    DDoS       1.00      1.00      1.00       457
-           DoS GoldenEye       1.00      0.90      0.95        29
-                DoS Hulk       0.99      0.99      0.99       661
-        DoS Slowhttptest       0.96      1.00      0.98        24
-           DoS slowloris       1.00      0.95      0.97        19
-             FTP-Patator       1.00      1.00      1.00        22
-                PortScan       0.99      1.00      1.00       328
-             SSH-Patator       1.00      0.86      0.92        14
-Web Attack � Brute Force       0.60      0.60      0.60         5
-        Web Attack � XSS       0.50      0.33      0.40         3
+                  BENIGN       1.00      1.00      1.00     15542
+                     Bot       0.44      0.69      0.54        16
+                    Comb       1.00      1.00      1.00      1253
+                    DDoS       1.00      1.00      1.00       951
+           DoS GoldenEye       1.00      1.00      1.00        71
+                DoS Hulk       1.00      0.99      0.99      1255
+        DoS Slowhttptest       0.89      0.95      0.92        43
+           DoS slowloris       1.00      1.00      1.00        33
+             FTP-Patator       1.00      1.00      1.00        42
+                PortScan       0.98      1.00      0.99       743
+             SSH-Patator       1.00      0.97      0.98        30
+Web Attack � Brute Force       0.75      0.67      0.71         9
+        Web Attack � XSS       0.67      0.50      0.57         4
 
-                accuracy                           1.00      9998
-               macro avg       0.91      0.87      0.89      9998
-            weighted avg       1.00      1.00      1.00      9998
+                accuracy                           1.00     19992
+               macro avg       0.90      0.90      0.90     19992
+            weighted avg       1.00      1.00      1.00     19992
