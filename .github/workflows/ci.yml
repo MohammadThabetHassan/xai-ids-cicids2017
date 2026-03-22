@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Verify imports
+        run: |
+          python -c "from src.utils.logger import setup_logger; print('Logger OK')"
+          python -c "from src.data.loader import load_dataset; print('Loader OK')"
+          python -c "from src.data.preprocessing import clean_data; print('Preprocessing OK')"
+          python -c "from src.models.train import MODEL_CONFIGS; print('Models OK')"
+          python -c "from src.evaluation.metrics import compute_metrics; print('Evaluation OK')"
+          python -c "from src.explainability.explain import compute_shap_explanations; print('Explainability OK')"
+
+      - name: Run tests
+        run: |
+          python -m pytest tests/ -v --tb=short
+
+      - name: Smoke test - generate sample data
+        run: |
+          python -c "
+          from src.data.generate_sample import generate_sample_dataset
+          generate_sample_dataset(n_samples=500, output_dir='data/raw', seed=42)
+          print('Sample data generated successfully')
+          "
