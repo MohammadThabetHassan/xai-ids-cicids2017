@@ -111,6 +111,16 @@ Examples:
         action="store_true",
         help="Generate precision-recall curves",
     )
+    parser.add_argument(
+        "--calibration",
+        action="store_true",
+        help="Generate calibration curves",
+    )
+    parser.add_argument(
+        "--failure-analysis",
+        action="store_true",
+        help="Generate failure analysis report",
+    )
 
     return parser.parse_args()
 
@@ -243,6 +253,34 @@ def main():
             data["y_test"],
             label_names,
             save_dir=figures_dir,
+        )
+
+    if args.calibration:
+        logger.info("\n" + "=" * 50)
+        logger.info("Calibration Curves")
+        logger.info("=" * 50)
+        from src.evaluation.metrics import plot_calibration_curves
+
+        plot_calibration_curves(
+            trained_models,
+            data["X_test"],
+            data["y_test"],
+            label_names,
+            save_dir=figures_dir,
+        )
+
+    if args.failure_analysis:
+        logger.info("\n" + "=" * 50)
+        logger.info("Failure Analysis")
+        logger.info("=" * 50)
+        from src.evaluation.metrics import generate_failure_analysis
+
+        generate_failure_analysis(
+            trained_models,
+            data["X_test"],
+            data["y_test"],
+            label_names,
+            save_dir=reports_dir,
         )
 
     # ─── Step 5: Explainability ───

@@ -17,11 +17,11 @@ This roadmap outlines the planned enhancements for the XAI-IDS project, organize
 
 | # | Task | Impact | Effort | Status |
 |---|------|--------|--------|--------|
-| 1.1 | Add per-class metrics table to README | HIGH | 30 min | Pending |
-| 1.2 | Add macro/weighted F1 prominently | HIGH | 30 min | Pending |
-| 1.3 | Document class imbalance in Limitations | HIGH | 15 min | Pending |
+| 1.1 | Add per-class metrics table to README | HIGH | 30 min | Complete |
+| 1.2 | Add macro/weighted F1 prominently | HIGH | 30 min | Complete |
+| 1.3 | Document class imbalance in Limitations | HIGH | 15 min | Complete |
 | 1.4 | Create this roadmap document | HIGH | 1 hour | Complete |
-| 1.5 | Create PROJECT_STATUS.md | HIGH | 1 hour | Pending |
+| 1.5 | Create PROJECT_STATUS.md | HIGH | 1 hour | Complete |
 | 1.6 | Add confusion matrix interpretation guide | MEDIUM | 1 hour | Pending |
 | 1.7 | Update site with class performance visualization | MEDIUM | 2 hours | Pending |
 
@@ -33,9 +33,9 @@ This roadmap outlines the planned enhancements for the XAI-IDS project, organize
 
 | # | Task | Impact | Effort | Status |
 |---|------|--------|--------|--------|
-| 2.1 | Implement class-weighted training | HIGH | 2 hours | Pending |
-| 2.2 | Add cross-validation (5-fold) | HIGH | 3 hours | Pending |
-| 2.3 | Generate per-class precision-recall curves | HIGH | 2 hours | Pending |
+| 2.1 | Implement class-weighted training | HIGH | 2 hours | Complete |
+| 2.2 | Add cross-validation (5-fold) | HIGH | 3 hours | Complete |
+| 2.3 | Generate per-class precision-recall curves | HIGH | 2 hours | Complete |
 | 2.4 | Add calibration analysis plots | HIGH | 2 hours | Pending |
 | 2.5 | Generate failure analysis report | HIGH | 2 hours | Pending |
 | 2.6 | Add statistical significance (paired t-test) | MEDIUM | 2 hours | Pending |
@@ -49,7 +49,7 @@ This roadmap outlines the planned enhancements for the XAI-IDS project, organize
 
 | # | Task | Impact | Effort | Status |
 |---|------|--------|--------|--------|
-| 3.1 | Find alternative CIC-IDS-2017 source | CRITICAL | 2 hours | Pending |
+| 3.1 | Find alternative CIC-IDS-2017 source | CRITICAL | 2 hours | Complete |
 | 3.2 | Download/verify dataset integrity | CRITICAL | 1 hour | Pending |
 | 3.3 | Run full benchmark on real data (~100K samples) | CRITICAL | 4 hours | Pending |
 | 3.4 | Compare synthetic vs real performance | HIGH | 2 hours | Pending |

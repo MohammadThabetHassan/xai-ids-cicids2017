@@ -25,6 +25,7 @@ from sklearn.metrics import (
     precision_score,
     recall_score,
 )
+from sklearn.calibration import calibration_curve
 from sklearn.model_selection import cross_val_predict, cross_val_score, StratifiedKFold
 
 from src.utils.logger import get_logger
@@ -547,3 +548,195 @@ def plot_precision_recall_curves(
         logger.info(f"Saved PR curves: {filepath}")
 
     return saved_paths
+
+
+def plot_calibration_curves(
+    models: Dict[str, Any],
+    X_test: np.ndarray,
+    y_test: np.ndarray,
+    label_names: List[str],
+    save_dir: str = "outputs/figures",
+    n_bins: int = 10,
+) -> List[str]:
+    """
+    Plot calibration curves for each class.
+
+    Parameters
+    ----------
+    models : Dict[str, Any]
+        Dictionary of trained models.
+    X_test : np.ndarray
+        Test features.
+    y_test : np.ndarray
+        Test labels.
+    label_names : List[str]
+        Human-readable class names.
+    save_dir : str
+        Directory to save figures.
+    n_bins : int
+        Number of bins for calibration curve.
+
+    Returns
+    -------
+    List[str]
+        Paths to saved figures.
+    """
+    from sklearn.preprocessing import label_binarize
+
+    Path(save_dir).mkdir(parents=True, exist_ok=True)
+    saved_paths = []
+
+    y_test_bin = label_binarize(y_test, classes=range(len(label_names)))
+
+    for model_name, model in models.items():
+        logger.info(f"Computing calibration for {model_name}...")
+
+        if not hasattr(model, "predict_proba"):
+            logger.warning(f"{model_name} lacks predict_proba, skipping calibration")
+            continue
+
+        y_scores = model.predict_proba(X_test)
+
+        fig, axes = plt.subplots(3, 5, figsize=(18, 12))
+        axes = axes.flatten()
+
+        for i in range(min(len(label_names), 15)):
+            if y_test_bin.shape[1] > i:
+                try:
+                    frac_pos, pred_prob = calibration_curve(
+                        y_test_bin[:, i], y_scores[:, i], n_bins=n_bins
+                    )
+                    axes[i].plot([0, 1], [0, 1], "k--", label="Perfect")
+                    axes[i].plot(pred_prob, frac_pos, "o-", label="Model")
+                    axes[i].set_xlabel("Mean Predicted Probability")
+                    axes[i].set_ylabel("Fraction of Positives")
+                    axes[i].set_title(f"{label_names[i]}")
+                    axes[i].legend(loc="lower right", fontsize=7)
+                    axes[i].grid(True, alpha=0.3)
+                    axes[i].set_xlim([0, 1])
+                    axes[i].set_ylim([0, 1])
+                except Exception as e:
+                    axes[i].text(0.5, 0.5, f"Error: {str(e)[:30]}", ha="center")
+
+        for i in range(len(label_names), 15):
+            axes[i].axis("off")
+
+        plt.suptitle(
+            f"Calibration Curves: {model_name}", fontsize=14, fontweight="bold"
+        )
+        plt.tight_layout()
+
+        filepath = os.path.join(
+            save_dir, f"calibration_{model_name.lower().replace(' ', '_')}.png"
+        )
+        fig.savefig(filepath, bbox_inches="tight", dpi=150)
+        plt.close(fig)
+
+        saved_paths.append(filepath)
+        logger.info(f"Saved calibration curves: {filepath}")
+
+    return saved_paths
+
+
+def generate_failure_analysis(
+    models: Dict[str, Any],
+    X_test: np.ndarray,
+    y_test: np.ndarray,
+    label_names: List[str],
+    save_dir: str = "outputs/reports",
+) -> Dict:
+    """
+    Generate failure analysis report showing which classes are confused with each other.
+
+    Parameters
+    ----------
+    models : Dict[str, Any]
+        Dictionary of trained models.
+    X_test : np.ndarray
+        Test features.
+    y_test : np.ndarray
+        Test labels.
+    label_names : List[str]
+        Human-readable class names.
+    save_dir : str
+        Directory to save reports.
+
+    Returns
+    -------
+    Dict
+        Failure analysis results.
+    """
+    Path(save_dir).mkdir(parents=True, exist_ok=True)
+
+    results = {}
+
+    for model_name, model in models.items():
+        y_pred = model.predict(X_test)
+        cm = confusion_matrix(y_test, y_pred)
+
+        report = classification_report(
+            y_test, y_pred, target_names=label_names, output_dict=True, zero_division=0
+        )
+
+        failing_classes = []
+        for i, name in enumerate(label_names):
+            if report[name]["recall"] < 0.3:
+                failing_classes.append(
+                    {
+                        "class": name,
+                        "recall": report[name]["recall"],
+                        "precision": report[name]["precision"],
+                        "f1": report[name]["f1-score"],
+                    }
+                )
+
+        top_confusions = []
+        for i in range(len(label_names)):
+            for j in range(len(label_names)):
+                if i != j and cm[i, j] >= 5:
+                    top_confusions.append(
+                        {
+                            "true": label_names[i],
+                            "predicted": label_names[j],
+                            "count": int(cm[i, j]),
+                        }
+                    )
+        top_confusions.sort(key=lambda x: x["count"], reverse=True)
+        top_confusions = top_confusions[:10]
+
+        results[model_name] = {
+            "failing_classes": failing_classes,
+            "top_confusions": top_confusions,
+            "macro_recall": report["macro avg"]["recall"],
+            "macro_f1": report["macro avg"]["f1-score"],
+        }
+
+    report_path = os.path.join(save_dir, "failure_analysis.txt")
+    with open(report_path, "w") as f:
+        f.write("=" * 60 + "\n")
+        f.write("FAILURE ANALYSIS REPORT\n")
+        f.write("=" * 60 + "\n\n")
+
+        for model_name, data in results.items():
+            f.write(f"Model: {model_name}\n")
+            f.write("-" * 40 + "\n")
+            f.write(f"Macro Recall: {data['macro_recall']:.4f}\n")
+            f.write(f"Macro F1: {data['macro_f1']:.4f}\n\n")
+
+            f.write("Failing Classes (recall < 30%):\n")
+            if data["failing_classes"]:
+                for fc in data["failing_classes"]:
+                    f.write(
+                        f"  - {fc['class']}: P={fc['precision']:.2f}, R={fc['recall']:.2f}, F1={fc['f1']:.2f}\n"
+                    )
+            else:
+                f.write("  None\n")
+
+            f.write("\nTop Confusions:\n")
+            for conf in data["top_confusions"]:
+                f.write(f"  {conf['true']} -> {conf['predicted']}: {conf['count']}\n")
+
+            f.write("\n" + "=" * 60 + "\n\n")
+
+    logger.info(f"Saved failure analysis: {report_path}")
+    return results
