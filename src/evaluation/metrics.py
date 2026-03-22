@@ -21,9 +21,11 @@ from sklearn.metrics import (
     classification_report,
     confusion_matrix,
     f1_score,
+    precision_recall_curve,
     precision_score,
     recall_score,
 )
+from sklearn.model_selection import cross_val_predict, cross_val_score, StratifiedKFold
 
 from src.utils.logger import get_logger
 
@@ -406,3 +408,142 @@ def evaluate_all_models(
     save_classification_reports(all_metrics, save_dir=reports_dir)
 
     return all_metrics
+
+
+def run_cross_validation(
+    model,
+    X: np.ndarray,
+    y: np.ndarray,
+    cv: int = 5,
+    scoring: str = "f1_weighted",
+) -> Dict:
+    """
+    Run stratified k-fold cross-validation.
+
+    Parameters
+    ----------
+    model : sklearn estimator
+        Model to validate.
+    X : np.ndarray
+        Features.
+    y : np.ndarray
+        Labels.
+    cv : int
+        Number of folds (default: 5).
+    scoring : str
+        Scoring metric.
+
+    Returns
+    -------
+    Dict
+        Cross-validation results.
+    """
+    logger.info(f"Running {cv}-fold cross-validation...")
+    skf = StratifiedKFold(n_splits=cv, shuffle=True, random_state=42)
+
+    scores = cross_val_score(model, X, y, cv=skf, scoring=scoring, n_jobs=-1)
+
+    results = {
+        "cv_folds": cv,
+        "scoring": scoring,
+        "scores": scores.tolist(),
+        "mean": scores.mean(),
+        "std": scores.std(),
+        "min": scores.min(),
+        "max": scores.max(),
+    }
+
+    logger.info(
+        f"  {cv}-Fold CV {scoring}: {scores.mean():.4f} (+/- {scores.std():.4f})"
+    )
+    logger.info(f"  Individual folds: {[f'{s:.4f}' for s in scores]}")
+
+    return results
+
+
+def plot_precision_recall_curves(
+    models: Dict[str, Any],
+    X_test: np.ndarray,
+    y_test: np.ndarray,
+    label_names: List[str],
+    save_dir: str = "outputs/figures",
+) -> List[str]:
+    """
+    Plot precision-recall curves for each class.
+
+    Parameters
+    ----------
+    models : Dict[str, Any]
+        Dictionary of trained models.
+    X_test : np.ndarray
+        Test features.
+    y_test : np.ndarray
+        Test labels.
+    label_names : List[str]
+        Human-readable class names.
+    save_dir : str
+        Directory to save figures.
+
+    Returns
+    -------
+    List[str]
+        Paths to saved figures.
+    """
+    from sklearn.preprocessing import label_binarize
+
+    Path(save_dir).mkdir(parents=True, exist_ok=True)
+    saved_paths = []
+
+    y_test_bin = label_binarize(y_test, classes=range(len(label_names)))
+
+    for model_name, model in models.items():
+        logger.info(f"Computing PR curve for {model_name}...")
+
+        if hasattr(model, "predict_proba"):
+            y_scores = model.predict_proba(X_test)
+        else:
+            continue
+
+        n_classes = len(label_names)
+        fig, axes = plt.subplots(3, 5, figsize=(18, 12))
+        axes = axes.flatten()
+
+        for i in range(min(n_classes, 15)):
+            if y_test_bin.shape[1] > i:
+                precision, recall, _ = precision_recall_curve(
+                    y_test_bin[:, i], y_scores[:, i]
+                )
+                f1 = (
+                    2
+                    * precision.mean()
+                    * recall.mean()
+                    / (precision.mean() + recall.mean() + 1e-10)
+                )
+
+                axes[i].plot(recall, precision, "b-", linewidth=2)
+                axes[i].fill_between(recall, precision, alpha=0.3)
+                axes[i].set_xlabel("Recall")
+                axes[i].set_ylabel("Precision")
+                axes[i].set_title(f"{label_names[i]}\nF1: {f1:.2f}")
+                axes[i].set_xlim([0, 1])
+                axes[i].set_ylim([0, 1])
+                axes[i].grid(True, alpha=0.3)
+
+        for i in range(n_classes, 15):
+            axes[i].axis("off")
+
+        plt.suptitle(
+            f"Precision-Recall Curves: {model_name}", fontsize=14, fontweight="bold"
+        )
+        plt.tight_layout()
+
+        filepath = os.path.join(
+            save_dir, f"pr_curves_{model_name.lower().replace(' ', '_')}.png"
+        )
+        fig.savefig(filepath, bbox_inches="tight", dpi=150)
+        plt.close(fig)
+
+        saved_paths.append(filepath)
+        logger.info(f"Saved PR curves: {filepath}")
+
+    return saved_paths

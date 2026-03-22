@@ -100,6 +100,17 @@ Examples:
         default="outputs",
         help="Base output directory (default: outputs)",
     )
+    parser.add_argument(
+        "--cv-folds",
+        type=int,
+        default=0,
+        help="Number of CV folds (0 to skip, default: 0)",
+    )
+    parser.add_argument(
+        "--pr-curves",
+        action="store_true",
+        help="Generate precision-recall curves",
+    )
 
     return parser.parse_args()
 
@@ -204,6 +215,35 @@ def main():
         reports_dir=reports_dir,
         metrics_path=metrics_path,
     )
+
+    if args.cv_folds > 0:
+        logger.info("\n" + "=" * 50)
+        logger.info("Cross-Validation Analysis")
+        logger.info("=" * 50)
+        from src.evaluation.metrics import run_cross_validation
+
+        for model_name, model in trained_models.items():
+            cv_results = run_cross_validation(
+                model,
+                data["X_train"],
+                data["y_train"],
+                cv=args.cv_folds,
+                scoring="f1_weighted",
+            )
+
+    if args.pr_curves:
+        logger.info("\n" + "=" * 50)
+        logger.info("Precision-Recall Curves")
+        logger.info("=" * 50)
+        from src.evaluation.metrics import plot_precision_recall_curves
+
+        plot_precision_recall_curves(
+            trained_models,
+            data["X_test"],
+            data["y_test"],
+            label_names,
+            save_dir=figures_dir,
+        )
 
     # ─── Step 5: Explainability ───
     if not args.skip_explain:
