@@ -297,6 +297,7 @@
       <li><a href="#explainability">Explainability</a></li>
       <li><a href="#demo">Demo</a></li>
       <li><a href="#team">Team</a></li>
+      <li><a href="#limitations">Limitations</a></li>
       <li><a href="https://github.com/MohammadThabetHassan/Explainable-AI-Intrusion-Detection-System-XAI-IDS-" target="_blank" rel="noopener">GitHub</a></li>
     </ul>
   </div>
@@ -340,10 +341,17 @@
         <div class="stat-label">ML Models Compared</div>
       </div>
       <div class="stat-card">
-        <div class="stat-value" style="color:var(--purple)">84.5%</div>
+        <div class="stat-value" style="color:var(--purple)">83.5%</div>
         <div class="stat-label">Best Accuracy (RF)</div>
       </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color:var(--accent-light)">0.51</div>
+        <div class="stat-label">Macro F1 (XGB)</div>
+      </div>
     </div>
+    <p style="text-align:center; color:var(--text-dim); margin-top:16px; font-size:0.9rem;">
+      Weighted F1: 0.82 | Macro F1: 0.51 | Class-weighted training for fairer evaluation
+    </p>
   </div>
 </section>
 
@@ -404,10 +412,17 @@
           <tbody>
             <tr>
               <td class="model-name">Logistic Regression</td>
-              <td>0.8143 <span class="metric-bar" style="width:81.43%; background:var(--accent);"></span></td>
-              <td>0.7744</td>
-              <td>0.8143</td>
-              <td>0.7790</td>
+              <td>0.7601 <span class="metric-bar" style="width:76.01%; background:var(--accent);"></span></td>
+              <td>0.7866</td>
+              <td>0.7601</td>
+              <td>0.7651</td>
+            </tr>
+            <tr class="highlight-row">
+              <td class="model-name">Random Forest <span class="badge badge-green" style="font-size:0.7rem; padding:2px 8px;">Best</span></td>
+              <td class="metric-best">0.8347 <span class="metric-bar" style="width:83.47%; background:var(--green);"></span></td>
+              <td class="metric-best">0.8096</td>
+              <td class="metric-best">0.8347</td>
+              <td class="metric-best">0.8162</td>
             </tr>
             <tr class="highlight-row">
               <td class="model-name">Random Forest <span class="badge badge-green" style="font-size:0.7rem; padding:2px 8px;">Best</span></td>
@@ -418,16 +433,19 @@
             </tr>
             <tr>
               <td class="model-name">XGBoost</td>
-              <td>0.8375 <span class="metric-bar" style="width:83.75%; background:var(--purple);"></span></td>
-              <td>0.8125</td>
-              <td>0.8375</td>
-              <td>0.8149</td>
+              <td>0.8250 <span class="metric-bar" style="width:82.50%; background:var(--purple);"></span></td>
+              <td>0.8158</td>
+              <td>0.8250</td>
+              <td>0.8193</td>
             </tr>
           </tbody>
         </table>
+        <p style="text-align:center; color:var(--text-muted); font-size:0.9rem; margin-top:16px; padding:12px; background:rgba(245,158,11,0.1); border-radius:8px; border:1px solid rgba(245,158,11,0.3);">
+          <strong>⚠️ Important:</strong> Weighted F1 (0.82) masks class-level failures. <strong>Macro F1 = 0.51</strong> reveals true performance. Class weighting improves fairness across classes.
+        </p>
       </div>
       <p style="text-align:center; color:var(--text-dim); font-size:0.85rem; margin-top:12px;">
-        Results from 50,000-sample synthetic CIC-IDS-2017 dataset. Performance on the full real dataset may differ.
+        Results from 50K synthetic dataset with balanced class weights. Macro F1: 0.51 (XGBoost). Real CIC-IDS-2017 benchmark pending.
       </p>
     </div>
 
@@ -696,6 +714,39 @@
         <p style="color:var(--text-dim); font-size:0.85rem; margin-bottom:4px;">Supervisor</p>
         <h3 style="font-size:1.1rem;">Dr. Mehak Khurana</h3>
         <p><a href="mailto:Mehak.Khurana@cud.ac.ae" style="color:var(--accent-light); font-size:0.9rem;">Mehak.Khurana@cud.ac.ae</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Limitations ── -->
+<section id="limitations" style="background: var(--bg-secondary);">
+  <div class="container">
+    <div class="section-header fade-in">
+      <div class="section-label">Honesty</div>
+      <h2 class="section-title">Limitations & Known Issues</h2>
+      <p class="section-desc">We believe in transparency. Here's what the project can and cannot do.</p>
+    </div>
+    
+    <div class="fade-in" style="display:grid; gap:20px; max-width:900px; margin:0 auto;">
+      <div class="card" style="border-left:4px solid var(--orange);">
+        <h3 style="color:var(--orange); margin-bottom:8px;">⚠️ Synthetic Data Default</h3>
+        <p style="color:var(--text-muted);">All published results are from synthetic data (~50K samples). The real CIC-IDS-2017 dataset (2.8M+ samples) requires downloading via --download flag. Real-data benchmark results are pending.</p>
+      </div>
+      
+      <div class="card" style="border-left:4px solid var(--red);">
+        <h3 style="color:var(--red); margin-bottom:8px;">❌ Class Imbalance</h3>
+        <p style="color:var(--text-muted);">5 attack types have very low recall: SQL Injection (0%), DoS Slowhttptest (3%), DoS slowloris (4%), Heartbleed (20%), DoS GoldenEye (12%). This is due to severe class imbalance (600:1 ratio). Class weighting improved macro F1 from 0.44 to 0.51.</p>
+      </div>
+      
+      <div class="card" style="border-left:4px solid var(--accent);">
+        <h3 style="color:var(--accent-light); margin-bottom:8px;">📊 Metrics Transparency</h3>
+        <p style="color:var(--text-muted);">Weighted F1 (0.82) appears strong but hides minority class failures. Macro F1 (0.51) provides a fairer evaluation. Always check per-class metrics, not just aggregate scores.</p>
+      </div>
+      
+      <div class="card" style="border-left:4px solid var(--green);">
+        <h3 style="color:var(--green-light); margin-bottom:8px;">✅ What's Working</h3>
+        <p style="color:var(--text-muted);">Cross-validation, PR curves, calibration curves, failure analysis, Docker, FastAPI, and comprehensive tests are all implemented. See README for CLI usage.</p>
       </div>
     </div>
   </div>
