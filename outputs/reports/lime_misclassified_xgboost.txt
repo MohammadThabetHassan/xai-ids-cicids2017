@@ -1,0 +1,17 @@
+LIME Explanation - xgboost
+Classification Type: misclassified
+True Label: DoS GoldenEye (3)
+Predicted Label: DoS Hulk (4)
+============================================================
+
+Feature contributions:
+  Total Fwd Packets > -0.30: 0.1385
+  SYN Flag Count > 0.10: -0.0118
+  Subflow Fwd Packets > 0.15: 0.0111
+  Fwd URG Flags > 0.11: 0.0090
+  Flow IAT Min > 0.15: 0.0077
+  Fwd Packet Length Std > 0.15: 0.0073
+  Avg Bwd Segment Size > 0.10: -0.0072
+  Bwd Avg Packets/Bulk > 0.10: 0.0070
+  Flow IAT Std > 0.13: 0.0070
+  Flow Packets/s > 0.13: 0.0069

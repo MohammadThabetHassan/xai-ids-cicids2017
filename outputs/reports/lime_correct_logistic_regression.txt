@@ -1,0 +1,17 @@
+LIME Explanation - logistic_regression
+Classification Type: correct
+True Label: BENIGN (0)
+Predicted Label: BENIGN (0)
+============================================================
+
+Feature contributions:
+  Total Length of Bwd Packets > 0.25: 0.0358
+  -0.57 < Fwd PSH Flags <= -0.38: 0.0339
+  -0.45 < Total Length of Fwd Packets <= -0.36: -0.0337
+  Total Backward Packets > 0.45: -0.0246
+  -0.57 < Bwd Packets/s <= -0.38: 0.0170
+  Fwd IAT Total <= -0.58: 0.0150
+  -0.38 < Bwd IAT Total <= 0.12: 0.0148
+  RST Flag Count <= -0.57: 0.0146
+  -0.58 < Fwd Packet Length Std <= -0.38: 0.0145
+  -0.58 < Fwd Header Length.1 <= -0.38: 0.0124

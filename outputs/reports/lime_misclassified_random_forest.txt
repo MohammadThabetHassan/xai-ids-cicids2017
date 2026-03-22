@@ -1,0 +1,17 @@
+LIME Explanation - random_forest
+Classification Type: misclassified
+True Label: DoS GoldenEye (3)
+Predicted Label: DoS Hulk (4)
+============================================================
+
+Feature contributions:
+  Total Fwd Packets > -0.30: 0.0172
+  Total Length of Bwd Packets <= -0.62: 0.0019
+  Bwd Avg Packets/Bulk > 0.10: 0.0018
+  Flow IAT Mean > 0.12: 0.0017
+  Fwd Packet Length Max > 0.09: 0.0017
+  ECE Flag Count > 0.08: 0.0017
+  Bwd Packets/s > 0.14: 0.0017
+  Fwd Packet Length Min > 0.11: 0.0017
+  Total Length of Fwd Packets > -0.10: 0.0016
+  ACK Flag Count > 0.12: 0.0015

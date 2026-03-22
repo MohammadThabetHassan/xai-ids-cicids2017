@@ -1,0 +1,17 @@
+LIME Explanation - xgboost
+Classification Type: correct
+True Label: BENIGN (0)
+Predicted Label: BENIGN (0)
+============================================================
+
+Feature contributions:
+  -0.37 < Destination Port <= -0.09: 0.2809
+  Fwd Avg Bulk Rate <= -0.58: 0.0619
+  Flow Bytes/s <= -0.58: 0.0527
+  Subflow Fwd Packets <= -0.56: 0.0417
+  Total Fwd Packets <= -0.60: 0.0366
+  -0.37 < Average Packet Size <= 0.17: -0.0354
+  -0.56 < CWE Flag Count <= -0.38: -0.0316
+  Subflow Fwd Bytes <= -0.58: 0.0279
+  -0.38 < Bwd Avg Bulk Rate <= 0.12: -0.0264
+  -0.37 < Init_Win_bytes_forward <= 0.08: -0.0244

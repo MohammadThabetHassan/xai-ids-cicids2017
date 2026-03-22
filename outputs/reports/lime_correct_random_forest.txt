@@ -1,0 +1,17 @@
+LIME Explanation - random_forest
+Classification Type: correct
+True Label: BENIGN (0)
+Predicted Label: BENIGN (0)
+============================================================
+
+Feature contributions:
+  Total Fwd Packets <= -0.60: 0.0587
+  -0.37 < Destination Port <= -0.09: 0.0552
+  Bwd IAT Std <= -0.56: 0.0176
+  Fwd Avg Bulk Rate <= -0.58: 0.0169
+  Flow Bytes/s <= -0.58: 0.0167
+  Bwd URG Flags > 0.10: -0.0156
+  RST Flag Count <= -0.58: 0.0152
+  Bwd IAT Max <= -0.58: 0.0140
+  Active Max <= -0.57: 0.0139
+  Fwd Packet Length Std > 0.15: -0.0138
