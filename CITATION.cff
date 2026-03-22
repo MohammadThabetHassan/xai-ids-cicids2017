@@ -1,0 +1,43 @@
+cff-version: "1.2.0"
+title: XAI-IDS: Explainable AI Intrusion Detection System
+message: "If you use this software, please cite it as below."
+type: software
+authors:
+  - name: "Mohammad Thabet Hassan"
+    email: "mohammadthabethassan@gmail.com"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+  - name: "Fahad Sadek"
+  - name: "Ahmed Sami"
+  - name: "Dr. Mehak Khurana"
+    email: "Mehak.Khurana@cud.ac.ae"
+    affiliation: "Canadian University of Dubai"
+date-released: "2026-03-22"
+version: "1.0.0"
+license: MIT
+repository-code: "https://github.com/MohammadThabetHassan/Explainable-AI-Intrusion-Detection-System-XAI-IDS-"
+
+references:
+  - type: article
+    title: "Toward Generating a New Intrusion Detection Dataset and Intrusion Traffic Characterization"
+    authors:
+      - name: "Sharafaldin, Iman"
+      - name: "Lashkari, Arash Habibi"
+      - name: "Ghorbani, Ali A."
+    year: 2018
+    journal: "ICISSP"
+  - type: article
+    title: "A Unified Approach to Interpreting Model Predictions"
+    authors:
+      - name: "Lundberg, Scott M."
+        orcid: "https://orcid.org/0000-0001-7167-258X"
+      - name: "Lee, Su-In"
+    year: 2017
+    journal: "NeurIPS"
+  - type: article
+    title: "Why Should I Trust You? Explaining the Predictions of Any Classifier"
+    authors:
+      - name: "Ribeiro, Marco Tulio"
+      - name: "Singh, Sameer"
+      - name: "Guestrin, Carlos"
+    year: 2016
+    journal: "KDD"

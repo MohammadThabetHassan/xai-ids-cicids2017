@@ -86,12 +86,12 @@ This roadmap outlines the planned enhancements for the XAI-IDS project, organize
 
 | # | Task | Impact | Effort | Status |
 |---|------|--------|--------|--------|
-| 5.1 | Add GitHub issue templates | LOW | 30 min | Pending |
-| 5.2 | Create CHANGELOG.md | LOW | 30 min | Pending |
+| 5.1 | Add GitHub issue templates | LOW | 30 min | Complete |
+| 5.2 | Create CHANGELOG.md | LOW | 30 min | Complete |
 | 5.3 | Add architecture diagram | MEDIUM | 1 hour | Pending |
 | 5.4 | Create model card (like HuggingFace) | MEDIUM | 1 hour | Complete |
 | 5.5 | Add architecture documentation (MkDocs) | MEDIUM | 2 hours | Pending |
-| 5.6 | Create citation file (CITATION.cff) | LOW | 15 min | Pending |
+| 5.6 | Create citation file (CITATION.cff) | LOW | 15 min | Complete |
 
 ---
 
