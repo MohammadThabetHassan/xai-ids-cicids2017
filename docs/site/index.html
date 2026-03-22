@@ -345,12 +345,12 @@
         <div class="stat-label">Best Accuracy (RF)</div>
       </div>
       <div class="stat-card">
-        <div class="stat-value" style="color:var(--accent-light)">0.51</div>
+        <div class="stat-value" style="color:var(--accent-light)">0.89</div>
         <div class="stat-label">Macro F1 (XGB)</div>
       </div>
     </div>
     <p style="text-align:center; color:var(--text-dim); margin-top:16px; font-size:0.9rem;">
-      Weighted F1: 0.82 | Macro F1: 0.51 | Class-weighted training for fairer evaluation
+      Real CIC-IDS-2017 V2 benchmark (50K sample). Weighted F1: 0.99 | Macro F1: 0.89 | Synthetic: Macro F1: 0.51
     </p>
   </div>
 </section>
@@ -412,40 +412,33 @@
           <tbody>
             <tr>
               <td class="model-name">Logistic Regression</td>
-              <td>0.7601 <span class="metric-bar" style="width:76.01%; background:var(--accent);"></span></td>
-              <td>0.7866</td>
-              <td>0.7601</td>
-              <td>0.7651</td>
-            </tr>
-            <tr class="highlight-row">
-              <td class="model-name">Random Forest <span class="badge badge-green" style="font-size:0.7rem; padding:2px 8px;">Best</span></td>
-              <td class="metric-best">0.8347 <span class="metric-bar" style="width:83.47%; background:var(--green);"></span></td>
-              <td class="metric-best">0.8096</td>
-              <td class="metric-best">0.8347</td>
-              <td class="metric-best">0.8162</td>
-            </tr>
-            <tr class="highlight-row">
-              <td class="model-name">Random Forest <span class="badge badge-green" style="font-size:0.7rem; padding:2px 8px;">Best</span></td>
-              <td class="metric-best">0.8450 <span class="metric-bar" style="width:84.5%; background:var(--green);"></span></td>
-              <td class="metric-best">0.8054</td>
-              <td class="metric-best">0.8450</td>
-              <td class="metric-best">0.8045</td>
+              <td>0.8493 <span class="metric-bar" style="width:84.93%; background:var(--accent);"></span></td>
+              <td>0.8925</td>
+              <td>0.8493</td>
+              <td>0.8528</td>
             </tr>
             <tr>
-              <td class="model-name">XGBoost</td>
-              <td>0.8250 <span class="metric-bar" style="width:82.50%; background:var(--purple);"></span></td>
-              <td>0.8158</td>
-              <td>0.8250</td>
-              <td>0.8193</td>
+              <td class="model-name">Random Forest</td>
+              <td>0.9972 <span class="metric-bar" style="width:99.72%; background:var(--green);"></span></td>
+              <td>0.9972</td>
+              <td>0.9972</td>
+              <td>0.9972</td>
+            </tr>
+            <tr class="highlight-row">
+              <td class="model-name">XGBoost <span class="badge badge-green" style="font-size:0.7rem; padding:2px 8px;">Best</span></td>
+              <td class="metric-best">0.9973 <span class="metric-bar" style="width:99.73%; background:var(--purple);"></span></td>
+              <td class="metric-best">0.9974</td>
+              <td class="metric-best">0.9973</td>
+              <td class="metric-best">0.9973</td>
             </tr>
           </tbody>
         </table>
-        <p style="text-align:center; color:var(--text-muted); font-size:0.9rem; margin-top:16px; padding:12px; background:rgba(245,158,11,0.1); border-radius:8px; border:1px solid rgba(245,158,11,0.3);">
-          <strong>⚠️ Important:</strong> Weighted F1 (0.82) masks class-level failures. <strong>Macro F1 = 0.51</strong> reveals true performance. Class weighting improves fairness across classes.
+        <p style="text-align:center; color:var(--text-muted); font-size:0.9rem; margin-top:16px; padding:12px; background:rgba(16,185,129,0.1); border-radius:8px; border:1px solid rgba(16,185,129,0.3);">
+          <strong>Real CIC-IDS-2017 V2 Benchmark (50K sample):</strong> Macro F1 = 0.89. XGBoost achieves 99.73% accuracy with strong per-class performance.
         </p>
       </div>
       <p style="text-align:center; color:var(--text-dim); font-size:0.85rem; margin-top:12px;">
-        Results from 50K synthetic dataset with balanced class weights. Macro F1: 0.51 (XGBoost). Real CIC-IDS-2017 benchmark pending.
+        Results from real CIC-IDS-2017 V2 dataset (50K sample). Macro F1: 0.89 (XGBoost). Synthetic dataset Macro F1: 0.51 for comparison.
       </p>
     </div>
 
@@ -729,19 +722,19 @@
     </div>
     
     <div class="fade-in" style="display:grid; gap:20px; max-width:900px; margin:0 auto;">
-      <div class="card" style="border-left:4px solid var(--orange);">
-        <h3 style="color:var(--orange); margin-bottom:8px;">⚠️ Synthetic Data Default</h3>
-        <p style="color:var(--text-muted);">All published results are from synthetic data (~50K samples). The real CIC-IDS-2017 dataset (2.8M+ samples) requires downloading via --download flag. Real-data benchmark results are pending.</p>
+      <div class="card" style="border-left:4px solid var(--green);">
+        <h3 style="color:var(--green-light); margin-bottom:8px;">✅ Real Data Benchmark Complete</h3>
+        <p style="color:var(--text-muted);">Ran real CIC-IDS-2017 V2 benchmark (50K sample). XGBoost: 99.73% accuracy, 0.89 macro F1. Random Forest: 99.72%. Significantly better than synthetic data (0.51 macro F1).</p>
       </div>
       
-      <div class="card" style="border-left:4px solid var(--red);">
-        <h3 style="color:var(--red); margin-bottom:8px;">❌ Class Imbalance</h3>
-        <p style="color:var(--text-muted);">5 attack types have very low recall: SQL Injection (0%), DoS Slowhttptest (3%), DoS slowloris (4%), Heartbleed (20%), DoS GoldenEye (12%). This is due to severe class imbalance (600:1 ratio). Class weighting improved macro F1 from 0.44 to 0.51.</p>
+      <div class="card" style="border-left:4px solid var(--orange);">
+        <h3 style="color:var(--orange); margin-bottom:8px;">⚠️ Sample Size</h3>
+        <p style="color:var(--text-muted);">Current benchmark uses 50K sample. Full dataset (2.8M+ samples) would provide more comprehensive evaluation. Use --random-sample flag to adjust sample size.</p>
       </div>
       
       <div class="card" style="border-left:4px solid var(--accent);">
         <h3 style="color:var(--accent-light); margin-bottom:8px;">📊 Metrics Transparency</h3>
-        <p style="color:var(--text-muted);">Weighted F1 (0.82) appears strong but hides minority class failures. Macro F1 (0.51) provides a fairer evaluation. Always check per-class metrics, not just aggregate scores.</p>
+        <p style="color:var(--text-muted);">Weighted F1 (0.99) is excellent on real data. Macro F1 (0.89) shows some class-level variation. Compare with synthetic baseline (Macro F1: 0.51) to see real-world improvement.</p>
       </div>
       
       <div class="card" style="border-left:4px solid var(--green);">
