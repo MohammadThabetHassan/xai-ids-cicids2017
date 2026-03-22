@@ -69,7 +69,9 @@ The **CIC-IDS-2017** dataset was created by the [Canadian Institute for Cybersec
 | Web Attack - Sql Injection | SQL injection |
 | Heartbleed | Heartbleed vulnerability exploit |
 
-**Source:** [http://205.174.165.80/CICDataset/CIC-IDS-2017/Dataset/](http://205.174.165.80/CICDataset/CIC-IDS-2017/Dataset/)
+**Source:** 
+- Primary: [UNB CIC](https://www.unb.ca/cic/datasets/ids-2017.html) (server may be offline)
+- Fallback: [Zenodo](https://zenodo.org/records/10141593) (CIC-IDS-2017 V2, 369MB)
 
 ---
 
@@ -328,7 +330,7 @@ Tests include:
 
 2. **Misleading Aggregate Metrics**: Weighted F1 (0.82) appears strong but macro F1 (0.51) reveals the true performance gap between majority and minority classes.
 
-3. **Synthetic Data Only**: All current results are from synthetic data. The real CIC-IDS-2017 dataset download URL is no longer accessible (UNB server offline).
+3. **Synthetic Data Default**: Current results are from synthetic data. Use `--download` to get real CIC-IDS-2017 (via Zenodo fallback if UNB is offline).
 
 4. **Class Distribution**: The 50K synthetic sample has a 600:1 ratio between largest (BENIGN: 6000) and smallest (Heartbleed: 10) classes.
 
