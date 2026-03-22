@@ -67,6 +67,11 @@ Examples:
         help="Number of samples for synthetic data generation (default: 50000)",
     )
     parser.add_argument(
+        "--random-sample",
+        action="store_true",
+        help="Use random sampling instead of first N rows when loading real data",
+    )
+    parser.add_argument(
         "--skip-explain",
         action="store_true",
         help="Skip explainability analysis (SHAP and LIME)",
@@ -181,6 +186,8 @@ def main():
     data = run_preprocessing(
         data_dir=args.data_dir,
         models_dir=models_dir,
+        nrows_per_file=args.sample_size if args.sample_size < 500000 else None,
+        random_sample=args.random_sample,
     )
 
     # ─── Step 3: Model Training ───

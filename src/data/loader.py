@@ -20,6 +20,9 @@ def find_csv_files(data_dir: str = "data/raw") -> List[str]:
     """
     Find all CSV files in the specified directory.
 
+    Prefers CIC-IDS-2017-V2.csv if present (real data),
+    excludes sample_cicids2017.csv (synthetic) unless it's the only option.
+
     Parameters
     ----------
     data_dir : str
@@ -28,16 +31,32 @@ def find_csv_files(data_dir: str = "data/raw") -> List[str]:
     Returns
     -------
     List[str]
-        Sorted list of CSV file paths.
+        Sorted list of CSV file paths (V2 preferred).
     """
-    csv_files = sorted(
-        [
-            os.path.join(data_dir, f)
-            for f in os.listdir(data_dir)
-            if f.lower().endswith(".csv")
-        ]
-    )
-    logger.info(f"Found {len(csv_files)} CSV files in {data_dir}")
+    all_files = [
+        os.path.join(data_dir, f)
+        for f in os.listdir(data_dir)
+        if f.lower().endswith(".csv")
+    ]
+
+    # Prefer V2 file (real data), exclude synthetic sample unless only option
+    v2_files = [f for f in all_files if "CIC-IDS-2017-V2" in f]
+    sample_files = [f for f in all_files if "sample_cicids" in f.lower()]
+    other_files = [f for f in all_files if f not in v2_files and f not in sample_files]
+
+    # Use V2 if available, otherwise other real files, then sample as fallback
+    if v2_files:
+        csv_files = sorted(v2_files)
+        logger.info(f"Using real dataset: {os.path.basename(csv_files[0])}")
+    elif other_files:
+        csv_files = sorted(other_files)
+        logger.info(f"Found {len(csv_files)} CSV files in {data_dir}")
+    elif all_files:
+        csv_files = sorted(all_files)
+        logger.warning(f"No V2 or real data files found, using all available")
+    else:
+        csv_files = []
+
     for f in csv_files:
         logger.info(f"  - {os.path.basename(f)}")
     return csv_files
@@ -110,6 +129,7 @@ def load_dataset(
     data_dir: str = "data/raw",
     chunk_size: Optional[int] = 50000,
     nrows_per_file: Optional[int] = None,
+    random_sample: bool = False,
 ) -> pd.DataFrame:
     """
     Load and merge all CSV files from the dataset directory.
@@ -122,6 +142,8 @@ def load_dataset(
         Chunk size for memory-efficient reading.
     nrows_per_file : int, optional
         Maximum rows per file (useful for testing).
+    random_sample : bool
+        If True, sample randomly from large files instead of taking first N rows.
 
     Returns
     -------
@@ -144,7 +166,27 @@ def load_dataset(
     skipped = []
 
     for filepath in csv_files:
-        df = load_single_csv(filepath, chunk_size=chunk_size, nrows=nrows_per_file)
+        if random_sample and nrows_per_file:
+            # Random sample from large file
+            import numpy as np
+
+            total_rows = sum(1 for _ in open(filepath)) - 1  # -1 for header
+            if total_rows > nrows_per_file:
+                skiprows = np.random.choice(
+                    range(1, total_rows + 1), total_rows - nrows_per_file, replace=False
+                )
+                skiprows = sorted(skiprows)
+                df = pd.read_csv(filepath, skiprows=skiprows, low_memory=False)
+                logger.info(
+                    f"Random sampled {os.path.basename(filepath)}: {df.shape[0]} rows"
+                )
+            else:
+                df = load_single_csv(
+                    filepath, chunk_size=chunk_size, nrows=nrows_per_file
+                )
+        else:
+            df = load_single_csv(filepath, chunk_size=chunk_size, nrows=nrows_per_file)
+
         if df is not None:
             dataframes.append(df)
         else:

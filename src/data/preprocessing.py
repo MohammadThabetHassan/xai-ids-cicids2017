@@ -54,6 +54,9 @@ def identify_label_column(df: pd.DataFrame) -> str:
     if "Label" in df.columns:
         return "Label"
 
+    if "label" in df.columns:
+        return "label"
+
     raise KeyError(f"Label column not found. Available columns: {list(df.columns)}")
 
 
@@ -227,9 +230,24 @@ def split_data(
     X = df.drop(columns=[label_col])
     y = df[label_col]
 
+    # Check if stratified split is possible (min 2 samples per class)
+    class_counts = y.value_counts()
+    min_class_count = class_counts.min()
+
+    use_stratify = min_class_count >= 2
+
+    if not use_stratify:
+        logger.warning(
+            f"Class {class_counts.idxmin()} has only {min_class_count} sample(s), using non-stratified split"
+        )
+
     # First split: separate test set
     X_temp, X_test, y_temp, y_test = train_test_split(
-        X, y, test_size=test_size, random_state=random_state, stratify=y
+        X,
+        y,
+        test_size=test_size,
+        random_state=random_state,
+        stratify=y if use_stratify else None,
     )
 
     # Second split: separate validation from training
@@ -239,7 +257,7 @@ def split_data(
         y_temp,
         test_size=val_fraction,
         random_state=random_state,
-        stratify=y_temp,
+        stratify=y_temp if use_stratify else None,
     )
 
     logger.info(f"Train: {X_train.shape[0]} samples")
@@ -254,6 +272,7 @@ def run_preprocessing(
     output_dir: str = "data/processed",
     models_dir: str = "outputs/models",
     nrows_per_file: Optional[int] = None,
+    random_sample: bool = False,
 ) -> Dict:
     """
     Execute the full preprocessing pipeline.
@@ -281,7 +300,9 @@ def run_preprocessing(
     logger.info("=" * 60)
 
     # Load data
-    df = load_dataset(data_dir, nrows_per_file=nrows_per_file)
+    df = load_dataset(
+        data_dir, nrows_per_file=nrows_per_file, random_sample=random_sample
+    )
 
     # Clean
     df = clean_data(df)

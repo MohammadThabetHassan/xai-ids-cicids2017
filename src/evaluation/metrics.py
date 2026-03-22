@@ -74,10 +74,15 @@ def compute_metrics(
     recall = recall_score(y_true, y_pred, average="weighted", zero_division=0)
     f1 = f1_score(y_true, y_pred, average="weighted", zero_division=0)
 
+    # Get actual labels present in both y_true and y_pred
+    present_labels = sorted(set(y_true) | set(y_pred))
+    present_label_names = [label_names[i] for i in present_labels]
+
     report = classification_report(
         y_true,
         y_pred,
-        target_names=label_names,
+        labels=present_labels,
+        target_names=present_label_names,
         zero_division=0,
         output_dict=True,
     )
@@ -85,7 +90,8 @@ def compute_metrics(
     report_str = classification_report(
         y_true,
         y_pred,
-        target_names=label_names,
+        labels=present_labels,
+        target_names=present_label_names,
         zero_division=0,
     )
 

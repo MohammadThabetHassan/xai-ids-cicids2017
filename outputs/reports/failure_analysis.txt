@@ -1,0 +1,84 @@
+============================================================
+FAILURE ANALYSIS REPORT
+============================================================
+
+Model: logistic_regression
+----------------------------------------
+Macro Recall: 0.4423
+Macro F1: 0.4276
+
+Failing Classes (recall < 30%):
+  - DDoS: P=0.26, R=0.15, F1=0.19
+  - DoS GoldenEye: P=0.19, R=0.23, F1=0.21
+  - DoS Hulk: P=0.42, R=0.16, F1=0.24
+  - DoS Slowhttptest: P=0.06, R=0.27, F1=0.10
+  - DoS slowloris: P=0.08, R=0.22, F1=0.12
+  - Web Attack - Sql Injection: P=0.11, R=0.20, F1=0.14
+
+Top Confusions:
+  DoS Hulk -> DoS Slowhttptest: 275
+  DoS Hulk -> DoS slowloris: 223
+  DDoS -> DoS Slowhttptest: 181
+  DoS Hulk -> DoS GoldenEye: 176
+  DDoS -> DoS slowloris: 164
+  DoS Hulk -> DDoS: 162
+  SSH-Patator -> FTP-Patator: 151
+  FTP-Patator -> SSH-Patator: 143
+  DDoS -> DoS GoldenEye: 141
+  DDoS -> DoS Hulk: 107
+
+============================================================
+
+Model: random_forest
+----------------------------------------
+Macro Recall: 0.4935
+Macro F1: 0.4780
+
+Failing Classes (recall < 30%):
+  - DDoS: P=0.27, R=0.24, F1=0.25
+  - DoS GoldenEye: P=0.15, R=0.03, F1=0.05
+  - DoS Slowhttptest: P=0.00, R=0.00, F1=0.00
+  - DoS slowloris: P=0.00, R=0.00, F1=0.00
+  - Heartbleed: P=0.00, R=0.00, F1=0.00
+  - Web Attack - Sql Injection: P=0.00, R=0.00, F1=0.00
+
+Top Confusions:
+  DDoS -> DoS Hulk: 514
+  DoS GoldenEye -> DoS Hulk: 281
+  DoS Hulk -> DDoS: 264
+  DoS slowloris -> DoS Hulk: 141
+  DoS Slowhttptest -> DoS Hulk: 121
+  DoS GoldenEye -> DDoS: 108
+  DoS slowloris -> DDoS: 53
+  DoS Hulk -> DoS GoldenEye: 34
+  Web Attack - XSS -> Web Attack - Brute Force: 28
+  DoS Slowhttptest -> DDoS: 25
+
+============================================================
+
+Model: xgboost
+----------------------------------------
+Macro Recall: 0.5203
+Macro F1: 0.5128
+
+Failing Classes (recall < 30%):
+  - DoS GoldenEye: P=0.19, R=0.12, F1=0.15
+  - DoS Slowhttptest: P=0.05, R=0.03, F1=0.04
+  - DoS slowloris: P=0.07, R=0.04, F1=0.05
+  - Heartbleed: P=0.33, R=0.20, F1=0.25
+  - Web Attack - Sql Injection: P=0.00, R=0.00, F1=0.00
+
+Top Confusions:
+  DDoS -> DoS Hulk: 361
+  DoS Hulk -> DDoS: 315
+  DoS GoldenEye -> DoS Hulk: 208
+  DoS GoldenEye -> DDoS: 124
+  DoS Hulk -> DoS GoldenEye: 107
+  DoS slowloris -> DoS Hulk: 100
+  DoS Slowhttptest -> DoS Hulk: 71
+  DDoS -> DoS GoldenEye: 66
+  DoS slowloris -> DDoS: 66
+  DoS Slowhttptest -> DDoS: 53
+
+============================================================
+

@@ -168,7 +168,42 @@ Data Acquisition → Preprocessing → Model Training → Evaluation → Explain
 
 ## Results
 
-### Model Comparison (with Balanced Class Weights)
+### Real Data Benchmark (CIC-IDS-2017 V2)
+
+**Dataset:** 50K random sample from real CIC-IDS-2017 V2 (Zenodo)
+**Classes:** 14 (includes new "Comb" class)
+
+| Model | Accuracy | Precision | Recall | F1-Score (Weighted) |
+|-------|----------|-----------|--------|---------------------|
+| Logistic Regression | 0.8493 | 0.9601 | 0.8493 | 0.8925 |
+| Random Forest | 0.9972 | 0.9972 | 0.9972 | 0.9972 |
+| **XGBoost** | **0.9973** | **0.9976** | **0.9973** | **0.9974** |
+
+### Per-Class Performance (XGBoost - Real Data)
+
+| Class | Precision | Recall | F1-Score | Samples |
+|-------|-----------|--------|----------|---------|
+| BENIGN | 1.00 | 1.00 | 1.00 | 7784 |
+| Bot | 0.44 | 1.00 | 0.62 | 4 |
+| Comb | 1.00 | 1.00 | 1.00 | 648 |
+| DDoS | 1.00 | 1.00 | 1.00 | 457 |
+| DoS GoldenEye | 0.97 | 0.97 | 0.97 | 29 |
+| DoS Hulk | 0.99 | 1.00 | 0.99 | 661 |
+| DoS Slowhttptest | 0.89 | 1.00 | 0.94 | 24 |
+| DoS slowloris | 1.00 | 1.00 | 1.00 | 19 |
+| FTP-Patator | 1.00 | 1.00 | 1.00 | 22 |
+| PortScan | 0.99 | 1.00 | 1.00 | 328 |
+| SSH-Patator | 1.00 | 1.00 | 1.00 | 14 |
+| Web Attack - Brute Force | 0.67 | 0.80 | 0.73 | 5 |
+| Web Attack - XSS | 0.50 | 0.33 | 0.40 | 3 |
+
+**Summary Metrics:**
+- **Macro Avg F1:** 0.89 (treats all classes equally)
+- **Weighted Avg F1:** 1.00 (favors majority classes)
+
+---
+
+### Synthetic Data Results (For Comparison)
 
 | Model | Accuracy | Precision | Recall | F1-Score (Weighted) | Macro F1 |
 |-------|----------|-----------|--------|---------------------|----------|
@@ -176,33 +211,7 @@ Data Acquisition → Preprocessing → Model Training → Evaluation → Explain
 | Random Forest | 0.8347 | 0.8096 | 0.8347 | 0.8162 | 0.48 |
 | **XGBoost** | **0.8250** | **0.8158** | **0.8250** | **0.8193** | **0.51** |
 
-> Class weighting improves fairness across classes. Macro F1 increased from 0.44 to 0.51, trading some weighted F1 for better minority class detection.
-
-### Per-Class Performance (XGBoost with Balanced Weights)
-
-| Class | Precision | Recall | F1-Score | Samples |
-|-------|-----------|--------|----------|---------|
-| BENIGN | 1.00 | 1.00 | 1.00 | 6000 |
-| Bot | 0.93 | 0.95 | 0.94 | 100 |
-| DDoS | 0.28 | 0.31 | 0.29 | 700 |
-| DoS GoldenEye | 0.19 | 0.12 | 0.15 | 400 |
-| DoS Hulk | 0.41 | 0.50 | 0.45 | 1000 |
-| DoS Slowhttptest | 0.05 | 0.03 | 0.04 | 150 |
-| DoS slowloris | 0.07 | 0.04 | 0.05 | 200 |
-| FTP-Patator | 1.00 | 1.00 | 1.00 | 300 |
-| Heartbleed | 0.33 | 0.20 | 0.25 | 10 |
-| Infiltration | 0.70 | 0.80 | 0.74 | 20 |
-| PortScan | 1.00 | 1.00 | 1.00 | 800 |
-| SSH-Patator | 0.99 | 1.00 | 1.00 | 300 |
-| Web Attack - Brute Force | 0.37 | 0.52 | 0.43 | 50 |
-| **Web Attack - Sql Injection** | **0.00** | **0.00** | **0.00** | 20 |
-| Web Attack - XSS | 0.38 | 0.34 | 0.36 | 50 |
-
-**Summary Metrics:**
-- **Macro Avg F1:** 0.51 (treats all classes equally)
-- **Weighted Avg F1:** 0.82 (favors majority classes)
-
-> Results shown are from the 50K synthetic dataset with balanced class weights. Performance on the full real dataset is expected to differ.
+> Note: Real data significantly outperforms synthetic. The synthetic data had 5 classes with 0% detection; real data has near-perfect detection for most classes.
 
 ### Model Comparison Chart
 

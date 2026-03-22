@@ -1,24 +1,22 @@
 Classification Report: xgboost
 ============================================================
 
-                            precision    recall  f1-score   support
+                          precision    recall  f1-score   support
 
-                    BENIGN       1.00      1.00      1.00      6000
-                       Bot       0.93      0.96      0.95       100
-                      DDoS       0.25      0.16      0.20       700
-             DoS GoldenEye       0.23      0.03      0.05       400
-                  DoS Hulk       0.40      0.79      0.53      1000
-          DoS Slowhttptest       0.00      0.00      0.00       150
-             DoS slowloris       0.00      0.00      0.00       200
-               FTP-Patator       1.00      1.00      1.00       300
-                Heartbleed       0.29      0.20      0.24        10
-              Infiltration       0.65      0.75      0.70        20
-                  PortScan       1.00      0.99      0.99       800
-               SSH-Patator       0.99      1.00      1.00       300
-  Web Attack - Brute Force       0.41      0.54      0.47        50
-Web Attack - Sql Injection       0.25      0.05      0.08        20
-          Web Attack - XSS       0.45      0.34      0.39        50
+                  BENIGN       1.00      1.00      1.00      7784
+                     Bot       0.44      1.00      0.62         4
+                    Comb       1.00      1.00      1.00       648
+                    DDoS       1.00      1.00      1.00       457
+           DoS GoldenEye       0.97      0.97      0.97        29
+                DoS Hulk       0.99      1.00      0.99       661
+        DoS Slowhttptest       0.89      1.00      0.94        24
+           DoS slowloris       1.00      1.00      1.00        19
+             FTP-Patator       1.00      1.00      1.00        22
+                PortScan       0.99      1.00      1.00       328
+             SSH-Patator       1.00      1.00      1.00        14
+Web Attack � Brute Force       0.67      0.80      0.73         5
+        Web Attack � XSS       0.50      0.33      0.40         3
 
-                  accuracy                           0.84     10100
-                 macro avg       0.52      0.52      0.51     10100
-              weighted avg       0.81      0.84      0.81     10100
+                accuracy                           1.00      9998
+               macro avg       0.88      0.93      0.89      9998
+            weighted avg       1.00      1.00      1.00      9998
