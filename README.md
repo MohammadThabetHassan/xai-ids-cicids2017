@@ -170,35 +170,34 @@ Data Acquisition → Preprocessing → Model Training → Evaluation → Explain
 
 ### Real Data Benchmark (CIC-IDS-2017 V2)
 
-**Dataset:** 50K random sample from real CIC-IDS-2017 V2 (Zenodo)
+**Dataset:** 100K random sample from real CIC-IDS-2017 V2 (Zenodo)
 **Classes:** 14 (includes new "Comb" class)
 
 | Model | Accuracy | Precision | Recall | F1-Score (Weighted) |
 |-------|----------|-----------|--------|---------------------|
-| Logistic Regression | 0.8493 | 0.9601 | 0.8493 | 0.8925 |
-| Random Forest | 0.9972 | 0.9972 | 0.9972 | 0.9972 |
-| **XGBoost** | **0.9973** | **0.9976** | **0.9973** | **0.9974** |
+| Logistic Regression | 0.8569 | 0.9637 | 0.8569 | 0.8994 |
+| **Random Forest** | **0.9969** | **0.9971** | **0.9969** | **0.9970** |
 
-### Per-Class Performance (XGBoost - Real Data)
+### Per-Class Performance (Random Forest - Real Data, 100K)
 
 | Class | Precision | Recall | F1-Score | Samples |
 |-------|-----------|--------|----------|---------|
-| BENIGN | 1.00 | 1.00 | 1.00 | 7784 |
-| Bot | 0.44 | 1.00 | 0.62 | 4 |
-| Comb | 1.00 | 1.00 | 1.00 | 648 |
-| DDoS | 1.00 | 1.00 | 1.00 | 457 |
-| DoS GoldenEye | 0.97 | 0.97 | 0.97 | 29 |
-| DoS Hulk | 0.99 | 1.00 | 0.99 | 661 |
-| DoS Slowhttptest | 0.89 | 1.00 | 0.94 | 24 |
-| DoS slowloris | 1.00 | 1.00 | 1.00 | 19 |
-| FTP-Patator | 1.00 | 1.00 | 1.00 | 22 |
-| PortScan | 0.99 | 1.00 | 1.00 | 328 |
-| SSH-Patator | 1.00 | 1.00 | 1.00 | 14 |
-| Web Attack - Brute Force | 0.67 | 0.80 | 0.73 | 5 |
-| Web Attack - XSS | 0.50 | 0.33 | 0.40 | 3 |
+| BENIGN | 1.00 | 1.00 | 1.00 | 15542 |
+| Bot | 0.44 | 0.69 | 0.54 | 16 |
+| Comb | 1.00 | 1.00 | 1.00 | 1253 |
+| DDoS | 1.00 | 1.00 | 1.00 | 951 |
+| DoS GoldenEye | 1.00 | 1.00 | 1.00 | 71 |
+| DoS Hulk | 1.00 | 0.99 | 0.99 | 1255 |
+| DoS Slowhttptest | 0.89 | 0.95 | 0.92 | 43 |
+| DoS slowloris | 1.00 | 1.00 | 1.00 | 33 |
+| FTP-Patator | 1.00 | 1.00 | 1.00 | 42 |
+| PortScan | 0.98 | 1.00 | 0.99 | 743 |
+| SSH-Patator | 1.00 | 0.97 | 0.98 | 30 |
+| Web Attack - Brute Force | 0.75 | 0.67 | 0.71 | 9 |
+| Web Attack - XSS | 0.67 | 0.50 | 0.57 | 4 |
 
 **Summary Metrics:**
-- **Macro Avg F1:** 0.89 (treats all classes equally)
+- **Macro Avg F1:** 0.90 (treats all classes equally)
 - **Weighted Avg F1:** 1.00 (favors majority classes)
 
 ---
@@ -211,7 +210,7 @@ Data Acquisition → Preprocessing → Model Training → Evaluation → Explain
 | Random Forest | 0.8347 | 0.8096 | 0.8347 | 0.8162 | 0.48 |
 | **XGBoost** | **0.8250** | **0.8158** | **0.8250** | **0.8193** | **0.51** |
 
-> Note: Real data significantly outperforms synthetic. The synthetic data had 5 classes with 0% detection; real data has near-perfect detection for most classes.
+> Note: Real data (99.69% RF accuracy) significantly outperforms synthetic (83.47% RF accuracy). The synthetic data had 5 classes with 0% detection; real data has near-perfect detection for most classes.
 
 ### Model Comparison Chart
 
@@ -341,15 +340,15 @@ Tests include:
 
 **Remaining Issues:**
 
-2. **Misleading Aggregate Metrics**: Weighted F1 (0.82) appears strong but macro F1 (0.51) reveals the true performance gap between majority and minority classes.
+2. **Real Data vs Synthetic**: Real CIC-IDS-2017 V2 benchmark (100K sample) shows 99.69% accuracy vs 83.47% for synthetic. Use `--random-sample` to run benchmarks.
 
-3. **Synthetic Data Default**: Current results are from synthetic data. Use `--download` to get real CIC-IDS-2017 (via Zenodo fallback if UNB is offline).
+3. **XGBoost Label Issue**: XGBoost fails with rare classes that get dropped during stratified split. Random Forest handles this better.
 
-4. **Class Distribution**: The 50K synthetic sample has a 600:1 ratio between largest (BENIGN: 6000) and smallest (Heartbleed: 10) classes.
+4. **Class Distribution**: Real data has severe imbalance (~600:1 ratio) but Random Forest handles it well with balanced class weights.
 
 **Other Limitations:**
-- Results shown are from a 50K synthetic dataset (not the full 2.8M+ CIC-IDS-2017)
-- The synthetic dataset approximates but does not perfectly replicate real network traffic distributions
+- Current benchmark uses 100K sample from 2.8M+ CIC-IDS-2017 V2 dataset
+- Full dataset benchmark would provide more comprehensive evaluation (use --sample-size)
 - SHAP KernelExplainer for Logistic Regression is computationally expensive on large datasets
 
 ---
