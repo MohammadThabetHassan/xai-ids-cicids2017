@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+eggs/
+*.egg
+.eggs/
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data (raw data too large for git)
+data/raw/*.csv
+data/raw/*.zip
+data/processed/*.csv
+data/processed/*.pkl
+
+# Model artifacts (too large for git)
+outputs/models/*.pkl
+outputs/models/*.joblib
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+outputs/logs/*.log
+
+# Keep directory structure
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!outputs/models/.gitkeep
+!outputs/figures/.gitkeep
+!outputs/logs/.gitkeep
+!outputs/reports/.gitkeep
