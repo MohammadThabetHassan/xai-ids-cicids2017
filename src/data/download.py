@@ -1,13 +1,14 @@
 """
 Dataset download utility for CIC-IDS-2017.
 
-Downloads the CSV files from the official CIC-IDS-2017 dataset repository.
-Supports resumable downloads and integrity checks.
+Downloads the CSV files from the official CIC-IDS-2017 dataset repository
+or alternative mirrors. Supports resumable downloads and integrity checks.
 """
 
 import os
 import re
 import time
+import zipfile
 from pathlib import Path
 from typing import List, Optional
 from urllib.parse import urljoin
@@ -21,6 +22,8 @@ logger = get_logger("xai_ids.download")
 
 DATASET_BASE_URL = "http://205.174.165.80/CICDataset/CIC-IDS-2017/Dataset/"
 MACHINELEARNIGCVE_PATH = "MachineLearningCVE/"
+
+ZENODO_DATASET_URL = "https://zenodo.org/records/10141593/files/CIC-IDS-2017-V2.zip"
 
 DEFAULT_RAW_DIR = "data/raw"
 
@@ -164,8 +167,8 @@ def download_dataset(
     csv_links = discover_csv_links(base_url)
 
     if not csv_links:
-        logger.error("No CSV files discovered. Check the dataset URL.")
-        return []
+        logger.warning("Primary source unavailable, trying Zenodo mirror...")
+        return download_from_zenodo(dest_dir)
 
     downloaded_files = []
     failed_files = []
@@ -183,8 +186,70 @@ def download_dataset(
 
     if failed_files:
         logger.warning(f"Failed downloads: {failed_files}")
+        logger.info("Trying Zenodo mirror as fallback...")
+        return download_from_zenodo(dest_dir)
 
     return downloaded_files
+
+
+def download_from_zenodo(dest_dir: str = DEFAULT_RAW_DIR) -> List[str]:
+    """
+    Download CIC-IDS-2017 from Zenodo mirror.
+
+    Parameters
+    ----------
+    dest_dir : str
+        Destination directory for raw CSV files.
+
+    Returns
+    -------
+    List[str]
+        List of paths to successfully downloaded files.
+    """
+    logger.info(f"Downloading CIC-IDS-2017 V2 from Zenodo...")
+
+    Path(dest_dir).mkdir(parents=True, exist_ok=True)
+    zip_path = os.path.join(dest_dir, "CIC-IDS-2017-V2.zip")
+
+    for attempt in range(1, 4):
+        try:
+            logger.info(f"Downloading (attempt {attempt}/3)...")
+            response = requests.get(ZENODO_DATASET_URL, stream=True, timeout=600)
+            response.raise_for_status()
+
+            total_size = int(response.headers.get("content-length", 0))
+            downloaded = 0
+
+            with open(zip_path, "wb") as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+                        downloaded += len(chunk)
+
+            logger.info(f"Downloaded: {downloaded / (1024 * 1024):.1f} MB")
+
+            logger.info("Extracting ZIP file...")
+            with zipfile.ZipFile(zip_path, "r") as zf:
+                zf.extractall(dest_dir)
+
+            csv_files = []
+            for root, _, files in os.walk(dest_dir):
+                for f in files:
+                    if f.endswith(".csv"):
+                        csv_files.append(os.path.join(root, f))
+
+            logger.info(f"Extracted {len(csv_files)} CSV files")
+            os.remove(zip_path)
+
+            return csv_files
+
+        except Exception as e:
+            logger.warning(f"Attempt {attempt} failed: {e}")
+            if attempt < 3:
+                time.sleep(5 * attempt)
+
+    logger.error("Zenodo download failed after 3 attempts")
+    return []
 
 
 if __name__ == "__main__":
