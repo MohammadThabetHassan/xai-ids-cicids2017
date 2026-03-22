@@ -164,13 +164,39 @@ Data Acquisition → Preprocessing → Model Training → Evaluation → Explain
 
 ### Model Comparison
 
-| Model | Accuracy | Precision | Recall | F1-Score |
+| Model | Accuracy | Precision | Recall | F1-Score (Weighted) |
 |-------|----------|-----------|--------|----------|
 | Logistic Regression | 0.8143 | 0.7744 | 0.8143 | 0.7790 |
 | Random Forest | **0.8450** | **0.8054** | **0.8450** | **0.8045** |
 | XGBoost | 0.8375 | 0.8125 | 0.8375 | 0.8149 |
 
-> Results shown above are from the 50K synthetic dataset. Performance on the full real dataset is expected to differ.
+> **Important:** The weighted F1 scores above (0.80) mask significant class-level failures. The **macro F1 score is 0.44**, revealing poor performance on minority attack classes.
+
+### Per-Class Performance (Random Forest)
+
+| Class | Precision | Recall | F1-Score | Samples |
+|-------|-----------|--------|----------|---------|
+| BENIGN | 1.00 | 1.00 | 1.00 | 6000 |
+| Bot | 0.85 | 0.99 | 0.91 | 100 |
+| DDoS | 0.31 | 0.02 | 0.04 | 700 |
+| **DoS GoldenEye** | **0.00** | **0.00** | **0.00** | 400 |
+| DoS Hulk | 0.41 | 0.98 | 0.58 | 1000 |
+| **DoS Slowhttptest** | **0.00** | **0.00** | **0.00** | 150 |
+| **DoS slowloris** | **0.00** | **0.00** | **0.00** | 200 |
+| FTP-Patator | 1.00 | 1.00 | 1.00 | 300 |
+| **Heartbleed** | **0.00** | **0.00** | **0.00** | 10 |
+| Infiltration | 0.50 | 0.25 | 0.33 | 20 |
+| PortScan | 1.00 | 0.99 | 1.00 | 800 |
+| SSH-Patator | 0.97 | 1.00 | 0.99 | 300 |
+| Web Attack - Brute Force | 0.37 | 0.30 | 0.33 | 50 |
+| **Web Attack - Sql Injection** | **0.00** | **0.00** | **0.00** | 20 |
+| Web Attack - XSS | 0.42 | 0.52 | 0.46 | 50 |
+
+**Summary Metrics:**
+- **Macro Avg F1:** 0.44 (treats all classes equally)
+- **Weighted Avg F1:** 0.80 (favors majority classes)
+
+> Results shown are from the 50K synthetic dataset. Performance on the full real dataset is expected to differ.
 
 ### Model Comparison Chart
 
@@ -293,10 +319,21 @@ Tests include:
 ## Limitations & Future Work
 
 ### Limitations
+
+**Critical Issues:**
+
+1. **Severe Class Imbalance**: 5 of 14 attack types (DoS GoldenEye, DoS Slowhttptest, DoS slowloris, Heartbleed, SQL Injection) have **0% precision and recall**. The model completely fails to detect these attacks.
+
+2. **Misleading Aggregate Metrics**: Weighted F1 (0.80) appears strong but macro F1 (0.44) reveals the true performance gap between majority and minority classes.
+
+3. **Synthetic Data Only**: All current results are from synthetic data. The real CIC-IDS-2017 dataset download URL is no longer accessible (UNB server offline).
+
+4. **Class Distribution**: The 50K synthetic sample has a 600:1 ratio between largest (BENIGN: 6000) and smallest (Heartbleed: 10) classes.
+
+**Other Limitations:**
 - Results shown are from a 50K synthetic dataset (not the full 2.8M+ CIC-IDS-2017)
 - The synthetic dataset approximates but does not perfectly replicate real network traffic distributions
 - SHAP KernelExplainer for Logistic Regression is computationally expensive on large datasets
-- Class imbalance (minority attack classes have very few samples)
 
 ### Future Work
 - Evaluate on the full CIC-IDS-2017 dataset
