@@ -1,0 +1,9 @@
+dataset,class,shap_top5,lime_top5,overlap,jaccard
+CICIDS2017,0,"['Flow IAT Max', 'Fwd Packets Length Total', 'Bwd IAT Max', 'Bwd Packet Length Mean', 'Bwd Packet Length Std']","['Bwd Packet Length Mean > 0.61', 'Bwd IAT Max > 1.05', 'Bwd IAT Std > 1.14', 'Bwd Packet Length Std > 1.22', 'Fwd IAT Std > 0.96']",[],0.0
+CICIDS2017,1,"['Flow IAT Max', 'Bwd Packet Length Mean', 'Avg Packet Size', 'Flow IAT Mean', 'Flow Duration']","['Flow IAT Mean <= -0.04', 'Fwd IAT Mean <= -0.00', '0.00 < ACK Flag Count <= 1.00', 'Fwd IAT Total <= -0.00', 'Bwd Packet Length Std <= 0.00']",[],0.0
+CICIDS2017,2,"['Bwd Packet Length Max', 'Fwd Packets Length Total', 'Bwd Packet Length Mean', 'Bwd Packet Length Std', 'Avg Packet Size']","['Packet Length Std > 1.00', 'Bwd Packet Length Mean > 0.61', 'Avg Packet Size > 0.66', 'Bwd Packet Length Std > 1.22', 'Fwd Packets Length Total <= -0.14']",[],0.0
+UNSWNB15,0,"['ct_dst_sport_ltm', 'sbytes', 'dbytes', 'smean', 'sload']","['ct_dst_sport_ltm > 0.00', 'dload <= -0.01', 'ct_src_dport_ltm > 1.00', 'djit <= -0.40', '0.01 < smean <= 0.70']",[],0.0
+UNSWNB15,1,"['sjit', 'dbytes', 'spkts', 'smean', 'sload']","['dload <= -0.01', 'trans_depth <= 0.00', 'ct_dst_sport_ltm <= 0.00', 'djit <= -0.40', '-0.04 < sload <= -0.00']",[],0.0
+UNSWNB15,2,"['sbytes', 'dbytes', 'sloss', 'spkts', 'smean']","['djit > 0.59', 'dbytes > 0.86', '0.03 < ackdat <= 0.73', 'ct_src_dport_ltm <= 0.00', 'sloss > 0.80']",[],0.0
+CICIDS2018,0,"['Flow IAT Min', 'Fwd Pkt Len Max', 'Flow IAT Max', 'Dst Port', 'ACK Flag Cnt']","['Idle Min <= 0.00', 'Dst Port > 1.00', 'Fwd Pkt Len Max > 0.68', 'Flow IAT Std > 0.98', '0.00 < Flow IAT Max <= 0.84']",[],0.0
+CICIDS2018,1,"['Flow IAT Max', 'Fwd Pkt Len Max', 'Src Port', 'Dst Port', 'Fwd IAT Mean']","['0.00 < Fwd IAT Std <= 0.52', '-0.01 < Fwd IAT Mean <= -0.00', 'Dst Port <= 0.00', '-0.32 < Fwd Pkt Len Max <= -0.01', '0.00 < Flow IAT Max <= 0.84']",[],0.0
