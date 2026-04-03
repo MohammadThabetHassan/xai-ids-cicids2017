@@ -20,8 +20,8 @@ from src.utils.logger import get_logger
 
 logger = get_logger("xai_ids.download")
 
-DATASET_BASE_URL = "http://205.174.165.80/CICDataset/CIC-IDS-2017/Dataset/"
-MACHINELEARNIGCVE_PATH = "MachineLearningCVE/"
+DATASET_BASE_URL = "https://205.174.165.80/CICDataset/CIC-IDS-2017/Dataset/"
+MACHINE_LEARNING_CVE_PATH = "MachineLearningCVE/"
 
 ZENODO_DATASET_URL = "https://zenodo.org/records/10141593/files/CIC-IDS-2017-V2.zip"
 
@@ -42,7 +42,7 @@ def discover_csv_links(base_url: str = DATASET_BASE_URL) -> List[str]:
     List[str]
         List of full URLs to CSV files.
     """
-    target_url = urljoin(base_url, MACHINELEARNIGCVE_PATH)
+    target_url = urljoin(base_url, MACHINE_LEARNING_CVE_PATH)
     logger.info(f"Discovering CSV links from: {target_url}")
 
     try:

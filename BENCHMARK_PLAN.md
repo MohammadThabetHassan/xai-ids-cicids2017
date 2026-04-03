@@ -1,34 +1,41 @@
 # Benchmark Execution Plan
 
-**Purpose:** Document how to run the real CIC-IDS-2017 benchmark
+**Purpose:** Document how to run benchmarks on CIC-IDS-2017 and other IDS datasets
 
 ---
 
 ## Current Status
 
 - **Synthetic benchmark**: ✅ Completed (50K samples, class-weighted)
-- **Real data benchmark**: ⏳ NOT YET RUN
+- **Real CIC-IDS-2017 benchmark**: ✅ Completed (100K sample via Zenodo)
+- **Multi-dataset Kaggle benchmark**: ✅ Completed (CICIDS2017, UNSW-NB15, CICIDS2018)
 
 ---
 
-## What Exists
+## Completed Results
 
-### Code Support
-- `python run_pipeline.py --download` - Downloads data from Zenodo fallback
-- Automatic fallback from UNB server to Zenodo
-- All evaluation features work with any dataset
+### Synthetic Data (50K samples)
 
-### Data Sources
-1. **Zenodo** (primary fallback): https://zenodo.org/records/10141593
-   - CIC-IDS-2017 V2
-   - 369MB ZIP file
-   - Normalized data + new "Comb" class
+| Model | Accuracy | Precision | Recall | F1 (weighted) | F1 (macro) |
+|-------|----------|-----------|--------|---------------|------------|
+| Logistic Regression | 0.7601 | 0.7866 | 0.7601 | 0.7651 | 0.48 |
+| Random Forest | 0.8347 | 0.8096 | 0.8347 | 0.8162 | 0.48 |
+| XGBoost | 0.8250 | 0.8158 | 0.8250 | 0.8193 | 0.51 |
 
-2. **UNB Original** (may be offline): https://www.unb.ca/cic/datasets/ids-2017.html
+### Real CIC-IDS-2017 V2 (100K sample)
+
+| Model | Accuracy | Precision | Recall | F1 (weighted) |
+|-------|----------|-----------|--------|---------------|
+| Logistic Regression | 0.8569 | 0.9637 | 0.8569 | 0.8994 |
+| Random Forest | 0.9969 | 0.9971 | 0.9969 | 0.9970 |
+
+### Kaggle Multi-Dataset (XGBoost, RF, LightGBM, VotingEnsemble)
+
+See `RESULTS.md` and `model_metadata.json` for full results across all 3 datasets.
 
 ---
 
-## Execution Commands
+## How to Re-run Benchmarks
 
 ### Option 1: Quick Real Data Benchmark (100K sample)
 
@@ -54,14 +61,9 @@ python run_pipeline.py --download --sample-size 500000 --cv-folds 5 --pr-curves 
 # Runtime: ~45-60 minutes
 ```
 
-### Option 3: Full Benchmark with Explainability
+### Option 3: Multi-Dataset (Kaggle Notebook)
 
-```bash
-# Complete run (may take 2+ hours on large data)
-python run_pipeline.py --download --sample-size 100000
-
-# Runtime: ~30-45 minutes with SHAP
-```
+The multi-dataset benchmark (CICIDS2017, UNSW-NB15, CICIDS2018) with LightGBM, VotingEnsemble, XCS, and SMOTE is available in `xai_ids_multidataset.ipynb`. This requires a Kaggle environment with GPU (Tesla T4).
 
 ---
 
@@ -79,6 +81,8 @@ All outputs saved to `outputs/`:
 | Calibration (if enabled) | `outputs/figures/calibration_*.png` |
 | Failure Analysis | `outputs/reports/failure_analysis.txt` |
 
+Multi-dataset outputs are in `plots/`, `explanations/`, and `model_metadata.json`.
+
 ---
 
 ## Hardware Requirements
@@ -89,15 +93,7 @@ All outputs saved to `outputs/`:
 | 100K | 16GB | 8 cores | ~20 min |
 | 500K | 32GB+ | 16 cores | ~60 min |
 | Full (2.8M) | 64GB+ | 32 cores | ~4+ hours |
-
----
-
-## What To Do After Benchmark
-
-1. **Update README.md**: Replace synthetic results with real benchmark
-2. **Update docs/site/index.html**: Update model comparison table
-3. **Update PROJECT_STATUS.md**: Mark "Real data benchmark" as completed
-4. **Commit and push**: Document the change in CHANGELOG.md
+| Kaggle (GPU) | Tesla T4 | GPU | ~30 min per dataset |
 
 ---
 
@@ -115,16 +111,4 @@ All outputs saved to `outputs/`:
 
 ---
 
-## Current Benchmark Results (Synthetic Only)
-
-| Model | Accuracy | Precision | Recall | F1 (weighted) | F1 (macro) |
-|-------|----------|-----------|--------|---------------|------------|
-| Logistic Regression | 0.7601 | 0.7866 | 0.7601 | 0.7651 | 0.48 |
-| Random Forest | 0.8347 | 0.8096 | 0.8347 | 0.8162 | 0.48 |
-| XGBoost | 0.8250 | 0.8158 | 0.8250 | 0.8193 | 0.51 |
-
-**Note:** These are from synthetic data. Real data results will differ.
-
----
-
-*Last updated: March 2026*
+*Last updated: April 2026*

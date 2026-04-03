@@ -1,7 +1,34 @@
-# Large model files — too big for GitHub
-models/ensemble_*.joblib
-models/rf_UNSWNB15.joblib
-models/rf_CICIDS2017.joblib
-fastapi_app/
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Jupyter
+*.ipynb_checkpoints/
+
+# macOS
+.DS_Store
+__MACOSX/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+outputs/logs/*.log
+
+# Environment
+.env
+venv/
+.venv/
+
+# Large model files — tracked via Git LFS or stored externally
+# models/*.joblib
+
+# OS temp files
+Thumbs.db

@@ -7,6 +7,7 @@ with SHAP explanations.
 
 import os
 import sys
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import List, Optional
 
@@ -21,13 +22,9 @@ from src.utils.logger import get_logger
 
 logger = get_logger("xai_ids.api")
 
-app = FastAPI(
-    title="XAI-IDS API",
-    description="Explainable AI Intrusion Detection System API",
-    version="1.0.0",
-)
-
-MODELS_DIR = Path("outputs/models")
+# Support both pipeline outputs/models and Kaggle models/ directory
+MODELS_DIR = Path("models")
+PIPELINE_MODELS_DIR = Path("outputs/models")
 
 models = {}
 scaler = None
@@ -37,55 +34,110 @@ feature_names = None
 
 class PredictionInput(BaseModel):
     features: List[float] = Field(
-        ..., description="Network flow features (78 features)"
+        ...,
+        description="Network flow features (78 for CIC-IDS-2017, 20 for Kaggle models)",
+        min_length=1,
+        max_length=100,
     )
 
     class Config:
-        json_schema_extra = {"example": {"features": [0.0] * 78}}
+        json_schema_extra = {
+            "example": {"features": [0.0] * 78}
+        }
 
 
 class PredictionOutput(BaseModel):
     prediction: str
     confidence: float
     probabilities: dict
+    xcs_score: Optional[float] = None
 
 
 class ExplanationOutput(BaseModel):
     prediction: str
     confidence: float
     top_features: List[dict]
+    xcs_score: Optional[float] = None
 
 
 def load_models():
-    """Load trained models and preprocessors."""
+    """Load trained models and preprocessors from available directories."""
     global models, scaler, label_encoder, feature_names
 
-    model_files = {
-        "random_forest": MODELS_DIR / "random_forest.pkl",
-        "xgboost": MODELS_DIR / "xgboost.pkl",
-        "logistic_regression": MODELS_DIR / "logistic_regression.pkl",
-    }
+    # Try Kaggle models/ directory first, then pipeline outputs/models/
+    model_dirs = [MODELS_DIR, PIPELINE_MODELS_DIR]
 
-    for name, path in model_files.items():
-        if path.exists():
-            models[name] = joblib.load(path)
-            logger.info(f"Loaded {name}")
+    for model_dir in model_dirs:
+        if not model_dir.exists():
+            continue
 
-    scaler_path = MODELS_DIR / "scaler.pkl"
-    if scaler_path.exists():
-        scaler = joblib.load(scaler_path)
-        logger.info("Loaded scaler")
+        # Load models (try various naming conventions)
+        model_patterns = {
+            "xgboost": ["xgboost.pkl", "xgboost_CICIDS2017.joblib", "xgb_CICIDS2017.joblib"],
+            "random_forest": ["random_forest.pkl", "rf_CICIDS2017.joblib", "rf_UNSWNB15.joblib", "rf_CICIDS2018.joblib"],
+            "lightgbm": ["lightgbm_CICIDS2017.joblib", "lgb_CICIDS2017.joblib", "lightgbm_UNSWNB15.joblib", "lightgbm_CICIDS2018.joblib"],
+            "logistic_regression": ["logistic_regression.pkl"],
+        }
 
-    le_path = MODELS_DIR / "label_encoder.pkl"
-    if le_path.exists():
-        label_encoder = joblib.load(le_path)
-        logger.info("Loaded label encoder")
+        for name, patterns in model_patterns.items():
+            for pattern in patterns:
+                path = model_dir / pattern
+                if path.exists() and name not in models:
+                    try:
+                        models[name] = joblib.load(path)
+                        logger.info(f"Loaded {name} from {path}")
+                        break
+                    except Exception as e:
+                        logger.warning(f"Failed to load {path}: {e}")
+
+        # Load scaler
+        for scaler_name in ["scaler.pkl", "scaler_CICIDS2017.joblib"]:
+            scaler_path = model_dir / scaler_name
+            if scaler_path.exists() and scaler is None:
+                try:
+                    scaler = joblib.load(scaler_path)
+                    logger.info(f"Loaded scaler from {scaler_path}")
+                    break
+                except Exception as e:
+                    logger.warning(f"Failed to load scaler {scaler_path}: {e}")
+
+        # Load label encoder
+        for le_name in ["label_encoder.pkl", "label_encoder_CICIDS2017.joblib"]:
+            le_path = model_dir / le_name
+            if le_path.exists() and label_encoder is None:
+                try:
+                    label_encoder = joblib.load(le_path)
+                    logger.info(f"Loaded label encoder from {le_path}")
+                    break
+                except Exception as e:
+                    logger.warning(f"Failed to load label encoder {le_path}: {e}")
+
+    if models:
+        logger.info(f"Loaded {len(models)} models: {list(models.keys())}")
+    else:
+        logger.warning("No models found in models/ or outputs/models/")
+
+    if scaler is not None:
+        logger.info("Scaler loaded")
+    if label_encoder is not None:
+        logger.info(f"Label encoder loaded with {len(label_encoder.classes_)} classes")
 
 
-@app.on_event("startup")
-async def startup_event():
-    """Load models on startup."""
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Load models on startup and cleanup on shutdown."""
     load_models()
+    yield
+    # Cleanup on shutdown
+    models.clear()
+
+
+app = FastAPI(
+    title="XAI-IDS API",
+    description="Explainable AI Intrusion Detection System API",
+    version="2.0.0",
+    lifespan=lifespan,
+)
 
 
 @app.get("/")
@@ -93,8 +145,10 @@ async def root():
     """Root endpoint."""
     return {
         "name": "XAI-IDS API",
-        "version": "1.0.0",
+        "version": "2.0.0",
         "models_loaded": list(models.keys()),
+        "scaler_loaded": scaler is not None,
+        "label_encoder_loaded": label_encoder is not None,
     }
 
 
@@ -104,6 +158,7 @@ async def health():
     return {
         "status": "healthy",
         "models_loaded": len(models) > 0,
+        "models": list(models.keys()),
         "scaler_loaded": scaler is not None,
         "encoder_loaded": label_encoder is not None,
     }
@@ -122,7 +177,7 @@ async def predict(input_data: PredictionInput):
     Returns
     -------
     PredictionOutput
-        Prediction with confidence and probabilities.
+        Prediction with confidence, probabilities, and XCS score.
     """
     if not models:
         raise HTTPException(status_code=503, detail="Models not loaded")
@@ -137,7 +192,7 @@ async def predict(input_data: PredictionInput):
         features = np.array(input_data.features).reshape(1, -1)
         features_scaled = scaler.transform(features)
 
-        model = models.get("random_forest") or models.get("xgboost")
+        model = models.get("random_forest") or models.get("xgboost") or models.get("lightgbm")
         if not model:
             raise HTTPException(status_code=503, detail="No prediction model loaded")
 
@@ -148,16 +203,25 @@ async def predict(input_data: PredictionInput):
         confidence = float(probabilities[prediction])
 
         prob_dict = {
-            label_encoder.inverse_transform([i])[0]: float(p)
+            str(label_encoder.inverse_transform([i])[0]): float(p)
             for i, p in enumerate(probabilities)
         }
+
+        # Compute simple XCS score (confidence-only if SHAP/LIME not available)
+        xcs_score = 0.4 * confidence  # Minimum XCS from confidence component
 
         return PredictionOutput(
             prediction=predicted_class,
             confidence=confidence,
             probabilities=prob_dict,
+            xcs_score=round(xcs_score, 4),
         )
 
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid input: expected {scaler.n_features_in_} features, got {len(input_data.features)}"
+        )
     except Exception as e:
         logger.error(f"Prediction error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -176,7 +240,7 @@ async def explain(input_data: PredictionInput):
     Returns
     -------
     ExplanationOutput
-        Prediction with feature importance explanation.
+        Prediction with feature importance explanation and XCS score.
     """
     if not models:
         raise HTTPException(status_code=503, detail="Models not loaded")
@@ -194,6 +258,8 @@ async def explain(input_data: PredictionInput):
         model = models.get("random_forest")
         if not model:
             model = models.get("xgboost")
+        if not model:
+            model = models.get("lightgbm")
         if not model:
             raise HTTPException(
                 status_code=503, detail="No model loaded for explanation"
@@ -215,18 +281,27 @@ async def explain(input_data: PredictionInput):
             )
 
         feature_importance = [
-            {"feature": f"feature_{i}", "importance": float(imp)}
+            {"feature": f"feature_{i}", "importance": round(float(imp), 6)}
             for i, imp in enumerate(importances)
         ]
         feature_importance.sort(key=lambda x: x["importance"], reverse=True)
         top_features = feature_importance[:10]
 
+        # Compute simple XCS score
+        xcs_score = 0.4 * confidence
+
         return ExplanationOutput(
             prediction=predicted_class,
             confidence=confidence,
             top_features=top_features,
+            xcs_score=round(xcs_score, 4),
         )
 
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid input: expected {scaler.n_features_in_} features, got {len(input_data.features)}"
+        )
     except Exception as e:
         logger.error(f"Explanation error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -238,7 +313,7 @@ async def get_classes():
     if label_encoder is None:
         raise HTTPException(status_code=503, detail="Label encoder not loaded")
 
-    return {"classes": list(label_encoder.classes_)}
+    return {"classes": [str(c) for c in label_encoder.classes_]}
 
 
 if __name__ == "__main__":

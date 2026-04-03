@@ -54,7 +54,6 @@ MODEL_CONFIGS = {
             "learning_rate": 0.1,
             "random_state": 42,
             "n_jobs": -1,
-            "use_label_encoder": False,
             "eval_metric": "mlogloss",
             "tree_method": "hist",
         },

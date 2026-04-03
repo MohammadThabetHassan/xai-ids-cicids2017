@@ -3,88 +3,157 @@
 ## Model Details
 
 - **Model Name**: XAI-IDS (Explainable AI Intrusion Detection System)
-- **Model Type**: Multi-class classification (15 classes)
-- **Algorithm**: Random Forest, XGBoost, Logistic Regression
-- **Version**: 1.0.0
-- **Release Date**: March 2026
+- **Model Type**: Multi-class and binary classification
+- **Algorithms**: XGBoost, Random Forest, LightGBM, VotingEnsemble, Logistic Regression
+- **Version**: 2.0.0
+- **Release Date**: April 2026
 - **Authors**: Mohammad Thabet Hassan, Fahad Sadek, Ahmed Sami
 - **Supervisor**: Dr. Mehak Khurana
+- **License**: MIT
+- **Repository**: [github.com/MohammadThabetHassan/xai-ids-cicids2017](https://github.com/MohammadThabetHassan/xai-ids-cicids2017)
 
-## Dataset
+## Intended Use
 
-- **Training Data**: CIC-IDS-2017 (synthetic simulation)
-- **Samples**: 50,000 (synthetic) / 2.8M+ (real, optional)
-- **Features**: 78 network flow features
-- **Classes**: 15 (1 benign + 14 attack types)
+### Primary Uses
+- **Research**: Studying explainability methods (SHAP, LIME) for intrusion detection
+- **Education**: Teaching ML pipeline construction, model evaluation, and XAI techniques
+- **Benchmarking**: Comparing model performance across multiple IDS datasets
+- **XAI Methodology**: Demonstrating the novel XAI Confidence Score (XCS) for explanation reliability
 
-### Classes
-| Class | Description |
-|-------|-------------|
-| BENIGN | Normal network traffic |
-| DoS Hulk | HTTP flood DoS |
-| PortScan | Network port scanning |
-| DDoS | Distributed DoS |
-| DoS GoldenEye | HTTP DoS |
-| FTP-Patator | FTP brute force |
-| SSH-Patator | SSH brute force |
-| DoS slowloris | Slowloris DoS |
-| DoS Slowhttptest | Slow HTTP DoS |
-| Bot | Botnet traffic |
-| Web Attack - Brute Force | Web brute force |
-| Web Attack - XSS | Cross-site scripting |
-| Infiltration | Network infiltration |
-| Web Attack - Sql Injection | SQL injection |
-| Heartbleed | Heartbleed exploit |
+### Out-of-Scope Uses
+- **Production IDS deployment**: This is not a production-ready intrusion detection system
+- **Real-time network monitoring**: The pipeline is designed for batch analysis, not real-time inference
+- **Standalone security decision-making**: Should be used as part of a defense-in-depth strategy
+- **Datasets not evaluated on**: Models trained on CIC-IDS-2017 may not generalize to other datasets (cross-dataset Jaccard = 0.216)
 
-## Performance
+## Datasets
 
-### Metrics (XGBoost with Balanced Weights)
-| Metric | Score |
-|--------|-------|
-| Accuracy | 0.8250 |
-| Precision (weighted) | 0.8158 |
-| Recall (weighted) | 0.8250 |
-| F1-Score (weighted) | 0.8193 |
-| **F1-Score (macro)** | **0.51** |
+### CIC-IDS-2017
+- **Source**: Canadian Institute for Cybersecurity, University of New Brunswick
+- **Records**: 2.8+ million flow records
+- **Features**: 78 original (20 selected for Kaggle notebook)
+- **Classes**: 14 (1 benign + 13 attack types)
+- **Attack Types**: DoS Hulk, PortScan, DDoS, DoS GoldenEye, FTP-Patator, SSH-Patator, DoS slowloris, DoS Slowhttptest, Bot, Web Attack (Brute Force, XSS, Sql Injection), Infiltration
+- **Class Imbalance**: Severe (~600:1 ratio between largest and smallest class)
 
-### Per-Class Performance
-- Strong (F1 > 0.9): BENIGN, Bot, PortScan, FTP-Patator, SSH-Patator
-- Moderate (F1 0.3-0.9): DDoS, DoS Hulk, Infiltration, Web Attack - XSS
-- Weak (F1 < 0.3): DoS GoldenEye, DoS Slowhttptest, DoS slowloris, Heartbleed, SQL Injection
+### UNSW-NB15
+- **Source**: UNSW Canberra Cyber
+- **Records**: 2.5+ million
+- **Features**: 20 selected
+- **Classes**: 10 (1 normal + 9 attack types)
+- **Attack Types**: Analysis, Backdoor, DoS, Exploits, Fuzzers, Generic, Reconnaissance, Shellcode, Worms
 
-## Limitations
+### CSE-CIC-IDS-2018
+- **Source**: Canadian Institute for Cybersecurity
+- **Records**: 10+ million
+- **Features**: 20 selected
+- **Classes**: 2 (Benign + DDoS attacks-LOIC-HTTP)
+- **Type**: Binary classification
 
-1. **Class Imbalance**: Severe imbalance (600:1 ratio) causes poor detection of minority classes
-2. **Synthetic Data**: Default training on synthetic data; real CIC-IDS-2017 requires download
-3. **Undetectable Classes**: SQL Injection (0% recall) remains undetectable with current approach
+## Model Architecture
 
-## Usage
+### XGBoost (Primary)
+- **n_estimators**: 100
+- **max_depth**: 8
+- **learning_rate**: 0.1
+- **tree_method**: hist
+- **eval_metric**: mlogloss
 
-### Training
-```bash
-python run_pipeline.py --sample-size 50000
+### Random Forest
+- **n_estimators**: 100
+- **max_depth**: 20
+- **min_samples_split**: 5
+- **min_samples_leaf**: 2
+- **class_weight**: balanced
+
+### LightGBM
+- Trained on Kaggle with GPU (Tesla T4)
+- 20 selected features per dataset
+
+### VotingEnsemble
+- Soft voting ensemble of XGBoost, Random Forest, and LightGBM
+
+### Logistic Regression (Main Pipeline)
+- **solver**: lbfgs
+- **max_iter**: 1000
+- **C**: 1.0
+- **class_weight**: balanced
+
+## Evaluation Results
+
+### CIC-IDS-2017 (14 classes)
+
+| Model | Accuracy | Precision | Recall | F1-Score |
+|-------|----------|-----------|--------|----------|
+| XGBoost | 0.9966 | 0.9964 | 0.9966 | 0.9964 |
+| VotingEnsemble | 0.9886 | 0.9945 | 0.9886 | 0.9911 |
+| RandomForest | 0.9857 | 0.9940 | 0.9857 | 0.9893 |
+| LightGBM | 0.9744 | 0.9930 | 0.9744 | 0.9828 |
+
+### UNSW-NB15 (10 classes)
+
+| Model | Accuracy | Precision | Recall | F1-Score |
+|-------|----------|-----------|--------|----------|
+| XGBoost | 0.8004 | 0.8120 | 0.8004 | 0.7982 |
+| VotingEnsemble | 0.7867 | 0.8240 | 0.7867 | 0.8002 |
+| RandomForest | 0.7635 | 0.8202 | 0.7635 | 0.7848 |
+| LightGBM | 0.7630 | 0.8291 | 0.7630 | 0.7863 |
+
+### CSE-CIC-IDS-2018 (Binary)
+
+| Model | Accuracy | Precision | Recall | F1-Score |
+|-------|----------|-----------|--------|----------|
+| RandomForest | 0.9993 | 0.9993 | 0.9993 | 0.9992 |
+| VotingEnsemble | 0.9993 | 0.9993 | 0.9993 | 0.9992 |
+| XGBoost | 0.9990 | 0.9990 | 0.9990 | 0.9990 |
+| LightGBM | 0.9990 | 0.9990 | 0.9990 | 0.9990 |
+
+## XAI Confidence Score (XCS)
+
+The XCS measures explanation reliability:
+
+```
+XCS = 0.4 × Confidence + 0.3 × (1 - SHAP_Instability) + 0.3 × Jaccard(SHAP, LIME)
 ```
 
-### API
-```bash
-uvicorn api.app:app --host 0.0.0.0 --port 8000
-```
+- **Threshold**: XCS > 0.3 for acceptable explanation reliability
+- **Cross-dataset Jaccard similarity**: 0.216
 
-### Docker
-```bash
-docker build -t xai-ids .
-docker run -p 8000:8000 xai-ids
-```
+## Limitations and Biases
+
+1. **Class Imbalance**: Severe imbalance in CIC-IDS-2017 (~600:1 ratio) causes poor detection of minority attack classes even with balanced class weights.
+
+2. **Dataset Specificity**: Cross-dataset feature importance shows low Jaccard similarity (0.216), meaning models trained on one dataset do not generalize well to others.
+
+3. **Feature Selection**: The Kaggle notebook uses 20 features per dataset (selected by importance), while the main pipeline uses all 78 CIC-IDS-2017 features. Results are not directly comparable.
+
+4. **Synthetic Data Default**: The main pipeline defaults to synthetic data. Real data requires download or running the Kaggle notebook.
+
+5. **Temporal Drift**: Network attack patterns evolve over time. Models trained on 2017/2018 data may not detect modern attack variants.
+
+6. **False Positives**: Even with 99.6% accuracy, the extreme class imbalance means false positives can overwhelm alerts in production.
+
+7. **UNSW-NB15 Performance**: 80% accuracy on UNSW-NB15 indicates significant room for improvement, especially on minority attack classes (Analysis, Backdoor, Shellcode, Worms).
 
 ## Ethical Considerations
 
-- This model is for research/educational purposes
+- This model is for research and educational purposes only
 - Does not constitute a production security solution
-- False positives may impact legitimate network traffic
-- Should be used as part of a defense-in-depth strategy
+- False positives may impact legitimate network traffic analysis
+- Should be used as part of a defense-in-depth strategy with human oversight
+- Model decisions should not be used for legal or disciplinary actions without human review
+
+## Reproducibility
+
+- Random seed (42) used consistently throughout the pipeline
+- Deterministic train/test splitting with stratification
+- All preprocessing artifacts (scaler, encoder) saved for inference
+- Full pipeline executable via single command: `python run_pipeline.py`
+- Multi-dataset results reproducible via Kaggle notebook with GPU
 
 ## References
 
 - Sharafaldin, I., Lashkari, A.H. and Ghorbani, A.A., "Toward Generating a New Intrusion Detection Dataset and Intrusion Traffic Characterization," ICISSP 2018.
 - Lundberg, S.M. and Lee, S.-I., "A Unified Approach to Interpreting Model Predictions," NeurIPS 2017.
-- Ribeiro, M.T., Singh, S. and Guestrin, C., "Why Should I Trust You?" KDD 2016.
+- Ribeiro, M.T., Singh, S. and Guestrin, C., "Why Should I Trust You? Explaining the Predictions of Any Classifier," KDD 2016.
+- Moustafa, N. and Slay, J., "UNSW-NB15: a comprehensive data set for network intrusion detection systems," MilCIS 2015.
