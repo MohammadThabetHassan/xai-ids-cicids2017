@@ -25,13 +25,13 @@ jobs:
 
       - name: Build site
         run: |
-          mkdir -p _site/figures _site/plots
+          mkdir -p _site/figures _site/plots _site/outputs/figures
 
           # Copy the main site HTML
           cp docs/site/index.html _site/index.html
 
-          # Copy pipeline figures (outputs/figures/)
-          cp outputs/figures/*.png _site/figures/ 2>/dev/null || echo "No pipeline figures"
+          # Copy pipeline figures (outputs/figures/) - preserve path for README images
+          cp outputs/figures/*.png _site/outputs/figures/ 2>/dev/null || echo "No pipeline figures"
 
           # Copy Kaggle notebook plots (plots/)
           cp plots/*.png _site/plots/ 2>/dev/null || echo "No Kaggle plots"
@@ -43,8 +43,8 @@ jobs:
           cp docs/site/CNAME _site/CNAME 2>/dev/null || echo "No CNAME file"
 
           echo "=== Site build complete ==="
-          echo "Figures:"
-          ls -la _site/figures/ 2>/dev/null || echo "  (none)"
+          echo "Figures (outputs/figures):"
+          ls -la _site/outputs/figures/ 2>/dev/null || echo "  (none)"
           echo "Plots:"
           ls -la _site/plots/ 2>/dev/null || echo "  (none)"
           echo "All files:"
