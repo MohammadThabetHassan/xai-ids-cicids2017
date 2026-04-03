@@ -338,6 +338,114 @@
     .limit-card h3 { font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; }
     .limit-card p { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6; }
 
+    /* Demo Section */
+    .demo-section { background: var(--bg-secondary); }
+    .demo-container {
+      max-width: 1000px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+    }
+    .demo-panel {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+    }
+    .demo-panel-header {
+      padding: 16px 20px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+      background: var(--bg-tertiary);
+    }
+    .demo-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .demo-dot.r { background: #ff5f57; }
+    .demo-dot.y { background: #febc2e; }
+    .demo-dot.g { background: #28c840; }
+    .demo-panel-title { font-size: 0.8rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; margin-left: 8px; }
+    .demo-scenarios { padding: 16px; display: flex; flex-wrap: wrap; gap: 6px; }
+    .scenario-btn {
+      padding: 8px 14px; border-radius: 8px; font-size: 0.75rem; font-weight: 600;
+      background: var(--bg-tertiary); border: 1px solid var(--border);
+      color: var(--text-secondary); cursor: pointer; transition: var(--transition);
+    }
+    .scenario-btn:hover { border-color: var(--border-hover); color: var(--text); }
+    .scenario-btn.active { border-color: var(--accent); color: var(--accent-light); background: rgba(99,102,241,0.1); }
+    .demo-features { padding: 0 16px 16px; max-height: 320px; overflow-y: auto; }
+    .demo-features::-webkit-scrollbar { width: 4px; }
+    .demo-features::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    .feature-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 0; border-bottom: 1px solid var(--border);
+    }
+    .feature-row:last-child { border-bottom: none; }
+    .feature-name { font-size: 0.7rem; color: var(--text-muted); width: 140px; font-family: 'JetBrains Mono', monospace; }
+    .feature-slider {
+      flex: 1; margin: 0 8px; height: 4px; -webkit-appearance: none; appearance: none;
+      background: var(--bg-tertiary); border-radius: 2px; outline: none;
+    }
+    .feature-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%;
+      background: var(--accent); cursor: pointer;
+    }
+    .feature-value { font-size: 0.7rem; color: var(--text); font-family: 'JetBrains Mono', monospace; width: 60px; text-align: right; }
+    .demo-actions { padding: 16px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
+    .demo-btn {
+      flex: 1; padding: 12px; border-radius: 10px; font-size: 0.85rem; font-weight: 600;
+      border: none; cursor: pointer; transition: var(--transition);
+    }
+    .demo-btn-primary { background: var(--accent); color: #fff; }
+    .demo-btn-primary:hover { box-shadow: 0 0 24px var(--accent-glow); }
+    .demo-btn-secondary { background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border); }
+    .demo-btn-secondary:hover { border-color: var(--border-hover); }
+
+    .demo-results { padding: 24px; }
+    .demo-placeholder {
+      text-align: center; padding: 40px 20px; color: var(--text-muted);
+    }
+    .demo-placeholder .icon { font-size: 2rem; margin-bottom: 12px; opacity: 0.5; }
+    .demo-placeholder p { font-size: 0.85rem; }
+    .result-verdict {
+      text-align: center; padding: 20px; border-radius: var(--radius-sm);
+      margin-bottom: 20px; animation: fadeUp 0.4s ease;
+    }
+    .result-verdict.safe { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); }
+    .result-verdict.attack { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); }
+    .result-verdict .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
+    .result-verdict.safe .label { color: var(--green); }
+    .result-verdict.attack .label { color: #ef4444; }
+    .result-verdict .class { font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; font-weight: 700; }
+    .result-verdict.safe .class { color: var(--green); }
+    .result-verdict.attack .class { color: #ef4444; }
+    .result-verdict .confidence { font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px; }
+    .result-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+    .result-metric {
+      background: var(--bg-tertiary); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 14px; text-align: center;
+    }
+    .result-metric .value {
+      font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem; font-weight: 700;
+    }
+    .result-metric .label { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+    .xcs-gauge { margin-bottom: 20px; }
+    .xcs-gauge-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .xcs-gauge-header .label { font-size: 0.75rem; color: var(--text-muted); }
+    .xcs-gauge-header .value { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; font-weight: 600; }
+    .xcs-gauge-bar { height: 8px; background: var(--bg-tertiary); border-radius: 4px; overflow: hidden; }
+    .xcs-gauge-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease; }
+    .xcs-gauge-breakdown { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+    .xcs-gauge-item { text-align: center; }
+    .xcs-gauge-item .val { font-size: 0.75rem; font-weight: 600; color: var(--text); }
+    .xcs-gauge-item .lbl { font-size: 0.6rem; color: var(--text-muted); }
+    .shap-chart { margin-top: 16px; }
+    .shap-chart .label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px; }
+    .shap-bar { display: flex; align-items: center; margin-bottom: 8px; }
+    .shap-bar .feature { font-size: 0.7rem; color: var(--text-secondary); width: 120px; font-family: 'JetBrains Mono', monospace; }
+    .shap-bar .bar-wrap { flex: 1; height: 20px; background: var(--bg-tertiary); border-radius: 4px; overflow: hidden; margin: 0 8px; }
+    .shap-bar .bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+    .shap-bar .val { font-size: 0.7rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; width: 40px; text-align: right; }
+
+    @media (max-width: 768px) {
+      .demo-container { grid-template-columns: 1fr; }
+      .result-metrics { grid-template-columns: repeat(3, 1fr); }
+      .xcs-gauge-breakdown { grid-template-columns: repeat(3, 1fr); }
+    }
+
     footer {
       background: var(--bg-secondary); border-top: 1px solid var(--border);
       padding: 40px 24px; text-align: center;
@@ -622,6 +730,48 @@
   </div>
 </section>
 
+<section id="demo" class="demo-section">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label">Interactive</div>
+      <h2 class="section-title">Live Demo</h2>
+      <p class="section-desc">Select a traffic scenario to see XGBoost predictions with SHAP explanations and XCS scoring.</p>
+    </div>
+
+    <div class="demo-container reveal">
+      <div class="demo-panel">
+        <div class="demo-panel-header">
+          <span class="demo-dot r"></span>
+          <span class="demo-dot y"></span>
+          <span class="demo-dot g"></span>
+          <span class="demo-panel-title">xai_ids_demo.py — CIC-IDS-2017</span>
+        </div>
+        <div class="demo-scenarios" id="scenarioBtns"></div>
+        <div class="demo-features" id="featureInputs"></div>
+        <div class="demo-actions">
+          <button class="demo-btn demo-btn-primary" onclick="runDemo()">▶ Run Prediction</button>
+          <button class="demo-btn demo-btn-secondary" onclick="resetDemo()">Reset</button>
+        </div>
+      </div>
+
+      <div class="demo-panel">
+        <div class="demo-panel-header">
+          <span class="demo-dot r"></span>
+          <span class="demo-dot y"></span>
+          <span class="demo-dot g"></span>
+          <span class="demo-panel-title">prediction_output</span>
+        </div>
+        <div class="demo-results" id="demoResults">
+          <div class="demo-placeholder">
+            <div class="icon">🔍</div>
+            <p>Select a scenario and click "Run Prediction" to see results.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="team">
   <div class="container">
     <div class="section-header reveal">
@@ -706,6 +856,138 @@
     entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
   }, { threshold: 0.1 });
   document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Demo
+  let demoData = null;
+  let activeScenario = null;
+
+  async function loadDemoData() {
+    try {
+      const res = await fetch('data/demo_predictions.json');
+      demoData = await res.json();
+      renderScenarioButtons();
+    } catch (e) {
+      console.error('Failed to load demo data:', e);
+    }
+  }
+
+  function renderScenarioButtons() {
+    const container = document.getElementById('scenarioBtns');
+    container.innerHTML = demoData.scenarios.map(s =>
+      `<button class="scenario-btn" data-id="${s.id}" onclick="selectScenario('${s.id}', this)">${s.icon} ${s.label}</button>`
+    ).join('');
+  }
+
+  function selectScenario(id, btn) {
+    activeScenario = demoData.scenarios.find(s => s.id === id);
+    document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderFeatureInputs();
+  }
+
+  function renderFeatureInputs() {
+    if (!activeScenario) return;
+    const container = document.getElementById('featureInputs');
+    container.innerHTML = demoData.features.map((f, i) => {
+      const val = activeScenario.features[i];
+      const max = Math.max(val * 1.5, 100);
+      return `<div class="feature-row">
+        <span class="feature-name">${f}</span>
+        <input type="range" class="feature-slider" min="0" max="${max}" value="${val}" data-idx="${i}" oninput="updateFeatureVal(this)">
+        <span class="feature-value" id="fv-${i}">${formatNum(val)}</span>
+      </div>`;
+    }).join('');
+  }
+
+  function updateFeatureVal(slider) {
+    const idx = slider.dataset.idx;
+    document.getElementById('fv-' + idx).textContent = formatNum(parseFloat(slider.value));
+  }
+
+  function formatNum(n) {
+    if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+    if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+    return n.toString();
+  }
+
+  function runDemo() {
+    if (!activeScenario) {
+      alert('Please select a scenario first.');
+      return;
+    }
+    const s = activeScenario;
+    const isSafe = s.verdict === 'safe';
+    const xcsColor = s.xcs > 0.7 ? '#10b981' : s.xcs > 0.4 ? '#f59e0b' : '#ef4444';
+    const barColor = isSafe ? '#10b981' : '#ef4444';
+
+    const shapColors = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#06b6d4'];
+
+    document.getElementById('demoResults').innerHTML = `
+      <div class="result-verdict ${s.verdict}">
+        <div class="label">${isSafe ? '✓ Traffic is Safe' : '⚠ Attack Detected'}</div>
+        <div class="class">${s.prediction}</div>
+        <div class="confidence">Confidence: ${(s.confidence * 100).toFixed(1)}%</div>
+      </div>
+      <div class="result-metrics">
+        <div class="result-metric">
+          <div class="value" style="color: var(--accent-light);">${(s.confidence * 100).toFixed(1)}%</div>
+          <div class="label">Confidence</div>
+        </div>
+        <div class="result-metric">
+          <div class="value" style="color: ${xcsColor};">${(s.xcs * 100).toFixed(0)}%</div>
+          <div class="label">XCS Score</div>
+        </div>
+        <div class="result-metric">
+          <div class="value" style="color: var(--text);">${s.prediction.includes('BENIGN') ? 'Safe' : 'Alert'}</div>
+          <div class="label">Verdict</div>
+        </div>
+      </div>
+      <div class="xcs-gauge">
+        <div class="xcs-gauge-header">
+          <span class="label">XAI Confidence Score</span>
+          <span class="value" style="color: ${xcsColor};">${s.xcs.toFixed(2)}</span>
+        </div>
+        <div class="xcs-gauge-bar">
+          <div class="xcs-gauge-fill" style="width: 0%; background: ${xcsColor};" id="xcsFill"></div>
+        </div>
+        <div class="xcs-gauge-breakdown">
+          <div class="xcs-gauge-item"><div class="val">${s.xcs_breakdown.confidence.toFixed(3)}</div><div class="lbl">Confidence</div></div>
+          <div class="xcs-gauge-item"><div class="val">${s.xcs_breakdown.shap_stability.toFixed(3)}</div><div class="lbl">SHAP Stability</div></div>
+          <div class="xcs-gauge-item"><div class="val">${s.xcs_breakdown.jaccard.toFixed(3)}</div><div class="lbl">Jaccard</div></div>
+        </div>
+      </div>
+      <div class="shap-chart">
+        <div class="label">Top SHAP Features</div>
+        ${s.shap_top5.map((f, i) => `
+          <div class="shap-bar">
+            <span class="feature">${f.feature}</span>
+            <div class="bar-wrap"><div class="bar-fill" style="width: 0%; background: ${shapColors[i]};" data-width="${(f.value * 100 / s.shap_top5[0].value).toFixed(0)}"></div></div>
+            <span class="val">${f.value.toFixed(3)}</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+
+    // Animate
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        const xcsFill = document.getElementById('xcsFill');
+        if (xcsFill) xcsFill.style.width = (s.xcs * 100) + '%';
+        document.querySelectorAll('.bar-fill').forEach(bar => {
+          bar.style.width = bar.dataset.width + '%';
+        });
+      }, 50);
+    });
+  }
+
+  function resetDemo() {
+    activeScenario = null;
+    document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('featureInputs').innerHTML = '';
+    document.getElementById('demoResults').innerHTML = '<div class="demo-placeholder"><div class="icon">🔍</div><p>Select a scenario and click "Run Prediction" to see results.</p></div>';
+  }
+
+  loadDemoData();
 </script>
 </body>
 </html>
