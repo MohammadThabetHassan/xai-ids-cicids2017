@@ -39,6 +39,9 @@ jobs:
           # Copy demo data
           cp -r docs/site/data _site/data/ 2>/dev/null || echo "No demo data"
 
+          # Copy CNAME for custom domain
+          cp docs/site/CNAME _site/CNAME 2>/dev/null || echo "No CNAME file"
+
           echo "=== Site build complete ==="
           echo "Figures:"
           ls -la _site/figures/ 2>/dev/null || echo "  (none)"
