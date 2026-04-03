@@ -25,15 +25,23 @@ jobs:
 
       - name: Build site
         run: |
-          mkdir -p _site/figures
+          mkdir -p _site/figures _site/plots
 
           # Copy the main site HTML
           cp docs/site/index.html _site/index.html
 
-          # Copy all figure assets
-          cp outputs/figures/*.png _site/figures/ 2>/dev/null || true
+          # Copy pipeline figures (outputs/figures/)
+          cp outputs/figures/*.png _site/figures/ 2>/dev/null || echo "No pipeline figures"
 
-          echo "Site build complete. Contents:"
+          # Copy Kaggle notebook plots (plots/)
+          cp plots/*.png _site/plots/ 2>/dev/null || echo "No Kaggle plots"
+
+          echo "=== Site build complete ==="
+          echo "Figures:"
+          ls -la _site/figures/ 2>/dev/null || echo "  (none)"
+          echo "Plots:"
+          ls -la _site/plots/ 2>/dev/null || echo "  (none)"
+          echo "All files:"
           find _site -type f | sort
 
       - name: Upload artifact
