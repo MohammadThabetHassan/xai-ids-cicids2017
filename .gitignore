@@ -1,5 +1,7 @@
-# Large model files
+# Large model files — too big for GitHub
 models/ensemble_*.joblib
 models/rf_UNSWNB15.joblib
 models/rf_CICIDS2017.joblib
-*.joblib
+fastapi_app/
+__pycache__/
+*.pyc

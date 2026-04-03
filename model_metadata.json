@@ -11,77 +11,87 @@
     "LightGBM",
     "VotingEnsemble"
   ],
+  "xcs": {
+    "formula": "XCS = w1*Conf + w2*(1-Instab) + w3*Jaccard_SL",
+    "weights": {
+      "w1": 0.4,
+      "w2": 0.3,
+      "w3": 0.3
+    },
+    "threshold": 0.3
+  },
+  "cross_dataset_jaccard": 0.21626984126984125,
   "datasets": {
     "CICIDS2017": {
-      "n_features_selected": 20,
+      "n_features": 20,
       "features": [
-        "Fwd Packets Length Total",
-        "Packet Length Max",
-        "Fwd IAT Std",
-        "Flow IAT Max",
+        "Fwd Seg Size Min",
         "Fwd IAT Total",
-        "Flow Duration",
+        "Fwd IAT Std",
         "Flow IAT Mean",
-        "Packet Length Std",
-        "Bwd Packet Length Mean",
-        "Packet Length Mean",
-        "Avg Packet Size",
         "Fwd IAT Mean",
-        "Bwd IAT Std",
-        "Bwd Packet Length Min",
-        "Bwd Packet Length Std",
-        "Packet Length Min",
+        "Avg Packet Size",
+        "Packet Length Mean",
+        "Packet Length Max",
         "Flow IAT Std",
-        "ACK Flag Count",
+        "Bwd IAT Std",
         "Bwd Packet Length Max",
-        "Bwd IAT Max"
+        "Flow IAT Max",
+        "Bwd Packet Length Min",
+        "Flow Duration",
+        "Fwd IAT Max",
+        "Bwd Packet Length Mean",
+        "Bwd IAT Max",
+        "Packet Length Std",
+        "Bwd Packet Length Std",
+        "PSH Flag Count"
       ],
       "n_classes": 14,
       "classes": [
-        "0",
-        "1",
-        "2",
-        "3",
-        "4",
-        "5",
-        "6",
-        "7",
-        "8",
-        "9",
-        "10",
-        "11",
-        "12",
-        "13"
+        "Benign",
+        "Bot",
+        "DDoS",
+        "DoS GoldenEye",
+        "DoS Hulk",
+        "DoS Slowhttptest",
+        "DoS slowloris",
+        "FTP-Patator",
+        "Infiltration",
+        "PortScan",
+        "SSH-Patator",
+        "Web Attack \ufffd Brute Force",
+        "Web Attack \ufffd Sql Injection",
+        "Web Attack \ufffd XSS"
       ],
       "results": {
         "XGBoost": {
-          "accuracy": 0.9964473783668019,
-          "f1": 0.996223230049998,
-          "precision": 0.9961480590491568,
-          "recall": 0.9964473783668019
+          "accuracy": 0.9965985537554486,
+          "f1": 0.9964266910704263,
+          "precision": 0.9963780726971228,
+          "recall": 0.9965985537554486
         },
         "RandomForest": {
-          "accuracy": 0.9850840283201895,
-          "f1": 0.9889864998723162,
-          "precision": 0.9940841482816657,
-          "recall": 0.9850840283201895
+          "accuracy": 0.9856887298747764,
+          "f1": 0.9893030341481561,
+          "precision": 0.9940496979246978,
+          "recall": 0.9856887298747764
         },
         "LightGBM": {
-          "accuracy": 0.9720073572022475,
-          "f1": 0.9811861049220256,
-          "precision": 0.9923851449857007,
-          "recall": 0.9720073572022475
+          "accuracy": 0.9744261634205952,
+          "f1": 0.9828072485215463,
+          "precision": 0.993015600916348,
+          "recall": 0.9744261634205952
         },
         "Ensemble": {
-          "accuracy": 0.9883342991760942,
-          "f1": 0.9911109435978434,
-          "precision": 0.994850005820661,
-          "recall": 0.9883342991760942
+          "accuracy": 0.988586258157172,
+          "f1": 0.9911128887376373,
+          "precision": 0.9945305654363482,
+          "recall": 0.988586258157172
         }
       }
     },
     "UNSWNB15": {
-      "n_features_selected": 20,
+      "n_features": 20,
       "features": [
         "smean",
         "dload",
@@ -89,117 +99,116 @@
         "sbytes",
         "dmean",
         "ct_src_dport_ltm",
-        "dloss",
-        "tcprtt",
-        "sloss",
         "synack",
+        "dloss",
         "ackdat",
+        "sloss",
         "trans_depth",
+        "tcprtt",
         "sload",
-        "stcpb",
+        "ct_dst_sport_ltm",
+        "rate",
+        "djit",
         "spkts",
         "dtcpb",
-        "ct_dst_sport_ltm",
-        "sjit",
-        "dinpkt",
-        "djit"
+        "stcpb",
+        "dinpkt"
       ],
       "n_classes": 10,
       "classes": [
-        "0",
-        "1",
-        "2",
-        "3",
-        "4",
-        "5",
-        "6",
-        "7",
-        "8",
-        "9"
+        "Analysis",
+        "Backdoor",
+        "DoS",
+        "Exploits",
+        "Fuzzers",
+        "Generic",
+        "Normal",
+        "Reconnaissance",
+        "Shellcode",
+        "Worms"
       ],
       "results": {
         "XGBoost": {
-          "accuracy": 0.8045705733364034,
-          "f1": 0.7932515864693159,
-          "precision": 0.7905916512005119,
-          "recall": 0.8045705733364034
+          "accuracy": 0.8004259728298411,
+          "f1": 0.7982345558941604,
+          "precision": 0.811976749304429,
+          "recall": 0.8004259728298411
         },
         "RandomForest": {
-          "accuracy": 0.7718742804513009,
-          "f1": 0.7901997010160857,
-          "precision": 0.8224591293653928,
-          "recall": 0.7718742804513009
+          "accuracy": 0.7634699516463275,
+          "f1": 0.7847767214850044,
+          "precision": 0.8202309881588071,
+          "recall": 0.7634699516463275
         },
         "LightGBM": {
-          "accuracy": 0.7679599355284366,
-          "f1": 0.7885434859189915,
-          "precision": 0.8262556863659332,
-          "recall": 0.7679599355284366
+          "accuracy": 0.7630094404789316,
+          "f1": 0.7862535897310974,
+          "precision": 0.8290605923219206,
+          "recall": 0.7630094404789316
         },
         "Ensemble": {
-          "accuracy": 0.7915035689615473,
-          "f1": 0.802579417051468,
-          "precision": 0.8225297106255831,
-          "recall": 0.7915035689615473
+          "accuracy": 0.7866682017038913,
+          "f1": 0.8001853329875501,
+          "precision": 0.8240363085313173,
+          "recall": 0.7866682017038913
         }
       }
     },
     "CICIDS2018": {
-      "n_features_selected": 20,
+      "n_features": 20,
       "features": [
         "Fwd Pkt Len Max",
-        "Flow IAT Max",
         "Dst Port",
-        "Flow IAT Min",
+        "Flow IAT Max",
         "Src Port",
-        "ACK Flag Cnt",
-        "Flow IAT Mean",
-        "Fwd IAT Max",
+        "Flow IAT Min",
         "Fwd IAT Mean",
         "Idle Min",
-        "Fwd IAT Std",
-        "Pkt Len Std",
+        "ACK Flag Cnt",
+        "Fwd IAT Max",
         "Fwd IAT Min",
-        "Flow IAT Std",
-        "RST Flag Cnt",
+        "Bwd Pkt Len Std",
+        "Fwd IAT Std",
         "Idle Mean",
+        "Flow IAT Std",
+        "Flow IAT Mean",
         "Fwd Pkt Len Std",
         "Idle Max",
-        "Pkt Len Min",
-        "Bwd IAT Tot"
+        "Fwd Seg Size Min",
+        "Bwd Pkt Len Min",
+        "Protocol"
       ],
       "n_classes": 2,
       "classes": [
-        "0",
-        "1"
+        "Benign",
+        "DDoS attacks-LOIC-HTTP"
       ],
       "results": {
         "XGBoost": {
-          "accuracy": 0.9998,
-          "f1": 0.9997999798639914,
-          "precision": 0.9998000564812198,
-          "recall": 0.9998
+          "accuracy": 0.999,
+          "f1": 0.9989999997499999,
+          "precision": 0.999000499000499,
+          "recall": 0.999
         },
         "RandomForest": {
-          "accuracy": 0.9998,
-          "f1": 0.9998000201085621,
-          "precision": 0.9998001368925393,
-          "recall": 0.9998
+          "accuracy": 0.99925,
+          "f1": 0.9992499995781248,
+          "precision": 0.9992511233150275,
+          "recall": 0.99925
         },
         "LightGBM": {
-          "accuracy": 0.9998,
-          "f1": 0.9997999798639914,
-          "precision": 0.9998000564812198,
-          "recall": 0.9998
+          "accuracy": 0.999,
+          "f1": 0.998999998999999,
+          "precision": 0.999001996007984,
+          "recall": 0.999
         },
         "Ensemble": {
-          "accuracy": 0.9998,
-          "f1": 0.9997999798639914,
-          "precision": 0.9998000564812198,
-          "recall": 0.9998
+          "accuracy": 0.99925,
+          "f1": 0.9992499995781248,
+          "precision": 0.9992511233150275,
+          "recall": 0.99925
         }
       }
     }
-  },
-  "cross_dataset_jaccard": 0.0
+  }
 }
