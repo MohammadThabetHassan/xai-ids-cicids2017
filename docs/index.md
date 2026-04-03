@@ -2,46 +2,43 @@
 
 ## Overview
 
-XAI-IDS is an Explainable AI-based Intrusion Detection System built on the CIC-IDS-2017 dataset. It combines traditional machine learning classifiers with state-of-the-art explainability techniques (SHAP and LIME) to create a transparent and interpretable network intrusion detection pipeline.
+XAI-IDS is a multi-dataset Explainable AI-based Intrusion Detection System evaluated on CIC-IDS-2017, UNSW-NB15, and CSE-CIC-IDS-2018. It combines ML classifiers (XGBoost, Random Forest, LightGBM, VotingEnsemble) with SHAP and LIME explainability, featuring a novel XAI Confidence Score (XCS).
 
 ## Key Features
 
-- **Multi-model training**: Logistic Regression, Random Forest, and XGBoost
-- **Class-balanced training**: Balanced class weights for fairer evaluation
-- **Comprehensive evaluation**: Accuracy, Precision, Recall, F1-score (weighted + macro), confusion matrices
-- **Cross-validation**: Stratified k-fold CV support
-- **Advanced analysis**: Precision-recall curves, calibration curves, failure analysis
-- **Global explainability**: SHAP feature importance and summary plots
-- **Local explainability**: LIME instance-level explanations for correct and misclassified samples
-- **Production-ready**: Docker support, FastAPI inference endpoint, config.yaml
-- **CI/CD**: Automated testing and documentation deployment
+- **Multi-dataset**: CIC-IDS-2017 (14 classes), UNSW-NB15 (10 classes), CSE-CIC-IDS-2018 (binary)
+- **Multi-model**: XGBoost, Random Forest, LightGBM, VotingEnsemble
+- **XCS Metric**: Novel XAI Confidence Score measuring explanation reliability
+- **SHAP**: Global feature importance with beeswarm, waterfall, summary plots
+- **LIME**: Local instance-level explanations
+- **Jaccard Similarity**: SHAP vs LIME agreement analysis
+- **Production-ready**: Docker, FastAPI inference endpoint
 
-## Dataset
+## Best Results
 
-The CIC-IDS-2017 dataset contains network traffic data with 78 features and 15 traffic classes:
-- 1 benign class (normal traffic)
-- 14 attack classes (DoS, DDoS, Brute Force, Port Scan, Web Attacks, etc.)
+| Dataset | Model | Accuracy |
+|---------|-------|----------|
+| CIC-IDS-2017 | XGBoost | 99.66% |
+| UNSW-NB15 | XGBoost | 80.04% |
+| CSE-CIC-IDS-2018 | RandomForest | 99.93% |
 
 ## Getting Started
 
 ```bash
-# Clone the repository
-git clone https://github.com/MohammadThabetHassan/Explainable-AI-Intrusion-Detection-System-XAI-IDS-.git
-
-# Install dependencies
+git clone https://github.com/MohammadThabetHassan/xai-ids-cicids2017.git
+cd xai-ids-cicids2017
 pip install -r requirements.txt
-
-# Run the pipeline
 python run_pipeline.py
 ```
 
 ## Documentation
 
-- [Methodology](methodology.md) - Detailed technical methodology
-- [README](../README.md) - Full project documentation
-- [Contributors](../CONTRIBUTORS.md) - Team and acknowledgments
+- [Methodology](methodology.md) - XCS formula and technical details
+- [Full Results](../RESULTS.md) - Complete metrics tables
+- [Model Card](../MODEL_CARD.md) - Model details and limitations
+- [GitHub Pages](https://mohammadthabethassan.github.io/xai-ids-cicids2017/) - Interactive demo
 
 ## Links
 
-- **Repository**: [GitHub](https://github.com/MohammadThabetHassan/Explainable-AI-Intrusion-Detection-System-XAI-IDS-)
-- **Dataset**: [CIC-IDS-2017](https://www.unb.ca/cic/datasets/ids-2017.html)
+- **Repository**: [GitHub](https://github.com/MohammadThabetHassan/xai-ids-cicids2017)
+- **Datasets**: [CIC-IDS-2017](https://www.unb.ca/cic/datasets/ids-2017.html) | [UNSW-NB15](https://www.unsw.adfa.edu.au/unsw-canberra-cyber/cybersecurity/ADFA-NB15-Datasets/)
