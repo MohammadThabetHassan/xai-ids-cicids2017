@@ -59,9 +59,9 @@
         "Infiltration",
         "PortScan",
         "SSH-Patator",
-        "Web Attack \ufffd Brute Force",
-        "Web Attack \ufffd Sql Injection",
-        "Web Attack \ufffd XSS"
+        "Web Attack - Brute Force",
+        "Web Attack - Sql Injection",
+        "Web Attack - XSS"
       ],
       "results": {
         "XGBoost": {

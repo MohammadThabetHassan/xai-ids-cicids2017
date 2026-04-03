@@ -170,7 +170,8 @@ def load_dataset(
             # Random sample from large file
             import numpy as np
 
-            total_rows = sum(1 for _ in open(filepath)) - 1  # -1 for header
+            with open(filepath, "r") as f:
+                total_rows = sum(1 for _ in f) - 1  # -1 for header
             if total_rows > nrows_per_file:
                 skiprows = np.random.choice(
                     range(1, total_rows + 1), total_rows - nrows_per_file, replace=False

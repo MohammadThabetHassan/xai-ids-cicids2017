@@ -1,55 +1,83 @@
 # XAI-IDS: Explainable AI Intrusion Detection System
 
-[![CI](https://github.com/MohammadThabetHassan/Explainable-AI-Intrusion-Detection-System-XAI-IDS-/actions/workflows/ci.yml/badge.svg)](https://github.com/MohammadThabetHassan/Explainable-AI-Intrusion-Detection-System-XAI-IDS-/actions/workflows/ci.yml)
-[![Pages](https://github.com/MohammadThabetHassan/Explainable-AI-Intrusion-Detection-System-XAI-IDS-/actions/workflows/pages.yml/badge.svg)](https://github.com/MohammadThabetHassan/Explainable-AI-Intrusion-Detection-System-XAI-IDS-/actions/workflows/pages.yml)
+[![CI](https://github.com/MohammadThabetHassan/xai-ids-cicids2017/actions/workflows/ci.yml/badge.svg)](https://github.com/MohammadThabetHassan/xai-ids-cicids2017/actions/workflows/ci.yml)
+[![Pages](https://github.com/MohammadThabetHassan/xai-ids-cicids2017/actions/workflows/pages.yml/badge.svg)](https://mohammadthabethassan.github.io/xai-ids-cicids2017/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Datasets](https://img.shields.io/badge/datasets-CICIDS2017%20%7C%20UNSW--NB15%20%7C%20CICIDS2018-orange.svg)](RESULTS.md)
+[![Models](https://img.shields.io/badge/models-XGBoost%20%7C%20RF%20%7C%20LightGBM%20%7C%20Ensemble-purple.svg)](RESULTS.md)
 
-An Explainable AI-based Intrusion Detection System that combines machine learning classifiers with SHAP and LIME explainability techniques on the CIC-IDS-2017 dataset.
+An Explainable AI-based Intrusion Detection System that combines machine learning classifiers with **SHAP** and **LIME** explainability techniques, evaluated across **3 datasets** (CIC-IDS-2017, UNSW-NB15, CSE-CIC-IDS-2018) with a novel **XAI Confidence Score (XCS)** for measuring explanation reliability.
 
-**Live Documentation:** [https://mohammadthabethassan.github.io/Explainable-AI-Intrusion-Detection-System-XAI-IDS-/](https://mohammadthabethassan.github.io/Explainable-AI-Intrusion-Detection-System-XAI-IDS-/)
+**Live Documentation:** [GitHub Pages](https://mohammadthabethassan.github.io/xai-ids-cicids2017/) | [Full Results](RESULTS.md) | [Model Card](MODEL_CARD.md)
 
 ---
 
 ## Table of Contents
 
-- [Problem Statement](#problem-statement)
-- [Dataset](#dataset)
-- [Installation & Setup](#installation--setup)
-- [How to Run](#how-to-run)
-- [Pipeline Overview](#pipeline-overview)
-- [Models](#models)
+- [Architecture](#architecture)
+- [Datasets](#datasets)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
 - [Results](#results)
-- [Explainability](#explainability)
+- [Explainability & XCS](#explainability--xcs)
+- [API & Deployment](#api--deployment)
 - [Repository Structure](#repository-structure)
 - [Testing](#testing)
-- [Limitations & Future Work](#limitations--future-work)
-- [Authors & Contributors](#authors--contributors)
+- [Limitations](#limitations)
+- [Citation](#citation)
+- [Authors](#authors)
+- [License](#license)
 
 ---
 
-## Problem Statement
+## Architecture
 
-Network intrusion detection is critical for cybersecurity. Traditional ML-based IDS systems often operate as "black boxes," making it difficult for security analysts to understand why specific traffic is flagged as malicious. This project addresses the need for **explainable** intrusion detection by combining effective ML classifiers with state-of-the-art interpretability techniques.
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        XAI-IDS Pipeline                              │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  ┌──────────┐    ┌──────────────┐    ┌───────────┐    ┌───────────┐ │
+│  │   Data   │───▶│ Preprocessing│───▶│  Models   │───▶│Evaluation │ │
+│  │ Acquisition│   │ Clean/Encode │    │ XGBoost   │    │ Metrics   │ │
+│  │ 3 Datasets│   │ Scale/Split  │    │ RF/LGBM   │    │ Confusion │ │
+│  └──────────┘    └──────────────┘    │ Ensemble  │    │ PR/CAL    │ │
+│                                      └─────┬─────┘    └───────────┘ │
+│                                            │                        │
+│                                      ┌─────▼─────┐                  │
+│                                      │Explainability│                │
+│                                      │ SHAP + LIME │                  │
+│                                      │ XCS Score   │                  │
+│                                      │ Jaccard Sim │                  │
+│                                      └─────────────┘                  │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
-**Objectives:**
-1. Build an ML pipeline for multi-class network intrusion detection
-2. Compare multiple classifiers (Logistic Regression, Random Forest, XGBoost)
-3. Provide transparent explanations using SHAP (global) and LIME (local)
-4. Create a reproducible, production-quality research pipeline
+**Pipeline Flow:**
+```
+Data Acquisition → Preprocessing → Model Training → Evaluation → SHAP/LIME → XCS Scoring
+     ↓                  ↓                ↓              ↓            ↓           ↓
+  3 IDS Datasets    Clean/Encode    4 Models       Metrics     Global/Local   Confidence
+  (CICIDS2017,     Scale/Split     (XGB, RF,      Confusion   Explanations   Score
+   UNSW-NB15,                       LGBM, Ens)     Matrices    Jaccard Sim
+   CICIDS2018)
+```
 
 ---
 
-## Dataset
+## Datasets
 
-### CIC-IDS-2017
+This project evaluates on **3 benchmark intrusion detection datasets**:
 
-The **CIC-IDS-2017** dataset was created by the [Canadian Institute for Cybersecurity](https://www.unb.ca/cic/datasets/ids-2017.html) at the University of New Brunswick. It contains labeled network traffic captured over 5 days with both benign activity and common attack types.
+| Dataset | Classes | Features | Records | Type |
+|---------|---------|----------|---------|------|
+| **CIC-IDS-2017** | 14 (1 benign + 13 attacks) | 20 selected | 2.8M+ | Multi-class |
+| **UNSW-NB15** | 10 (1 normal + 9 attacks) | 20 selected | 2.5M+ | Multi-class |
+| **CSE-CIC-IDS-2018** | 2 (Benign + DDoS) | 20 selected | 10M+ | Binary |
 
-**Key characteristics:**
-- **78 network flow features** extracted using CICFlowMeter
-- **15 traffic classes** (1 benign + 14 attack types)
-- **2.8+ million flow records** across 8 CSV files
+### CIC-IDS-2017 Attack Types
 
 | Class | Description |
 |-------|-------------|
@@ -67,34 +95,46 @@ The **CIC-IDS-2017** dataset was created by the [Canadian Institute for Cybersec
 | Web Attack - XSS | Cross-site scripting |
 | Infiltration | Network infiltration |
 | Web Attack - Sql Injection | SQL injection |
-| Heartbleed | Heartbleed vulnerability exploit |
 
-**Source:** 
-- Primary: [UNB CIC](https://www.unb.ca/cic/datasets/ids-2017.html) (server may be offline)
-- Fallback: [Zenodo](https://zenodo.org/records/10141593) (CIC-IDS-2017 V2, 369MB)
+**Sources:**
+- CIC-IDS-2017: [UNB CIC](https://www.unb.ca/cic/datasets/ids-2017.html) | [Zenodo Mirror](https://zenodo.org/records/10141593)
+- UNSW-NB15: [UNSW Canberra](https://www.unsw.adfa.edu.au/unsw-canberra-cyber/cybersecurity/ADFA-NB15-Datasets/)
+- CSE-CIC-IDS-2018: [CSE-CIC](https://www.unb.ca/cic/datasets/ids-2018.html)
 
 ---
 
-## Installation & Setup
+## Installation
 
 ### Prerequisites
+
 - Python 3.10+
 - pip
+- (Optional) Docker for containerized execution
 
 ### Install
 
 ```bash
 # Clone the repository
-git clone https://github.com/MohammadThabetHassan/Explainable-AI-Intrusion-Detection-System-XAI-IDS-.git
-cd Explainable-AI-Intrusion-Detection-System-XAI-IDS-
+git clone https://github.com/MohammadThabetHassan/xai-ids-cicids2017.git
+cd xai-ids-cicids2017
 
 # Install dependencies
 pip install -r requirements.txt
 ```
 
+### Docker
+
+```bash
+# Build the container
+docker build -t xai-ids .
+
+# Run the pipeline
+docker run -v $(pwd)/outputs:/app/outputs xai-ids
+```
+
 ---
 
-## How to Run
+## Quick Start
 
 ### Full Pipeline (Synthetic Data)
 
@@ -120,6 +160,7 @@ python run_pipeline.py --sample-size 5000 --skip-explain
 |------|-------------|
 | `--download` | Download real CIC-IDS-2017 data (via Zenodo fallback) |
 | `--sample-size N` | Synthetic dataset size (default: 50000) |
+| `--random-sample` | Use random sampling instead of first N rows |
 | `--skip-explain` | Skip SHAP and LIME analysis |
 | `--skip-shap` | Skip SHAP only |
 | `--skip-lime` | Skip LIME only |
@@ -142,75 +183,48 @@ make clean             # Remove outputs
 
 ---
 
-## Pipeline Overview
-
-```
-Data Acquisition → Preprocessing → Model Training → Evaluation → Explainability
-```
-
-1. **Data Acquisition**: Download CIC-IDS-2017 or generate synthetic data
-2. **Preprocessing**: Clean (NaN, Inf, duplicates), encode labels, scale features, stratified split (70/10/20)
-3. **Model Training**: Train Logistic Regression, Random Forest, and XGBoost
-4. **Evaluation**: Compute metrics, confusion matrices, comparison charts
-5. **Explainability**: SHAP global analysis + LIME local explanations
-
----
-
-## Models
-
-| Model | Type | Key Parameters |
-|-------|------|---------------|
-| **Logistic Regression** | Linear | solver=lbfgs, max_iter=1000, C=1.0 |
-| **Random Forest** | Ensemble | n_estimators=100, max_depth=20 |
-| **XGBoost** | Boosting | n_estimators=100, max_depth=8, lr=0.1 |
-
----
-
 ## Results
 
-### Real Data Benchmark (CIC-IDS-2017 V2)
+### Multi-Dataset Performance (Kaggle Notebook)
 
-**Dataset:** 100K random sample from real CIC-IDS-2017 V2 (Zenodo)
-**Classes:** 14 (includes new "Comb" class)
+Results from the multi-dataset evaluation with XGBoost, Random Forest, LightGBM, and VotingEnsemble.
 
-| Model | Accuracy | Precision | Recall | F1-Score (Weighted) |
-|-------|----------|-----------|--------|---------------------|
-| Logistic Regression | 0.8569 | 0.9637 | 0.8569 | 0.8994 |
-| **Random Forest** | **0.9969** | **0.9971** | **0.9969** | **0.9970** |
+#### CIC-IDS-2017 (14 classes)
 
-### Per-Class Performance (Random Forest - Real Data, 100K)
+| Model | Accuracy | Precision | Recall | F1-Score |
+|-------|----------|-----------|--------|----------|
+| **XGBoost** | **0.9966** | **0.9964** | **0.9966** | **0.9964** |
+| VotingEnsemble | 0.9886 | 0.9945 | 0.9886 | 0.9911 |
+| RandomForest | 0.9857 | 0.9940 | 0.9857 | 0.9893 |
+| LightGBM | 0.9744 | 0.9930 | 0.9744 | 0.9828 |
 
-| Class | Precision | Recall | F1-Score | Samples |
-|-------|-----------|--------|----------|---------|
-| BENIGN | 1.00 | 1.00 | 1.00 | 15542 |
-| Bot | 0.44 | 0.69 | 0.54 | 16 |
-| Comb | 1.00 | 1.00 | 1.00 | 1253 |
-| DDoS | 1.00 | 1.00 | 1.00 | 951 |
-| DoS GoldenEye | 1.00 | 1.00 | 1.00 | 71 |
-| DoS Hulk | 1.00 | 0.99 | 0.99 | 1255 |
-| DoS Slowhttptest | 0.89 | 0.95 | 0.92 | 43 |
-| DoS slowloris | 1.00 | 1.00 | 1.00 | 33 |
-| FTP-Patator | 1.00 | 1.00 | 1.00 | 42 |
-| PortScan | 0.98 | 1.00 | 0.99 | 743 |
-| SSH-Patator | 1.00 | 0.97 | 0.98 | 30 |
-| Web Attack - Brute Force | 0.75 | 0.67 | 0.71 | 9 |
-| Web Attack - XSS | 0.67 | 0.50 | 0.57 | 4 |
+#### UNSW-NB15 (10 classes)
 
-**Summary Metrics:**
-- **Macro Avg F1:** 0.90 (treats all classes equally)
-- **Weighted Avg F1:** 1.00 (favors majority classes)
+| Model | Accuracy | Precision | Recall | F1-Score |
+|-------|----------|-----------|--------|----------|
+| **XGBoost** | **0.8004** | **0.8120** | **0.8004** | **0.7982** |
+| VotingEnsemble | 0.7867 | 0.8240 | 0.7867 | 0.8002 |
+| RandomForest | 0.7635 | 0.8202 | 0.7635 | 0.7848 |
+| LightGBM | 0.7630 | 0.8291 | 0.7630 | 0.7863 |
 
----
+#### CSE-CIC-IDS-2018 (Binary)
 
-### Synthetic Data Results (For Comparison)
+| Model | Accuracy | Precision | Recall | F1-Score |
+|-------|----------|-----------|--------|----------|
+| **RandomForest** | **0.9993** | **0.9993** | **0.9993** | **0.9992** |
+| VotingEnsemble | 0.9993 | 0.9993 | 0.9993 | 0.9992 |
+| XGBoost | 0.9990 | 0.9990 | 0.9990 | 0.9990 |
+| LightGBM | 0.9990 | 0.9990 | 0.9990 | 0.9990 |
 
-| Model | Accuracy | Precision | Recall | F1-Score (Weighted) | Macro F1 |
-|-------|----------|-----------|--------|---------------------|----------|
-| Logistic Regression | 0.7601 | 0.7866 | 0.7601 | 0.7651 | 0.48 |
-| Random Forest | 0.8347 | 0.8096 | 0.8347 | 0.8162 | 0.48 |
+> **See [RESULTS.md](RESULTS.md) for complete per-class breakdowns, XCS scores, and cross-dataset analysis.**
+
+### Synthetic Data Results (Main Pipeline)
+
+| Model | Accuracy | Precision | Recall | F1 (weighted) | F1 (macro) |
+|-------|----------|-----------|--------|---------------|------------|
 | **XGBoost** | **0.8250** | **0.8158** | **0.8250** | **0.8193** | **0.51** |
-
-> Note: Real data (99.69% RF accuracy) significantly outperforms synthetic (83.47% RF accuracy). The synthetic data had 5 classes with 0% detection; real data has near-perfect detection for most classes.
+| Random Forest | 0.8347 | 0.8096 | 0.8347 | 0.8162 | 0.48 |
+| Logistic Regression | 0.7601 | 0.7866 | 0.7601 | 0.7651 | 0.48 |
 
 ### Model Comparison Chart
 
@@ -229,7 +243,7 @@ Data Acquisition → Preprocessing → Model Training → Evaluation → Explain
 
 ---
 
-## Explainability
+## Explainability & XCS
 
 ### SHAP - Global Feature Importance
 
@@ -251,14 +265,76 @@ LIME (Local Interpretable Model-agnostic Explanations) explains individual predi
 #### Misclassified Sample (XGBoost)
 ![XGB LIME Misclassified](outputs/figures/lime_misclassified_xgboost.png)
 
-### Generating Explainability Outputs
+### XAI Confidence Score (XCS)
+
+The **XCS** is a novel metric that measures the reliability of explanations for individual predictions:
+
+```
+XCS = w1 × Confidence + w2 × (1 - SHAP_Instability) + w3 × Jaccard(SHAP, LIME)
+```
+
+Where:
+- **w1 = 0.4**: Weight for model prediction confidence
+- **w2 = 0.3**: Weight for SHAP explanation stability (1 - feature ranking variance)
+- **w3 = 0.3**: Weight for agreement between SHAP and LIME (Jaccard similarity of top-k features)
+
+**Interpretation:**
+- XCS > 0.7: High-confidence, reliable explanation
+- XCS 0.3–0.7: Moderate confidence, use with caution
+- XCS < 0.3: Low-confidence explanation, do not trust
+
+![XCS Distribution](plots/xcs_cicids2017.png)
+
+### SHAP vs LIME Agreement
+
+The Jaccard similarity between SHAP and LIME top-k features measures how consistently both methods identify important features:
+
+![Jaccard Similarity](plots/jaccard_shap_lime.png)
+
+Cross-dataset Jaccard similarity: **0.216** — indicating dataset-specific feature patterns.
+
+---
+
+## API & Deployment
+
+### FastAPI Inference Server
 
 ```bash
-# Full pipeline with explainability
-python run_pipeline.py
+# Start the API server
+uvicorn api.app:app --host 0.0.0.0 --port 8000
 
-# Explainability with custom SHAP sample size
-python run_pipeline.py --shap-samples 200
+# Test the API
+curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{"features": [0.0] * 78}'
+
+# Get explanation with prediction
+curl -X POST http://localhost:8000/explain \
+  -H "Content-Type: application/json" \
+  -d '{"features": [0.0] * 78}'
+```
+
+### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/` | GET | API info and loaded models |
+| `/health` | GET | Health check (models, scaler, encoder status) |
+| `/predict` | POST | Make prediction with confidence and probabilities |
+| `/explain` | POST | Prediction with top-10 feature importances |
+| `/classes` | GET | List available prediction classes |
+
+### Docker
+
+```bash
+# Build
+docker build -t xai-ids .
+
+# Run pipeline
+docker run -v $(pwd)/outputs:/app/outputs xai-ids
+
+# Run API server
+docker run -p 8000:8000 xai-ids uvicorn api.app:app --host 0.0.0.0 --port 8000
 ```
 
 ---
@@ -266,16 +342,35 @@ python run_pipeline.py --shap-samples 200
 ## Repository Structure
 
 ```
-XAI-IDS/
+xai-ids-cicids2017/
 ├── .github/
-│   └── workflows/
-│       ├── ci.yml                    # CI workflow (tests + imports)
-│       └── pages.yml                 # GitHub Pages deployment
+│   ├── workflows/
+│   │   ├── ci.yml                    # CI workflow (tests + imports)
+│   │   └── pages.yml                 # GitHub Pages deployment
+│   └── ISSUE_TEMPLATE/
+│       ├── bug_report.md
+│       └── feature_request.md
+├── api/
+│   └── app.py                        # FastAPI inference server
 ├── data/
 │   ├── raw/                          # Raw CSV files
 │   └── processed/                    # Processed data
+├── docs/
+│   ├── methodology.md                # Technical methodology
+│   └── site/                         # GitHub Pages site
+├── explanations/
+│   ├── shap_lime_jaccard_all.csv     # SHAP-LIME agreement
+│   ├── xcs_*.csv                     # XCS scores per dataset
+│   └── *.html                        # LIME explanation files
+├── models/                           # Trained models (Kaggle notebook)
 ├── notebooks/
 │   └── exploration.ipynb             # Interactive demo notebook
+├── outputs/
+│   ├── figures/                      # Confusion matrices, SHAP, LIME plots
+│   ├── models/                       # Trained models (.pkl) from pipeline
+│   ├── reports/                      # Classification reports, failure analysis
+│   └── results_metrics.csv           # Model comparison metrics
+├── plots/                            # Multi-dataset visualizations
 ├── src/
 │   ├── data/
 │   │   ├── download.py               # Dataset download utility
@@ -292,22 +387,18 @@ XAI-IDS/
 │   │   └── explain.py                # SHAP and LIME implementations
 │   └── utils/
 │       └── logger.py                 # Centralized logging
-├── outputs/
-│   ├── figures/                      # Confusion matrices, SHAP, LIME plots
-│   ├── models/                       # Trained models (.pkl)
-│   ├── logs/                         # Pipeline logs
-│   ├── reports/                      # Classification reports, LIME reports
-│   └── results_metrics.csv           # Model comparison metrics
-├── docs/
-│   ├── index.md                      # Documentation home
-│   └── methodology.md               # Detailed methodology
 ├── tests/
-│   └── test_smoke.py                 # Smoke tests for pipeline
+│   ├── test_smoke.py                 # Smoke tests (13 tests)
+│   └── test_evaluation.py            # Evaluation tests (11 tests)
+├── xai_ids_multidataset.ipynb        # Kaggle notebook (multi-dataset)
+├── config.yaml                       # Reference configuration
+├── Dockerfile                        # Container definition
+├── Makefile                          # Build automation
+├── MODEL_CARD.md                     # Model card (HuggingFace-style)
 ├── README.md                         # This file
-├── CONTRIBUTORS.md                   # Team and acknowledgments
+├── RESULTS.md                        # Full results tables
 ├── requirements.txt                  # Python dependencies
-├── run_pipeline.py                   # Main pipeline entry point
-└── Makefile                          # Build automation
+└── run_pipeline.py                   # Main pipeline entry point
 ```
 
 ---
@@ -323,79 +414,50 @@ python -m pytest tests/test_smoke.py -v -x
 ```
 
 Tests include:
-- Module import verification
-- Synthetic data generation
-- Data preprocessing pipeline
-- Mini end-to-end pipeline execution
+- Module import verification (8 tests)
+- Synthetic data generation (2 tests)
+- Data preprocessing (2 tests)
+- Mini end-to-end pipeline execution (1 test)
+- Metrics computation (2 tests)
+- Cross-validation (2 tests)
+- Calibration curves (1 test)
+- Failure analysis (2 tests)
+- Confusion matrix (2 tests)
+- Edge cases (2 tests)
 
 ---
 
-## Limitations & Future Work
+## Limitations
 
-### Limitations
+1. **Class Imbalance**: Severe imbalance in CIC-IDS-2017 (~600:1 ratio) causes poor detection of minority attack classes. Balanced class weights improve macro F1 from 0.44 to 0.51 but rare classes (SQL Injection, Heartbleed) remain challenging.
 
-**Mitigated Issues:**
+2. **Feature Selection**: The Kaggle notebook uses 20 features per dataset (selected by importance), while the main pipeline uses all 78 CIC-IDS-2017 features. Results are not directly comparable.
 
-1. **Class Imbalance (Improved)**: Added balanced class weights. Macro F1 improved from 0.44 to 0.51. Only SQL Injection (20 samples) remains at 0% detection.
+3. **Synthetic vs Real Data**: Default `run_pipeline.py` uses synthetic data. Real data requires download via `--download` or running the Kaggle notebook.
 
-**Remaining Issues:**
+4. **Dataset Generalization**: Cross-dataset feature importance shows low Jaccard similarity (0.216), meaning models trained on one dataset may not generalize well to others.
 
-2. **Real Data vs Synthetic**: Real CIC-IDS-2017 V2 benchmark (100K sample) shows 99.69% accuracy vs 83.47% for synthetic. Use `--random-sample` to run benchmarks.
-
-3. **XGBoost Label Issue**: XGBoost fails with rare classes that get dropped during stratified split. Random Forest handles this better.
-
-4. **Class Distribution**: Real data has severe imbalance (~600:1 ratio) but Random Forest handles it well with balanced class weights.
-
-**Other Limitations:**
-- Current benchmark uses 100K sample from 2.8M+ CIC-IDS-2017 V2 dataset
-- Full dataset benchmark would provide more comprehensive evaluation (use --sample-size)
-- SHAP KernelExplainer for Logistic Regression is computationally expensive on large datasets
+5. **Research-Grade**: This is a research/educational system, not a production-ready IDS. It should be used as part of a defense-in-depth strategy.
 
 ---
 
-## Deployment
+## Citation
 
-### Docker
+If you use this work in your research, please cite:
 
-```bash
-# Build the container
-docker build -t xai-ids .
-
-# Run the pipeline
-docker run -v $(pwd)/outputs:/app/outputs xai-ids
+```bibtex
+@software{xai_ids_2026,
+  author = {Hassan, Mohammad Thabet and Sadek, Fahad and Sami, Ahmed},
+  title = {XAI-IDS: Explainable AI Intrusion Detection System},
+  year = {2026},
+  url = {https://github.com/MohammadThabetHassan/xai-ids-cicids2017},
+  license = {MIT}
+}
 ```
 
-### FastAPI Inference
-
-```bash
-# Start the API server
-uvicorn api.app:app --host 0.0.0.0 --port 8000
-
-# Test the API
-curl -X POST http://localhost:8000/predict \
-  -H "Content-Type: application/json" \
-  -d '{"features": [0.0] * 78}'
-```
-
-### Configuration
-
-The project includes `config.yaml` with default settings. This serves as a reference for pipeline configuration.
-
 ---
 
-### Future Work
-- Evaluate on the full CIC-IDS-2017 dataset
-- Implement deep learning models (LSTM, Transformer-based)
-- Add real-time inference pipeline
-- Explore additional XAI techniques (Counterfactual explanations, Anchors)
-- Apply oversampling (SMOTE) to handle class imbalance
-- Deploy as a web application with interactive dashboards
-
----
-
-## Authors & Contributors
-
-### Authors
+## Authors
 
 | Name | Role | GitHub |
 |------|------|--------|
@@ -403,24 +465,28 @@ The project includes `config.yaml` with default settings. This serves as a refer
 | **Fahad Sadek** | Contributor | [@fahad6789123](https://github.com/fahad6789123) |
 | **Ahmed Sami** | Contributor | [@AhmedSamiAlameri](https://github.com/AhmedSamiAlameri) |
 
-### Supervisor
-
-**Dr. Mehak Khurana** - Mehak.Khurana@cud.ac.ae
-
-### Acknowledgments
-
-- [Canadian Institute for Cybersecurity](https://www.unb.ca/cic/) - CIC-IDS-2017 dataset
-- [SHAP](https://github.com/shap/shap) - Lundberg & Lee, NeurIPS 2017
-- [LIME](https://github.com/marcotcr/lime) - Ribeiro, Singh & Guestrin, KDD 2016
+**Supervisor:** Dr. Mehak Khurana — Mehak.Khurana@cud.ac.ae
 
 ---
 
-## License
+## Acknowledgments
 
-This project is developed for academic and research purposes.
+- [Canadian Institute for Cybersecurity](https://www.unb.ca/cic/) — CIC-IDS-2017 and CSE-CIC-IDS-2018 datasets
+- [UNSW Canberra Cyber](https://www.unsw.adfa.edu.au/unsw-canberra-cyber/) — UNSW-NB15 dataset
+- [SHAP](https://github.com/shap/shap) — Lundberg & Lee, NeurIPS 2017
+- [LIME](https://github.com/marcotcr/lime) — Ribeiro, Singh & Guestrin, KDD 2016
+
+---
 
 ## References
 
 1. Sharafaldin, I., Lashkari, A.H. and Ghorbani, A.A., "Toward Generating a New Intrusion Detection Dataset and Intrusion Traffic Characterization," ICISSP 2018.
 2. Lundberg, S.M. and Lee, S.-I., "A Unified Approach to Interpreting Model Predictions," NeurIPS 2017.
 3. Ribeiro, M.T., Singh, S. and Guestrin, C., "Why Should I Trust You? Explaining the Predictions of Any Classifier," KDD 2016.
+4. Moustafa, N. and Slay, J., "UNSW-NB15: a comprehensive data set for network intrusion detection systems," MilCIS 2015.
+
+---
+
+## License
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.

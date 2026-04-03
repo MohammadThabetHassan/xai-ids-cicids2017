@@ -2,6 +2,44 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.0] - 2026-04-03
+
+### Added
+- **Multi-Dataset Support**: Evaluation on 3 datasets (CIC-IDS-2017, UNSW-NB15, CSE-CIC-IDS-2018)
+- **New Models**: LightGBM and VotingEnsemble (from Kaggle notebook)
+- **XCS Metric**: Novel XAI Confidence Score for explanation reliability
+- **RESULTS.md**: Comprehensive results tables for all datasets and models
+- **CONTRIBUTING.md**: Contribution guidelines
+- **SECURITY.md**: Security policy and best practices
+- **PR Template**: Pull request template for consistent contributions
+- **Model Prediction Tests**: Tests for loading saved models and making predictions
+- **Example Scripts**: `examples/predict_example.py` for model usage
+- **API Improvements**: XCS score in predictions, lifespan context manager, input validation
+
+### Changed
+- **README.md**: Complete overhaul with architecture diagram, multi-dataset results, XCS formula
+- **MODEL_CARD.md**: Updated with actual metrics from all 3 datasets
+- **docs/methodology.md**: Added XCS formula, multi-dataset discussion, UNSW-NB15 and CICIDS2018 details
+- **ROADMAP.md**: Updated to reflect completed phases
+- **BENCHMARK_PLAN.md**: Updated with completed benchmark results
+- **api/app.py**: Modernized with FastAPI lifespan, improved model loading, input validation
+- **requirements.txt**: Added lightgbm, imbalanced-learn; pinned upper bounds
+- **CITATION.cff**: Removed placeholder ORCID
+- **.gitignore**: Added __MACOSX/, .DS_Store, .ipynb_checkpoints/, logs
+
+### Fixed
+- XGBoost deprecated `use_label_encoder` parameter removed
+- File handle leak in `src/data/loader.py`
+- HTTP URL changed to HTTPS in `src/data/download.py`
+- Typo fix: `MACHINELEARNIGCVE_PATH` → `MACHINE_LEARNING_CVE_PATH`
+- Unicode corruption in `model_metadata.json` class names
+- Removed committed `__MACOSX/` macOS artifact directory
+
+### Removed
+- `pyyaml` from requirements.txt (config.yaml is reference-only, not loaded)
+
+---
+
 ## [1.0.0] - 2026-03-22
 
 ### Added
@@ -17,7 +55,7 @@ All notable changes to this project will be documented in this file.
 - **API**: Added FastAPI inference endpoint (api/app.py)
 - **Infrastructure**: Added config.yaml for pipeline configuration
 - **Infrastructure**: Added Dockerfile for containerized deployment
-- **Testing**: Added comprehensive unit tests (tests/test_evaluation.py)
+- **Testing**: Added unit tests (tests/test_evaluation.py)
 - **Documentation**: Added MODEL_CARD.md
 - **Documentation**: Added AUDIT.md, ROADMAP.md, PROJECT_STATUS.md
 
