@@ -218,6 +218,39 @@ Results from the multi-dataset evaluation with XGBoost, Random Forest, LightGBM,
 
 > **See [RESULTS.md](RESULTS.md) for complete per-class breakdowns, XCS scores, and cross-dataset analysis.**
 
+### Multi-Dataset Visualizations
+
+#### CIC-IDS-2017 Confusion Matrix
+![CIC-IDS-2017 Confusion](plots/confusion_CICIDS2017.png)
+
+#### UNSW-NB15 Confusion Matrix
+![UNSW-NB15 Confusion](plots/confusion_UNSWNB15.png)
+
+#### CSE-CIC-IDS-2018 Confusion Matrix
+![CSE-CIC-IDS-2018 Confusion](plots/confusion_CICIDS2018.png)
+
+#### SHAP Beeswarm Plots
+![CIC-IDS-2017 SHAP](plots/shap_beeswarm_CICIDS2017.png)
+![UNSW-NB15 SHAP](plots/shap_beeswarm_UNSWNB15.png)
+![CSE-CIC-IDS-2018 SHAP](plots/shap_beeswarm_CICIDS2018.png)
+
+#### XCS Distribution
+![CIC-IDS-2017 XCS](plots/xcs_CICIDS2017.png)
+![UNSW-NB15 XCS](plots/xcs_UNSWNB15.png)
+![CSE-CIC-IDS-2018 XCS](plots/xcs_CICIDS2018.png)
+
+#### Cross-Dataset Comparison
+![Cross-Dataset](plots/cross_dataset_comparison.png)
+
+#### LIME Local Explanations
+![LIME Benign](plots/lime_CICIDS2017_Benign.png)
+![LIME DDoS](plots/lime_CICIDS2017_DDoS.png)
+
+#### SHAP Waterfall Plots
+![SHAP Waterfall Benign](plots/shap_waterfall_CICIDS2017_Benign.png)
+![SHAP Waterfall Bot](plots/shap_waterfall_CICIDS2017_Bot.png)
+![SHAP Waterfall DDoS](plots/shap_waterfall_CICIDS2017_DDoS.png)
+
 ### Synthetic Data Results (Main Pipeline)
 
 | Model | Accuracy | Precision | Recall | F1 (weighted) | F1 (macro) |
@@ -283,7 +316,7 @@ Where:
 - XCS 0.3–0.7: Moderate confidence, use with caution
 - XCS < 0.3: Low-confidence explanation, do not trust
 
-![XCS Distribution](plots/xcs_cicids2017.png)
+![XCS Distribution](plots/xcs_CICIDS2017.png)
 
 ### SHAP vs LIME Agreement
 
