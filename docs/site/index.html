@@ -620,18 +620,8 @@
       <h2 class="section-title">Architecture</h2>
       <p class="section-desc">End-to-end pipeline from raw traffic to explainable predictions.</p>
     </div>
-    <div class="card reveal" style="padding: 32px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; line-height: 2; overflow-x: auto;">
-      <pre style="margin: 0; white-space: pre-wrap; color: var(--text-secondary);">
-┌─────────────┐    ┌──────────────┐    ┌──────────────┐    ┌─────────────┐
-│  Raw PCAP   │───▶│ CICFlowMeter │───▶│  Preprocess  │───▶│   Models    │
-│  Traffic    │    │  (78 feats)  │    │ (20 selected)│    │ XGB/RF/LGBM │
-└─────────────┘    └──────────────┘    └──────────────┘    └──────┬──────┘
-                                                                  │
-┌─────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────▼──────┐
-│  XCS Score  │◀───│  Jaccard Sim │◀───│ SHAP + LIME  │◀───│ Predictions │
-│ (0.4/0.3/0.3)│    │ (SHAP∩LIME)  │    │ Explanations │    │ + Confidence│
-└─────────────┘    └──────────────┘    └──────────────┘    └─────────────┘
-      </pre>
+    <div class="card reveal" style="padding: 24px; text-align: center; background: var(--bg-card); border: 1px solid var(--border);">
+      <img src="xai_ids_Architecture.svg" alt="XAI-IDS Architecture Diagram" style="max-width: 100%; height: auto;" loading="lazy">
     </div>
     <div class="grid grid-4" style="margin-top: 32px;">
       <div class="card reveal">
