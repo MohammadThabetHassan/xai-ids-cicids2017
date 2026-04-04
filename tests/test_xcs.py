@@ -3,12 +3,7 @@
 import os
 import sys
 
-import numpy as np
-import pytest
-
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-
 class TestXCSFormula:
     """Test XCS formula properties."""
 
@@ -44,8 +39,6 @@ class TestXCSFormula:
         xcs_wrong = 0.4 * wrong_conf + 0.3 * 0.5 + 0.3 * 0.1
 
         assert xcs_correct > xcs_wrong
-
-
 class TestXCSComponents:
     """Test individual XCS components."""
 

@@ -8,7 +8,6 @@ import os
 import sys
 
 import numpy as np
-import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -18,21 +17,19 @@ THRESHOLDS = {
     "min_macro_f1_synthetic": 0.30,
     "min_weighted_f1_synthetic": 0.55,
 }
-
-
 class TestPerformanceRegression:
     """Test that model performance stays above minimum thresholds."""
 
     def test_synthetic_pipeline_accuracy(self):
         """Accuracy on synthetic data should exceed threshold."""
+        # Generate small synthetic dataset
+        import tempfile
+
         from sklearn.linear_model import LogisticRegression
         from sklearn.metrics import accuracy_score
 
         from src.data.generate_sample import generate_sample_dataset
-        from src.data.preprocessing import clean_data, encode_labels, split_data, scale_features
-
-        # Generate small synthetic dataset
-        import tempfile
+        from src.data.preprocessing import clean_data, encode_labels, scale_features, split_data
         with tempfile.TemporaryDirectory() as tmpdir:
             csv_path = generate_sample_dataset(n_samples=2000, output_dir=tmpdir)
 

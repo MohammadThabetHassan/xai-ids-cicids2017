@@ -4,7 +4,6 @@ import os
 import sys
 
 import numpy as np
-import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -44,8 +43,6 @@ class TestMapFeatures:
         X_mapped, shared = map_features(X, source, target)
         assert shared == ["a", "b"]
         np.testing.assert_array_equal(X_mapped, X)
-
-
 class TestCrossDatasetEval:
     """Test cross-dataset evaluation."""
 

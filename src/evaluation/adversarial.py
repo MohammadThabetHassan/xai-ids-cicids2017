@@ -125,16 +125,12 @@ def compute_xcs_on_adversarial(
         Mean XCS for clean and adversarial samples, plus
         per-component breakdown.
     """
-    import shap
 
     rng = np.random.RandomState(42)
     indices = rng.choice(len(X_test), size=min(n_samples, len(X_test)), replace=False)
 
     X_clean = X_test[indices]
     X_adv_sub = X_adv[indices]
-    y_sub = y_test[indices]
-
-    explainer = shap.TreeExplainer(model)
 
     clean_xcs = []
     adv_xcs = []

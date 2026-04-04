@@ -9,7 +9,6 @@ import os
 import sys
 
 import numpy as np
-import pytest
 from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression as LR
@@ -54,8 +53,9 @@ class TestCrossValidation:
     """Test cross-validation function."""
 
     def test_cv_returns_dict(self):
-        from src.evaluation.metrics import run_cross_validation
         from sklearn.ensemble import RandomForestClassifier
+
+        from src.evaluation.metrics import run_cross_validation
 
         X, y = make_classification(
             n_samples=200, n_features=10, n_classes=2, n_informative=5, random_state=42

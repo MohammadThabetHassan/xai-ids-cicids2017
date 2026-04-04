@@ -6,8 +6,7 @@ and handling common data quality issues.
 """
 
 import os
-from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 import pandas as pd
 
@@ -53,7 +52,7 @@ def find_csv_files(data_dir: str = "data/raw") -> List[str]:
         logger.info(f"Found {len(csv_files)} CSV files in {data_dir}")
     elif all_files:
         csv_files = sorted(all_files)
-        logger.warning(f"No V2 or real data files found, using all available")
+        logger.warning("No V2 or real data files found, using all available")
     else:
         csv_files = []
 

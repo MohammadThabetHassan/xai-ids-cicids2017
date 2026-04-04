@@ -2,14 +2,10 @@
 
 import os
 import sys
-import tempfile
 
 import numpy as np
-import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-
 class TestPipelineFlags:
     """Test that pipeline CLI flags work without crashing."""
 
@@ -31,9 +27,9 @@ class TestPipelineFlags:
 
     def test_adversarial_flag_no_art(self):
         """--adversarial flag should return error dict when model doesn't support gradients."""
-        from src.evaluation.adversarial import evaluate_adversarial_robustness
-
         from sklearn.ensemble import RandomForestClassifier
+
+        from src.evaluation.adversarial import evaluate_adversarial_robustness
         rng = np.random.RandomState(42)
         X = rng.randn(100, 10).astype(np.float32)
         y = rng.choice([0, 1], size=100)
@@ -46,9 +42,9 @@ class TestPipelineFlags:
 
     def test_drift_flag(self):
         """--drift flag should run temporal drift detection."""
-        from src.evaluation.drift import simulate_temporal_drift
-
         from sklearn.ensemble import RandomForestClassifier
+
+        from src.evaluation.drift import simulate_temporal_drift
         rng = np.random.RandomState(42)
         X = rng.randn(500, 5)
         y = rng.choice([0, 1], size=500)
@@ -60,9 +56,9 @@ class TestPipelineFlags:
 
     def test_counterfactuals_flag(self):
         """--counterfactuals flag should generate counterfactuals."""
-        from src.explainability.counterfactual import generate_counterfactuals
-
         from sklearn.ensemble import RandomForestClassifier
+
+        from src.explainability.counterfactual import generate_counterfactuals
         rng = np.random.RandomState(42)
         X = rng.randn(100, 10)
         y = rng.choice([0, 1], size=100)
@@ -79,9 +75,9 @@ class TestPipelineFlags:
 
     def test_cross_dataset_flag(self):
         """--cross-dataset flag should run cross-dataset evaluation."""
-        from src.evaluation.cross_dataset import evaluate_cross_dataset
-
         from sklearn.ensemble import RandomForestClassifier
+
+        from src.evaluation.cross_dataset import evaluate_cross_dataset
         rng = np.random.RandomState(42)
         X_src = rng.randn(200, 5)
         y_src = rng.choice([0, 1], size=200)

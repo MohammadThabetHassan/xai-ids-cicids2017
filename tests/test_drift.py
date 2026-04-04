@@ -4,7 +4,6 @@ import os
 import sys
 
 import numpy as np
-import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -46,8 +45,6 @@ class TestFeatureDrift:
         result = detect_feature_drift(X_ref, X_cur, feature_names=names)
         output_names = [f["name"] for f in result["features"]]
         assert output_names == names
-
-
 class TestTemporalDrift:
     """Test temporal drift simulation."""
 

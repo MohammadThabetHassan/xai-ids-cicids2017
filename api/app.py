@@ -20,9 +20,8 @@ dual SHAP + LIME computation. Use /predict for fast-path (confidence
 only, ~10ms) and /explain for full XCS with explanations.
 """
 
-import os
-import sys
 import json
+import sys
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -194,8 +193,8 @@ def _compute_lime_shap_jaccard(
         Jaccard similarity between SHAP top-n and LIME top-n feature names.
     """
     try:
-        import shap
         import lime.lime_tabular
+        import shap
 
         # SHAP top-n
         explainer = shap.TreeExplainer(model)
@@ -305,9 +304,18 @@ def load_models():
 
         # Load models (try various naming conventions)
         model_patterns = {
-            "xgboost": ["xgb_CICIDS2017.joblib", "xgboost_CICIDS2017.joblib", "xgboost.pkl"],
-            "random_forest": ["rf_CICIDS2017.joblib", "rf_UNSWNB15.joblib", "rf_CICIDS2018.joblib", "random_forest.pkl"],
-            "lightgbm": ["lgb_CICIDS2017.joblib", "lightgbm_CICIDS2017.joblib", "lightgbm_UNSWNB15.joblib", "lightgbm_CICIDS2018.joblib"],
+            "xgboost": [
+                "xgb_CICIDS2017.joblib", "xgboost_CICIDS2017.joblib",
+                "xgboost.pkl",
+            ],
+            "random_forest": [
+                "rf_CICIDS2017.joblib", "rf_UNSWNB15.joblib",
+                "rf_CICIDS2018.joblib", "random_forest.pkl",
+            ],
+            "lightgbm": [
+                "lgb_CICIDS2017.joblib", "lightgbm_CICIDS2017.joblib",
+                "lightgbm_UNSWNB15.joblib", "lightgbm_CICIDS2018.joblib",
+            ],
             "logistic_regression": ["logistic_regression.pkl"],
         }
 
@@ -483,7 +491,7 @@ async def predict(input_data: PredictionInput):
             xcs_score=xcs_score,
         )
 
-    except ValueError as e:
+    except ValueError:
         raise HTTPException(
             status_code=400,
             detail=f"Invalid input: expected {scaler.n_features_in_} features, got {len(input_data.features)}"
@@ -592,7 +600,10 @@ async def explain(input_data: PredictionInput):
             ]
 
         # Full real-time XCS computation
-        fn = feature_names if feature_names and len(feature_names) == n_feats else [f"feature_{i}" for i in range(n_feats)]
+        if feature_names and len(feature_names) == n_feats:
+            fn = feature_names
+        else:
+            fn = [f"feature_{i}" for i in range(n_feats)]
         xcs_result = compute_realtime_xcs(model, features_scaled, fn, confidence)
 
         return ExplanationOutput(
@@ -604,7 +615,7 @@ async def explain(input_data: PredictionInput):
             xcs_reliable=xcs_result["xcs_reliable"],
         )
 
-    except ValueError as e:
+    except ValueError:
         raise HTTPException(
             status_code=400,
             detail=f"Invalid input: expected {scaler.n_features_in_} features, got {len(input_data.features)}"

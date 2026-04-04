@@ -46,7 +46,7 @@ class TestLIME:
         assert lime is not None
 
     def test_lime_on_synthetic_data(self):
-        lime = pytest.importorskip("lime")
+        pytest.importorskip("lime")
         import lime.lime_tabular
         from sklearn.ensemble import RandomForestClassifier
 
@@ -80,6 +80,7 @@ class TestCounterfactual:
 
     def test_counterfactual_fallback(self):
         from sklearn.ensemble import RandomForestClassifier
+
         from src.explainability.counterfactual import generate_counterfactuals
 
         rng = np.random.RandomState(42)

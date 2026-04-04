@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from sklearn.calibration import calibration_curve
 from sklearn.metrics import (
     accuracy_score,
     classification_report,
@@ -25,8 +26,7 @@ from sklearn.metrics import (
     precision_score,
     recall_score,
 )
-from sklearn.calibration import calibration_curve
-from sklearn.model_selection import cross_val_predict, cross_val_score, StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, cross_val_score
 
 from src.utils.logger import get_logger
 

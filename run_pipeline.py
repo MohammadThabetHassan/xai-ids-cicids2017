@@ -21,7 +21,6 @@ Supervisor:
 """
 
 import argparse
-import json
 import os
 import sys
 import time
@@ -33,7 +32,7 @@ import numpy as np
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, PROJECT_ROOT)
 
-from src.utils.logger import setup_logger
+from src.utils.logger import setup_logger  # noqa: E402
 
 logger = setup_logger("xai_ids.pipeline")
 
@@ -239,7 +238,7 @@ def main():
     logger.info("STEP 3: Model Training")
     logger.info("=" * 50)
 
-    from src.models.train import train_model, MODEL_CONFIGS
+    from src.models.train import MODEL_CONFIGS, train_model
 
     model_map = {"lr": "logistic_regression", "rf": "random_forest", "xgb": "xgboost"}
     if "all" in args.models:
@@ -286,7 +285,7 @@ def main():
         from src.evaluation.metrics import run_cross_validation
 
         for model_name, model in trained_models.items():
-            cv_results = run_cross_validation(
+            run_cross_validation(
                 model,
                 data["X_train"],
                 data["y_train"],
@@ -369,7 +368,6 @@ def main():
         logger.info("=" * 50)
 
         from src.evaluation.adversarial import (
-            compute_xcs_on_adversarial,
             evaluate_adversarial_robustness,
             plot_adversarial_results,
         )
@@ -383,7 +381,7 @@ def main():
                 adv_results,
                 save_path=os.path.join(figures_dir, "adversarial_robustness.png"),
             )
-            logger.info(f"\nAdversarial Results:")
+            logger.info("\nAdversarial Results:")
             logger.info(f"  Baseline accuracy: {adv_results['baseline_accuracy']:.4f}")
             for eps_result in adv_results["epsilons"]:
                 logger.info(
@@ -414,7 +412,7 @@ def main():
             drift_results,
             save_path=os.path.join(figures_dir, "temporal_drift_CICIDS2017.png"),
         )
-        logger.info(f"\nTemporal Drift Results:")
+        logger.info("\nTemporal Drift Results:")
         for split in drift_results["splits"]:
             logger.info(
                 f"  Split: train_acc={split['train_accuracy']:.4f}, "
@@ -452,7 +450,7 @@ def main():
             [cd_results],
             save_path=os.path.join(figures_dir, "cross_dataset_generalization.png"),
         )
-        logger.info(f"\nCross-Dataset Results:")
+        logger.info("\nCross-Dataset Results:")
         logger.info(f"  In-distribution acc: {cd_results['in_distribution']['accuracy']:.4f}")
         logger.info(f"  Cross-dataset acc:   {cd_results['cross_dataset']['accuracy']:.4f}")
         logger.info(f"  Accuracy drop:       {cd_results['performance_drop']['accuracy_drop']:.4f}")
@@ -498,7 +496,7 @@ def main():
             n_per_class=3,
         )
 
-        logger.info(f"\nCounterfactual Results:")
+        logger.info("\nCounterfactual Results:")
         for cls_name, cf_data in cf_results.items():
             n_cf = len(cf_data.get("counterfactuals", []))
             logger.info(f"  {cls_name}: {n_cf} counterfactuals generated ({cf_data['method']})")
@@ -509,10 +507,9 @@ def main():
         logger.info("Learned XCS Weights Calibration")
         logger.info("=" * 50)
 
-        from src.explainability.explain import compute_shap_explanations
-        from sklearn.linear_model import LogisticRegression
-        import shap
         import lime.lime_tabular
+        import shap
+        from sklearn.linear_model import LogisticRegression
 
         primary_model = trained_models.get("xgboost") or list(trained_models.values())[0]
         n_cal = min(200, len(data["X_test"]))
@@ -575,7 +572,7 @@ def main():
         learned_weights = lr.coef_[0]
         learned_weights_norm = learned_weights / learned_weights.sum()
 
-        logger.info(f"\nLearned XCS Weights vs Hand-Tuned:")
+        logger.info("\nLearned XCS Weights vs Hand-Tuned:")
         logger.info(f"  {'Component':<20} {'Learned':>10} {'Hand-Tuned':>10}")
         logger.info(f"  {'Confidence':<20} {learned_weights_norm[0]:>10.4f} {0.4:>10.4f}")
         logger.info(f"  {'1-Instability':<20} {learned_weights_norm[1]:>10.4f} {0.3:>10.4f}")

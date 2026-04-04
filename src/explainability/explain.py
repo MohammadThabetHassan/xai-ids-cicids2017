@@ -141,7 +141,7 @@ def compute_shap_explanations(
         cmap = plt.colormaps.get_cmap("RdYlBu_r")
         colors = cmap(np.linspace(0.2, 0.8, len(names)))
         y_pos = np.arange(len(names))
-        bars = ax.barh(y_pos, values, color=colors, edgecolor="white", linewidth=0.5)
+        ax.barh(y_pos, values, color=colors, edgecolor="white", linewidth=0.5)
         ax.set_yticks(y_pos)
         ax.set_yticklabels(names, fontsize=8)
         ax.set_xlabel("Mean |SHAP value| (Feature Importance)", fontsize=11)

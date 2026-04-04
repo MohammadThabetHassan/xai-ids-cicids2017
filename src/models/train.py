@@ -198,7 +198,7 @@ def train_model(
         sample_weight = np.array(
             [class_weights[np.where(classes == y)[0][0]] for y in y_train]
         )
-        logger.info(f"  Using balanced sample weights for XGBoost")
+        logger.info("  Using balanced sample weights for XGBoost")
 
     if model_name == "xgboost" and X_val is not None:
         if sample_weight is not None:

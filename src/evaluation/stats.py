@@ -59,13 +59,8 @@ def mcnemar_test(
     b_correct = (preds_b == y_true)
 
     # Contingency table cells
-    both_wrong = np.sum(~a_correct & ~b_correct)   # n00
-    both_right = np.sum(a_correct & b_correct)      # n11
-    a_wrong_b_right = np.sum(~a_correct & b_correct)  # n01
-    a_right_b_wrong = np.sum(a_correct & ~b_correct)  # n10
-
-    n01 = float(a_wrong_b_right)
-    n10 = float(a_right_b_wrong)
+    n01 = float(np.sum(~a_correct & b_correct))   # a wrong, b right
+    n10 = float(np.sum(a_correct & ~b_correct))   # a right, b wrong
 
     if n01 + n10 == 0:
         logger.warning("Both models agree on all samples; McNemar's test undefined")
@@ -218,8 +213,8 @@ def cross_validate_with_stats(
         Contains mean, std, and per-fold arrays for accuracy,
         precision, recall, and f1 (all weighted).
     """
+    from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
     from sklearn.model_selection import StratifiedKFold
-    from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
     skf = StratifiedKFold(n_splits=cv, shuffle=True, random_state=random_state)
 

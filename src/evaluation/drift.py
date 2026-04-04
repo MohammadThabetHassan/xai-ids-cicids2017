@@ -6,7 +6,7 @@ and measuring how model performance degrades across temporal splits.
 Uses Kolmogorov-Smirnov tests for feature distribution drift.
 """
 
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import numpy as np
 

@@ -206,7 +206,7 @@ def download_from_zenodo(dest_dir: str = DEFAULT_RAW_DIR) -> List[str]:
     List[str]
         List of paths to successfully downloaded files.
     """
-    logger.info(f"Downloading CIC-IDS-2017 V2 from Zenodo...")
+    logger.info("Downloading CIC-IDS-2017 V2 from Zenodo...")
 
     Path(dest_dir).mkdir(parents=True, exist_ok=True)
     zip_path = os.path.join(dest_dir, "CIC-IDS-2017-V2.zip")
@@ -217,7 +217,7 @@ def download_from_zenodo(dest_dir: str = DEFAULT_RAW_DIR) -> List[str]:
             response = requests.get(ZENODO_DATASET_URL, stream=True, timeout=600)
             response.raise_for_status()
 
-            total_size = int(response.headers.get("content-length", 0))
+            _ = int(response.headers.get("content-length", 0))
             downloaded = 0
 
             with open(zip_path, "wb") as f:

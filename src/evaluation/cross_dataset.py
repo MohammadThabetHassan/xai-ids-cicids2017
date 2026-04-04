@@ -5,12 +5,9 @@ Trains models on one dataset and evaluates on another to measure
 domain shift and generalization capability.
 """
 
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
-import joblib
 import numpy as np
-import pandas as pd
 
 from src.utils.logger import get_logger
 
@@ -101,7 +98,7 @@ def evaluate_cross_dataset(
         In-distribution accuracy, cross-dataset accuracy,
         accuracy drop, and feature mapping info.
     """
-    from sklearn.metrics import accuracy_score, f1_score, classification_report
+    from sklearn.metrics import accuracy_score, classification_report, f1_score
 
     # In-distribution performance (train/test on source)
     model.fit(X_source, y_source)
