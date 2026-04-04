@@ -3,6 +3,7 @@ Model training module for XAI-IDS.
 
 Trains Logistic Regression, Random Forest, and XGBoost classifiers
 on the CIC-IDS-2017 dataset with proper logging and artifact saving.
+Supports SMOTE oversampling for imbalanced datasets.
 """
 
 import os
@@ -61,6 +62,69 @@ MODEL_CONFIGS = {
 }
 
 
+def apply_smote(
+    X_train: np.ndarray,
+    y_train: np.ndarray,
+    min_samples_per_class: int = 200,
+    random_state: int = 42,
+) -> tuple:
+    """Apply SMOTE oversampling for minority classes.
+
+    Parameters
+    ----------
+    X_train : np.ndarray
+        Training features.
+    y_train : np.ndarray
+        Training labels.
+    min_samples_per_class : int
+        Minimum number of samples per class after oversampling.
+    random_state : int
+        Random seed.
+
+    Returns
+    -------
+    tuple
+        (X_resampled, y_resampled)
+    """
+    try:
+        from imblearn.over_sampling import SMOTE
+    except ImportError:
+        logger.warning("imbalanced-learn not installed; skipping SMOTE")
+        return X_train, y_train
+
+    class_counts = np.bincount(y_train.astype(int))
+    n_classes = len(class_counts)
+
+    # Determine sampling strategy: minority classes get min_samples_per_class
+    sampling_strategy = {}
+    for cls in range(n_classes):
+        if class_counts[cls] < min_samples_per_class:
+            sampling_strategy[cls] = min_samples_per_class
+
+    if not sampling_strategy:
+        logger.info("All classes have sufficient samples; skipping SMOTE")
+        return X_train, y_train
+
+    logger.info(
+        f"Applying SMOTE: {len(sampling_strategy)} classes below "
+        f"{min_samples_per_class} samples will be oversampled"
+    )
+
+    smote = SMOTE(
+        sampling_strategy=sampling_strategy,
+        random_state=random_state,
+        k_neighbors=min(5, min(class_counts) - 1) if min(class_counts) > 1 else 1,
+    )
+    X_res, y_res = smote.fit_resample(X_train, y_train)
+
+    logger.info(
+        f"SMOTE: {len(X_train)} -> {len(X_res)} samples "
+        f"({len(X_res) - len(X_train)} synthetic samples added)"
+    )
+
+    return X_res, y_res
+
+
 def train_model(
     model_name: str,
     X_train: np.ndarray,
@@ -70,6 +134,8 @@ def train_model(
     save_dir: str = "outputs/models",
     custom_params: Optional[Dict] = None,
     use_balanced_weights: bool = True,
+    use_smote: bool = False,
+    smote_min_samples: int = 200,
 ) -> Any:
     """
     Train a single model.
@@ -92,6 +158,10 @@ def train_model(
         Override default parameters.
     use_balanced_weights : bool
         Whether to use balanced class weights (default: True).
+    use_smote : bool
+        Whether to apply SMOTE oversampling (default: False).
+    smote_min_samples : int
+        Minimum samples per class for SMOTE (default: 200).
 
     Returns
     -------
@@ -111,6 +181,11 @@ def train_model(
     logger.info(f"Training {model_name}...")
     logger.info(f"  Parameters: {params}")
     logger.info(f"  Training samples: {X_train.shape[0]}")
+
+    # Apply SMOTE if requested
+    if use_smote:
+        X_train, y_train = apply_smote(X_train, y_train, min_samples_per_class=smote_min_samples)
+        logger.info(f"  After SMOTE: {X_train.shape[0]} samples")
 
     model = config["class"](**params)
 

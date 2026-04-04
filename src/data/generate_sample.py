@@ -237,7 +237,7 @@ def generate_sample_dataset(
     all_labels = []
 
     for attack_class, proportion in ATTACK_CLASSES.items():
-        n = max(int(n_samples * proportion), 10)
+        n = max(int(n_samples * proportion), 200)
         feature_data = _generate_feature_data(n, attack_class, rng)
         labels = [attack_class] * n
         all_data.append(feature_data)

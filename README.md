@@ -9,6 +9,8 @@
 
 An Explainable AI-based Intrusion Detection System that combines machine learning classifiers with **SHAP** and **LIME** explainability techniques, evaluated across **3 datasets** (CIC-IDS-2017, UNSW-NB15, CSE-CIC-IDS-2018) with a novel **XAI Confidence Score (XCS)** for measuring explanation reliability.
 
+> **Abstract:** We present XAI-IDS, a multi-dataset intrusion detection framework combining XGBoost, Random Forest, LightGBM, and VotingEnsemble classifiers with SHAP and LIME explainability methods and a novel XAI Confidence Score (XCS) that quantifies explanation trustworthiness. Evaluated on 3 datasets totalling 16M+ records across 26 attack classes, our best model achieves F1=0.9964 on CIC-IDS-2017 and F1=0.7933 on UNSW-NB15. XCS correctly identifies low-confidence predictions with 5% flag rate on UNSW-NB15, enabling targeted human analyst review. Statistical significance testing (McNemar's test, paired t-test) validates model comparisons, and adversarial robustness evaluation demonstrates XCS degradation under FGSM attacks.
+
 **Live Documentation:** [GitHub Pages](https://mohammadthabethassan.github.io/xai-ids-cicids2017/) | [Full Results](RESULTS.md) | [Model Card](MODEL_CARD.md)
 
 ---

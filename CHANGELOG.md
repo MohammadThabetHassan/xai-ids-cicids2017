@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.0.0] - 2026-04-07
+
+### Added
+- **Real-time XCS in API**: `/explain` endpoint now computes full
+  XCS = 0.4×Conf + 0.3×(1-SHAP_Instability) + 0.3×Jaccard(SHAP,LIME)
+  with `xcs_components` breakdown and `xcs_reliable` flag.
+- **Statistical significance testing**: `src/evaluation/stats.py` with
+  McNemar's test, paired t-test, and cross-validation with pairwise
+  model comparisons.
+- **SMOTE oversampling**: `src/models/train.py` now supports
+  `use_smote=True` flag for minority class boosting.
+- **Adversarial robustness evaluation**: `src/evaluation/adversarial.py`
+  with FGSM attacks via ART, accuracy degradation curves, and XCS
+  drop analysis on adversarial inputs.
+- **Counterfactual explanations**: `src/explainability/counterfactual.py`
+  using DiCE library with gradient-free fallback.
+- **Temporal drift detection**: `src/evaluation/drift.py` with KS-test
+  per feature and sequential temporal split evaluation.
+- **Cross-dataset generalization**: `src/evaluation/cross_dataset.py`
+  with feature name mapping and domain shift metrics.
+- **API /health/features endpoint**: Returns training feature statistics
+  for client-side drift detection.
+- **Test coverage expanded**: Added test_api.py (all endpoints),
+  test_explainability.py (SHAP+LIME+counterfactuals), test_xcs.py
+  (XCS formula properties), test_stats.py (McNemar+t-test),
+  test_regression.py (performance threshold guards).
+- **BENCHMARKS.md**: Comprehensive benchmark table with all models,
+  datasets, train/test sizes, accuracy, F1, and latency.
+
+### Changed
+- **API version**: 2.0.0 → 3.0.0
+- **generate_sample.py**: minimum 200 samples per rare class (was 10)
+- **README.md**: Added paper-style abstract and expanded Key Findings
+- **AUDIT.md**: Added Threats to Validity section
+- **RESULTS.md**: Expanded Key Findings with 8 scientific findings
+
+### Fixed
+- **SMOTE type annotation**: Fixed sampling_strategy dict typing
+- **API model loading**: Prioritizes .joblib files over .pkl fallbacks
+
+---
+
 ## [2.0.2] - 2026-04-06
 
 ### Fixed

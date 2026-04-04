@@ -219,3 +219,26 @@ The project has strong foundations - with targeted improvements it can achieve r
 | UNSWNB15 Normal class FPR = 14.7% | MEDIUM | Documented |
 | Models trained on 2017/2018 data (temporal drift) | MEDIUM | Documented |
 | XCS computed on synthetic test set (not real data) | MEDIUM | Noted in scripts/
+
+---
+
+## Threats to Validity
+
+### Construct Validity
+- **Does XCS actually measure trustworthiness?** XCS is a composite of confidence, SHAP stability, and SHAP-LIME agreement. While each component has theoretical grounding, the weights (0.4, 0.3, 0.3) are hand-tuned. The learned-weight calibration (IMPROVE 2) partially addresses this by fitting logistic regression on prediction correctness.
+- **Are SHAP and LIME appropriate for IDS?** Both methods assume feature independence, which is violated in network flow data (e.g., packet length statistics are correlated). This may inflate or deflate explanation quality.
+
+### Internal Validity
+- **No data leakage?** The scaler is fitted only on training data. Train/test splits use stratification. However, the synthetic data generator uses fixed distributions that may not capture real-world correlations.
+- **Random seed effects?** All experiments use seed=42. Results may vary with different seeds. The cross-validation framework (5-fold) partially mitigates this.
+- **SMOTE oversampling** introduces synthetic minority samples that may create artificial decision boundaries not present in real data.
+
+### External Validity
+- **Do results generalize beyond these 3 datasets?** Cross-dataset generalization experiments show significant performance drops (FIX 4), suggesting models are dataset-specific. The 0.324 Jaccard similarity between top features across datasets confirms this.
+- **Temporal generalization?** Models trained on 2017/2018 data may not detect modern attack variants. The temporal drift analysis (IMPROVE 5) quantifies this degradation.
+- **Synthetic vs real data gap?** The main pipeline uses synthetic data by default. Real data results come only from the Kaggle notebook.
+
+### Reliability
+- **Are results reproducible with different seeds?** The pipeline uses seed=42 consistently. Running with different seeds may produce different results, especially for minority classes.
+- **Environment reproducibility?** Package versions are pinned in pyproject.toml. However, SHAP and LIME may produce slightly different results across versions due to algorithmic changes.
+- **Hardware effects?** Kaggle notebook runs on Tesla T4 GPU. The main pipeline runs on CPU. Results should be consistent but training times differ.
