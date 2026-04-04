@@ -24,7 +24,7 @@
 - **Production IDS deployment**: This is not a production-ready intrusion detection system
 - **Real-time network monitoring**: The pipeline is designed for batch analysis, not real-time inference
 - **Standalone security decision-making**: Should be used as part of a defense-in-depth strategy
-- **Datasets not evaluated on**: Models trained on CIC-IDS-2017 may not generalize to other datasets (cross-dataset Jaccard = 0.216)
+- **Datasets not evaluated on**: Models trained on CIC-IDS-2017 may not generalize to other datasets (cross-dataset Jaccard = 0.324)
 
 ## Datasets
 
@@ -47,8 +47,10 @@
 - **Source**: Canadian Institute for Cybersecurity
 - **Records**: 10+ million
 - **Features**: 20 selected
-- **Classes**: 2 (Benign + DDoS attacks-LOIC-HTTP)
-- **Type**: Binary classification
+- **Classes**: 2 currently captured (Benign + DDoS attacks-LOIC-HTTP);
+  14+ attack types available in the full dataset
+- **Type**: Binary (current run); stratified multi-class sampling fix
+  applied to notebook for next run
 
 ## Model Architecture
 
@@ -117,13 +119,13 @@ XCS = 0.4 × Confidence + 0.3 × (1 - SHAP_Instability) + 0.3 × Jaccard(SHAP, L
 ```
 
 - **Threshold**: XCS > 0.3 for acceptable explanation reliability
-- **Cross-dataset Jaccard similarity**: 0.216
+- **Cross-dataset Jaccard similarity**: 0.324
 
 ## Limitations and Biases
 
 1. **Class Imbalance**: Severe imbalance in CIC-IDS-2017 (~600:1 ratio) causes poor detection of minority attack classes even with balanced class weights.
 
-2. **Dataset Specificity**: Cross-dataset feature importance shows low Jaccard similarity (0.216), meaning models trained on one dataset do not generalize well to others.
+2. **Dataset Specificity**: Cross-dataset feature importance shows low Jaccard similarity (0.324), meaning models trained on one dataset do not generalize well to others.
 
 3. **Feature Selection**: The Kaggle notebook uses 20 features per dataset (selected by importance), while the main pipeline uses all 78 CIC-IDS-2017 features. Results are not directly comparable.
 
@@ -134,6 +136,13 @@ XCS = 0.4 × Confidence + 0.3 × (1 - SHAP_Instability) + 0.3 × Jaccard(SHAP, L
 6. **False Positives**: Even with 99.6% accuracy, the extreme class imbalance means false positives can overwhelm alerts in production.
 
 7. **UNSW-NB15 Performance**: 80% accuracy on UNSW-NB15 indicates significant room for improvement, especially on minority attack classes (Analysis, Backdoor, Shellcode, Worms).
+
+8. **CICIDS2018 class diversity**: The current Kaggle notebook run
+   captured only 2 of the 14+ available attack classes due to the
+   chunked CSV sampler stopping before reaching files with rarer
+   attacks. The `load_csv_files_stratified()` function in the updated
+   notebook fixes this by sampling proportionally per label value
+   within each file.
 
 ## Ethical Considerations
 

@@ -50,7 +50,14 @@ class PredictionOutput(BaseModel):
     prediction: str
     confidence: float
     probabilities: dict
-    xcs_score: Optional[float] = None
+    xcs_score: Optional[float] = Field(
+        None,
+        description=(
+            "XAI Confidence Score (fast-path: confidence component only). "
+            "Full XCS = 0.4*Conf + 0.3*(1-SHAP_Instability) + 0.3*Jaccard(SHAP,LIME) "
+            "is computed offline in the Kaggle evaluation notebook."
+        )
+    )
 
 
 class ExplanationOutput(BaseModel):
@@ -207,8 +214,15 @@ async def predict(input_data: PredictionInput):
             for i, p in enumerate(probabilities)
         }
 
-        # Compute simple XCS score (confidence-only if SHAP/LIME not available)
-        xcs_score = 0.4 * confidence  # Minimum XCS from confidence component
+        # Full XCS formula:
+        # XCS = 0.4*Conf + 0.3*(1-Instab) + 0.3*Jaccard_SL
+        # At inference time we have confidence but not SHAP instability or
+        # LIME agreement (computing them per-request requires the full
+        # SHAP+LIME pipeline which is too slow for real-time).
+        # We therefore compute the confidence component only and label it
+        # clearly as a fast-path approximation.
+        # Full XCS is computed offline in the Kaggle notebook for evaluation.
+        xcs_score = round(0.4 * confidence, 4)  # fast-path: confidence component only
 
         return PredictionOutput(
             prediction=predicted_class,
@@ -271,24 +285,57 @@ async def explain(input_data: PredictionInput):
         predicted_class = label_encoder.inverse_transform([prediction])[0]
         confidence = float(probabilities[prediction])
 
-        if hasattr(model, "feature_importances_"):
-            importances = model.feature_importances_
-        elif hasattr(model, "coef_"):
-            importances = np.abs(model.coef_[0])
-        else:
-            raise HTTPException(
-                status_code=500, detail="Model lacks feature importances"
+        try:
+            import shap as shap_lib
+            explainer = shap_lib.TreeExplainer(model)
+            shap_vals = explainer.shap_values(features_scaled)
+            # Handle multiclass (list or 3-D array) and binary (2-D array)
+            if isinstance(shap_vals, list):
+                sv = shap_vals[int(prediction)]
+            elif shap_vals.ndim == 3:
+                sv = shap_vals[0, :, int(prediction)]
+            else:
+                sv = shap_vals[0]
+            abs_sv = [abs(float(v)) for v in sv]
+            n_feats = len(abs_sv)
+            feat_labels = (
+                feature_names if feature_names and len(feature_names) == n_feats
+                else [f"feature_{i}" for i in range(n_feats)]
             )
+            pairs = sorted(
+                zip(feat_labels, abs_sv),
+                key=lambda x: x[1], reverse=True
+            )
+            top_features = [
+                {"feature": f, "importance": round(imp, 6)}
+                for f, imp in pairs[:10]
+            ]
+        except Exception as shap_err:
+            logger.warning(f"SHAP failed, falling back to global importances: {shap_err}")
+            if hasattr(model, "feature_importances_"):
+                importances = model.feature_importances_
+            elif hasattr(model, "coef_"):
+                importances = abs(model.coef_[0])
+            else:
+                raise HTTPException(status_code=500, detail="Cannot compute explanation")
+            n_feats = len(importances)
+            feat_labels = (
+                feature_names if feature_names and len(feature_names) == n_feats
+                else [f"feature_{i}" for i in range(n_feats)]
+            )
+            pairs = sorted(
+                zip(feat_labels, [float(v) for v in importances]),
+                key=lambda x: x[1], reverse=True
+            )
+            top_features = [
+                {"feature": f, "importance": round(imp, 6)}
+                for f, imp in pairs[:10]
+            ]
 
-        feature_importance = [
-            {"feature": f"feature_{i}", "importance": round(float(imp), 6)}
-            for i, imp in enumerate(importances)
-        ]
-        feature_importance.sort(key=lambda x: x["importance"], reverse=True)
-        top_features = feature_importance[:10]
-
-        # Compute simple XCS score
-        xcs_score = 0.4 * confidence
+        # Full XCS formula:
+        # XCS = 0.4*Conf + 0.3*(1-Instab) + 0.3*Jaccard_SL
+        # Fast-path: confidence component only at inference time
+        xcs_score = round(0.4 * confidence, 4)  # fast-path: confidence component only
 
         return ExplanationOutput(
             prediction=predicted_class,

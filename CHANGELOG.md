@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.1] - 2026-04-05
+
+### Fixed
+- **api/app.py `/explain`**: replaced misleading global `feature_importances_`
+  with real per-sample SHAP TreeExplainer values; global importances kept as
+  fallback if SHAP fails
+- **api/app.py XCS score**: added inline documentation clarifying that the
+  API returns the confidence component only (fast-path); full
+  XCS = 0.4×Conf + 0.3×(1−Instab) + 0.3×Jaccard is computed offline in the
+  Kaggle evaluation notebook
+- **RESULTS.md**: filled in XCS and SHAP–LIME Jaccard tables with actual
+  numbers (previously "See CSV"); added per-class XCS breakdown
+- **RESULTS.md**: honest framing for CICIDS2018 — 2 classes captured, not
+  "binary classification"; stratified sampling fix applied to notebook
+- **README.md**: synced CICIDS2018 class count and XCS results table
+
+### Known limitation (pending re-run)
+- CICIDS2018 full multi-class results (14+ classes) require re-running
+  `xai_ids_multidataset.ipynb` on Kaggle with `CICIDS2018_ROWS_PER_FILE = 20_000`
+  and `load_csv_files_stratified()` — the code fix is already in the notebook
+
+---
+
 ## [2.0.0] - 2026-04-03
 
 ### Added

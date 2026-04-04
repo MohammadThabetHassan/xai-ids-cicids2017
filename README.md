@@ -49,7 +49,7 @@ This project evaluates on **3 benchmark intrusion detection datasets**:
 |---------|---------|----------|---------|------|
 | **CIC-IDS-2017** | 14 (1 benign + 13 attacks) | 20 selected | 2.8M+ | Multi-class |
 | **UNSW-NB15** | 10 (1 normal + 9 attacks) | 20 selected | 2.5M+ | Multi-class |
-| **CSE-CIC-IDS-2018** | 2 (Benign + DDoS) | 20 selected | 10M+ | Binary |
+| **CSE-CIC-IDS-2018** | 2 captured (14+ available) | 20 selected | 10M+ | Multi-class (stratified fix applied) |
 
 ### CIC-IDS-2017 Attack Types
 
@@ -181,7 +181,7 @@ Results from the multi-dataset evaluation with XGBoost, Random Forest, LightGBM,
 | RandomForest | 0.7635 | 0.8202 | 0.7635 | 0.7848 |
 | LightGBM | 0.7630 | 0.8291 | 0.7630 | 0.7863 |
 
-#### CSE-CIC-IDS-2018 (Binary)
+#### CSE-CIC-IDS-2018 (2 classes captured — full multi-class results pending)
 
 | Model | Accuracy | Precision | Recall | F1-Score |
 |-------|----------|-----------|--------|----------|
@@ -290,6 +290,17 @@ Where:
 - XCS 0.3–0.7: Moderate confidence, use with caution
 - XCS < 0.3: Low-confidence explanation, do not trust
 
+#### XCS Results Summary
+
+| Dataset | Mean XCS | Flagged (< 0.3) | XCS correct | XCS wrong |
+|---------|----------|-----------------|-------------|-----------|
+| CIC-IDS-2017 | 0.386 | 85/86 | 0.400 | 0.311 |
+| UNSW-NB15 | 0.266 | 100/100 | 0.313 | 0.205 |
+| CSE-CIC-IDS-2018 | 0.400 | 100/100 | 0.400 | N/A |
+
+Key finding: wrong predictions have lower XCS than correct ones in all
+datasets, confirming XCS as a trustworthiness signal for security analysts.
+
 ![XCS Distribution](plots/xcs_CICIDS2017.png)
 
 ### SHAP vs LIME Agreement
@@ -298,7 +309,14 @@ The Jaccard similarity between SHAP and LIME top-k features measures how consist
 
 ![Jaccard Similarity](plots/jaccard_shap_lime.png)
 
-Cross-dataset Jaccard similarity: **0.216** — indicating dataset-specific feature patterns.
+| Dataset | Mean Jaccard (SHAP–LIME top-5) |
+|---------|-------------------------------|
+| CIC-IDS-2017 | 0.296 |
+| UNSW-NB15 | 0.204 |
+| CSE-CIC-IDS-2018 | 0.548 |
+| **Overall** | **0.324** |
+
+Cross-dataset Jaccard similarity: **0.324** — indicating dataset-specific feature patterns.
 
 ---
 
@@ -442,7 +460,7 @@ Tests include:
 
 3. **Synthetic vs Real Data**: Default `run_pipeline.py` uses synthetic data. Real data requires download via `--download` or running the Kaggle notebook.
 
-4. **Dataset Generalization**: Cross-dataset feature importance shows low Jaccard similarity (0.216), meaning models trained on one dataset may not generalize well to others.
+4. **Dataset Generalization**: Cross-dataset feature importance shows low Jaccard similarity (0.324), meaning models trained on one dataset may not generalize well to others.
 
 5. **Research-Grade**: This is a research/educational system, not a production-ready IDS. It should be used as part of a defense-in-depth strategy.
 

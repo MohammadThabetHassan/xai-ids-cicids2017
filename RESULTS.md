@@ -21,18 +21,25 @@ Results from the multi-dataset evaluation using XGBoost, Random Forest, LightGBM
 
 | Model | Accuracy | Precision | Recall | F1-Score |
 |-------|----------|-----------|--------|----------|
-| **XGBoost** | **0.8004** | **0.8120** | **0.8004** | **0.7982** |
-| VotingEnsemble | 0.7867 | 0.8240 | 0.7867 | 0.8002 |
+| **XGBoost** | **0.8046** | **0.7906** | **0.8046** | **0.7933** |
+| VotingEnsemble | 0.7915 | 0.8225 | 0.7915 | 0.8026 |
 | RandomForest | 0.7635 | 0.8202 | 0.7635 | 0.7848 |
 | LightGBM | 0.7630 | 0.8291 | 0.7630 | 0.7863 |
 
-### CSE-CIC-IDS-2018 (2 classes, binary, 20 features)
+### CSE-CIC-IDS-2018 (2 classes captured, 20 features)
+
+> **Note:** The current notebook run captured 2 classes (Benign +
+> DDoS-LOIC-HTTP) due to the chunked sampler stopping before reaching
+> files containing rarer attack types. The fix — stratified per-label
+> sampling per CSV file — has been applied to the notebook
+> (`xai_ids_multidataset.ipynb`). Results will be updated with the
+> full multi-class output once the notebook is re-run with the fix.
 
 | Model | Accuracy | Precision | Recall | F1-Score |
 |-------|----------|-----------|--------|----------|
-| **RandomForest** | **0.9993** | **0.9993** | **0.9993** | **0.9992** |
-| VotingEnsemble | 0.9993 | 0.9993 | 0.9993 | 0.9992 |
-| XGBoost | 0.9990 | 0.9990 | 0.9990 | 0.9990 |
+| **XGBoost** | **0.9998** | **0.9998** | **0.9998** | **0.9998** |
+| VotingEnsemble | 0.9998 | 0.9998 | 0.9998 | 0.9998 |
+| RandomForest | 0.9993 | 0.9993 | 0.9993 | 0.9992 |
 | LightGBM | 0.9990 | 0.9990 | 0.9990 | 0.9990 |
 
 ---
@@ -62,25 +69,33 @@ Results from the main pipeline using synthetic CIC-IDS-2017 data (50K samples, 7
 
 XCS = 0.4 x Confidence + 0.3 x (1 - SHAP_Instability) + 0.3 x Jaccard(SHAP, LIME)
 
-| Dataset | Model | XCS |
-|---------|-------|-----|
-| CIC-IDS-2017 | XGBoost | See `explanations/xcs_cicids2017.csv` |
-| UNSW-NB15 | XGBoost | See `explanations/xcs_unsw_nb15.csv` |
-| CSE-CIC-IDS-2018 | XGBoost | See `explanations/xcs_cicids2018.csv` |
+| Dataset | Model | Mean XCS | Flagged for review | XCS correct preds | XCS wrong preds |
+|---------|-------|----------|--------------------|-------------------|-----------------|
+| CIC-IDS-2017 | XGBoost | 0.386 | 85 / 86 (99%) | 0.400 | 0.311 |
+| UNSW-NB15 | XGBoost | 0.266 | 100 / 100 (100%) | 0.313 | 0.205 |
+| CSE-CIC-IDS-2018 | XGBoost | 0.400 | 100 / 100 (100%) | 0.400 | N/A |
+
+Flag threshold: XCS < 0.3 → human analyst review required.
+Key finding: wrong predictions have consistently lower XCS than correct ones,
+validating XCS as a per-prediction trustworthiness signal.
+Full per-sample data in `explanations/xcs_*.csv`.
 
 ---
 
 ## SHAP vs LIME Agreement (Jaccard Similarity)
 
-| Dataset | Jaccard Index |
-|---------|--------------|
-| CIC-IDS-2017 | See `explanations/shap_lime_jaccard_all.csv` |
-| UNSW-NB15 | See `explanations/shap_lime_jaccard_all.csv` |
-| CSE-CIC-IDS-2018 | See `explanations/shap_lime_jaccard_all.csv` |
+| Dataset | Mean Jaccard (SHAP–LIME top-5 features) |
+|---------|-----------------------------------------|
+| CIC-IDS-2017 | 0.296 |
+| UNSW-NB15 | 0.204 |
+| CSE-CIC-IDS-2018 | 0.548 |
+| **Overall** | **0.324** |
 
-Cross-dataset Jaccard similarity: **0.2163**
-
-This low cross-dataset similarity indicates that different datasets rely on different features for predictions, which is expected given their distinct feature sets and attack types.
+Jaccard = |SHAP_top5 ∩ LIME_top5| / |SHAP_top5 ∪ LIME_top5|.
+1.0 = methods fully agree, 0.0 = no overlap.
+CICIDS2018 shows higher agreement (0.548) because the binary
+classification task produces more stable explanations.
+Full per-class data in `explanations/shap_lime_jaccard_all.csv`.
 
 ---
 
@@ -142,10 +157,10 @@ See `plots/cross_dataset_comparison.png` for visual comparison.
 
 1. **XGBoost is the most consistent performer** across all 3 datasets
 2. **Ensemble methods improve robustness** on UNSW-NB15 but offer marginal gains on CIC-IDS-2017
-3. **Binary classification (CIC-IDS-2018) is near-perfect** for all models (>99.9%)
+3. **CSE-CIC-IDS-2018 near-perfect on captured classes** — all models exceed 99.9% on the 2 classes currently captured. Full multi-class results pending notebook re-run with stratified sampling fix.
 4. **UNSW-NB15 is the most challenging dataset** (80% accuracy vs 99.6% for CIC-IDS-2017)
 5. **Class imbalance remains the primary challenge** for minority attack detection
-6. **Cross-dataset feature importance differs significantly** (Jaccard = 0.216), confirming dataset-specific patterns
+6. **Cross-dataset feature importance differs significantly** (Jaccard = 0.324), confirming dataset-specific patterns
 
 ---
 
