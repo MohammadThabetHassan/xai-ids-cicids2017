@@ -193,14 +193,25 @@ const XAIIDS = (() => {
       }
     }
 
-    // Calculate confidence using softmax with high temperature
+    // Calculate confidence using softmax with margin-based boost
     const scores = Object.values(results).map(r => r.score);
+    const sorted = [...scores].sort((a, b) => b - a);
+    const margin = sorted[0] - sorted[1];
+
+    // Higher temperature for more decisive predictions
+    const temp = 50;
     const maxS = Math.max(...scores);
-    const temp = 20;
     const expScores = scores.map(s => Math.exp((s - maxS) * temp));
     const sumExp = expScores.reduce((a, b) => a + b, 0);
-    const rawConfidence = expScores[Object.keys(CLASSES).indexOf(bestClass)] / sumExp;
-    const confidence = Math.min(0.995, Math.max(0.50, rawConfidence));
+    let rawConfidence = expScores[Object.keys(CLASSES).indexOf(bestClass)] / sumExp;
+
+    // Margin-based confidence boost
+    // Large margin (>0.02) = very confident, small margin = moderate
+    const marginBoost = Math.min(0.20, margin * 5);
+    rawConfidence = Math.min(0.995, rawConfidence + marginBoost);
+
+    // Floor at 0.70 for minimum confidence
+    const confidence = Math.min(0.995, Math.max(0.70, rawConfidence));
 
     // Calculate SHAP-like contributions
     const contribs = results[bestClass].contributions;
