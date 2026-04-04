@@ -35,38 +35,6 @@ An Explainable AI-based Intrusion Detection System that combines machine learnin
 
 ![XAI-IDS Architecture](xai_ids_Architecture.svg)
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                        XAI-IDS Pipeline                              │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  ┌──────────┐    ┌──────────────┐    ┌───────────┐    ┌───────────┐ │
-│  │   Data   │───▶│ Preprocessing│───▶│  Models   │───▶│Evaluation │ │
-│  │ Acquisition│   │ Clean/Encode │    │ XGBoost   │    │ Metrics   │ │
-│  │ 3 Datasets│   │ Scale/Split  │    │ RF/LGBM   │    │ Confusion │ │
-│  └──────────┘    └──────────────┘    │ Ensemble  │    │ PR/CAL    │ │
-│                                      └─────┬─────┘    └───────────┘ │
-│                                            │                        │
-│                                      ┌─────▼─────┐                  │
-│                                      │Explainability│                │
-│                                      │ SHAP + LIME │                  │
-│                                      │ XCS Score   │                  │
-│                                      │ Jaccard Sim │                  │
-│                                      └─────────────┘                  │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-**Pipeline Flow:**
-```
-Data Acquisition → Preprocessing → Model Training → Evaluation → SHAP/LIME → XCS Scoring
-     ↓                  ↓                ↓              ↓            ↓           ↓
-  3 IDS Datasets    Clean/Encode    4 Models       Metrics     Global/Local   Confidence
-  (CICIDS2017,     Scale/Split     (XGB, RF,      Confusion   Explanations   Score
-   UNSW-NB15,                       LGBM, Ens)     Matrices    Jaccard Sim
-   CICIDS2018)
-```
-
 ---
 
 ## Datasets
