@@ -1120,6 +1120,21 @@
   }
 
   loadDemoData();
+
+  // Back to top button
+  const backToTop = document.createElement('button');
+  backToTop.className = 'back-to-top';
+  backToTop.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg>';
+  backToTop.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+  document.body.appendChild(backToTop);
+
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 400) {
+      backToTop.classList.add('visible');
+    } else {
+      backToTop.classList.remove('visible');
+    }
+  });
 </script>
 </body>
 </html>
