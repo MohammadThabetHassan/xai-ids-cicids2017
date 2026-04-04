@@ -7,45 +7,49 @@
  * This is NOT an approximation - it's the real model running client-side.
  */
 
-// Class names from the trained model
-const XAI_CLASSES = [
+// Global variables
+let xaiSession = null;
+let xaiSessionPromise = null;
+let xaiPipelineInfo = null;
+let xaiModelReady = false;
+let xaiLoadTime = 0;
+
+// Default values (will be overwritten by pipeline_info.json)
+let XAI_FEATURES = [
+  "Fwd Seg Size Min", "Fwd IAT Total", "Fwd IAT Std", "Flow IAT Mean", "Fwd IAT Mean",
+  "Avg Packet Size", "Packet Length Mean", "Packet Length Max", "Flow IAT Std", "Bwd IAT Std",
+  "Bwd Packet Length Max", "Flow IAT Max", "Bwd Packet Length Min", "Flow Duration", "Fwd IAT Max",
+  "Bwd Packet Length Mean", "Bwd IAT Max", "Packet Length Std", "Bwd Packet Length Std", "PSH Flag Count"
+];
+
+let XAI_CLASSES = [
   "BENIGN", "Bot", "DDoS", "DoS GoldenEye", "DoS Hulk", "DoS Slowhttptest",
   "DoS slowloris", "FTP-Patator", "Infiltration", "PortScan", "SSH-Patator",
   "Web Attack - Brute Force", "Web Attack - Sql Injection", "Web Attack - XSS"
 ];
 
-// Feature names (20 selected features from CIC-IDS-2017)
-const XAI_FEATURES = [
-  "Flow Duration", "Total Fwd Packets", "Total Backward Packets",
-  "Fwd IAT Mean", "Flow IAT Mean", "Flow IAT Std",
-  "Fwd Packet Length Mean", "Bwd Packet Length Mean",
-  "Flow Bytes/s", "Flow Packets/s",
-  "Fwd Header Length", "Bwd Header Length",
-  "Fwd Packets/s", "Bwd Packets/s",
-  "Min Packet Length", "Max Packet Length",
-  "Packet Length Mean", "Packet Length Std",
-  "FIN Flag Count", "SYN Flag Count"
-];
+let XAI_SCALER_CENTER = [20.0, 152.0, 0.0, 25070.6, 111.0, 85.5, 66.6, 111.0, 15399.4, 0.0, 105.0, 51812.0, 6.0, 61482.0, 142.0, 98.0, 4.0, 35.2, 0.0, 0.0];
+let XAI_SCALER_SCALE = [12.0, 5047867.5, 774500.9, 587041.8, 750597.7, 147.8, 132.8, 1156.0, 1563966.3, 35470.1, 740.0, 5012599.0, 94.0, 5347540.0, 4422541.5, 212.5, 136788.0, 314.5, 262.5, 1.0];
 
-// Scaler parameters (StandardScaler fitted on training data)
-const XAI_SCALER_MEAN = [
-  125432.5, 18.2, 15.8, 48234.1, 41256.3, 13542.7,
-  342.5, 298.4, 52345.8, 92.3,
-  1285.4, 1042.3, 45.8, 38.2,
-  68.5, 1520.3, 445.2, 295.8,
-  0.8, 2.5
-];
-const XAI_SCALER_STD = [
-  85234.2, 25.4, 22.1, 35421.8, 32145.6, 10234.5,
-  245.8, 215.3, 85432.1, 125.4,
-  1542.3, 1285.4, 62.3, 52.8,
-  45.2, 485.2, 325.8, 218.5,
-  2.5, 8.5
-];
-
-// ONNX Runtime session (lazy loaded)
-let xaiSession = null;
-let xaiSessionPromise = null;
+/**
+ * Load pipeline info from JSON
+ */
+async function xaiLoadPipelineInfo() {
+  try {
+    const res = await fetch('data/pipeline_info.json');
+    xaiPipelineInfo = await res.json();
+    
+    // Update global variables with real data
+    XAI_FEATURES = xaiPipelineInfo.features;
+    XAI_CLASSES = xaiPipelineInfo.classes;
+    XAI_SCALER_CENTER = xaiPipelineInfo.scaler_center;
+    XAI_SCALER_SCALE = xaiPipelineInfo.scaler_scale;
+    
+    console.log('Pipeline info loaded:', XAI_FEATURES.length, 'features,', XAI_CLASSES.length, 'classes');
+  } catch (e) {
+    console.warn('Failed to load pipeline info, using defaults:', e);
+  }
+}
 
 /**
  * Load ONNX Runtime Web script
@@ -70,8 +74,13 @@ function xaiLoadONNXRuntime() {
 async function xaiInitSession() {
   if (xaiSessionPromise) return xaiSessionPromise;
   
+  const startTime = performance.now();
+  
   xaiSessionPromise = (async () => {
     try {
+      // Load pipeline info first
+      await xaiLoadPipelineInfo();
+      
       // Load ONNX Runtime Web
       await xaiLoadONNXRuntime();
       
@@ -83,7 +92,10 @@ async function xaiInitSession() {
         executionProviders: ['wasm']
       });
       
-      console.log('ONNX model loaded successfully');
+      xaiLoadTime = performance.now() - startTime;
+      xaiModelReady = true;
+      
+      console.log(`ONNX model loaded successfully in ${(xaiLoadTime/1000).toFixed(2)}s`);
       return xaiSession;
     } catch (error) {
       console.error('Failed to load ONNX model:', error);
@@ -95,10 +107,14 @@ async function xaiInitSession() {
 }
 
 /**
- * Scale features using StandardScaler parameters
+ * Scale features using RobustScaler parameters
  */
 function xaiScaleFeatures(features) {
-  return features.map((val, i) => (val - XAI_SCALER_MEAN[i]) / XAI_SCALER_STD[i]);
+  return features.map((val, i) => {
+    const center = XAI_SCALER_CENTER[i] || 0;
+    const scale = XAI_SCALER_SCALE[i] || 1;
+    return (val - center) / scale;
+  });
 }
 
 /**
@@ -109,7 +125,7 @@ async function xaiPredict(features) {
   // Initialize session if needed
   await xaiInitSession();
 
-  // Scale features
+  // Scale features using RobustScaler
   const scaledFeatures = xaiScaleFeatures(features);
 
   // Create input tensor
@@ -126,10 +142,10 @@ async function xaiPredict(features) {
   const predictedClass = XAI_CLASSES[label];
   const confidence = probabilities[label];
 
-  // Calculate SHAP-like feature contributions (approximation based on feature importance)
+  // Calculate SHAP-like feature contributions
   const featureContributions = scaledFeatures.map((val, i) => ({
     feature: XAI_FEATURES[i],
-    value: Math.abs(val) * 0.01 * (1 + Math.random() * 0.1)
+    value: Math.abs(val) * 0.01
   }));
 
   const shapTop5 = featureContributions
@@ -157,7 +173,8 @@ async function xaiPredict(features) {
     },
     shap_top5: shapTop5,
     verdict: predictedClass === "BENIGN" ? "safe" : "attack",
-    probabilities: probabilities
+    probabilities: probabilities,
+    loadTime: xaiLoadTime
   };
 }
 
@@ -166,5 +183,7 @@ const XAIIDS = {
   predict: xaiPredict,
   initSession: xaiInitSession,
   FEATURES: XAI_FEATURES,
-  CLASSES: XAI_CLASSES
+  CLASSES: XAI_CLASSES,
+  isReady: () => xaiModelReady,
+  getLoadTime: () => xaiLoadTime
 };
