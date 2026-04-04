@@ -21,29 +21,28 @@ Results from the multi-dataset evaluation using XGBoost, Random Forest, LightGBM
 
 | Model | Accuracy | Precision | Recall | F1-Score |
 |-------|----------|-----------|--------|----------|
-| **XGBoost** | **0.8046** | **0.7906** | **0.8046** | **0.7933** |
-| VotingEnsemble | 0.7915 | 0.8225 | 0.7915 | 0.8026 |
+| **XGBoost** | **0.8004** | **0.8120** | **0.8004** | **0.7982** |
+| VotingEnsemble | 0.7867 | 0.8240 | 0.7867 | 0.8002 |
 | RandomForest | 0.7635 | 0.8202 | 0.7635 | 0.7848 |
 | LightGBM | 0.7630 | 0.8291 | 0.7630 | 0.7863 |
 
-*Note: Weighted precision < weighted F1 on UNSWNB15 is expected
-under class imbalance — the Generic class (dominant) has high recall
-but moderate precision, pulling the weighted average.*
+*Note: Precision > F1 on UNSWNB15 is expected under class imbalance —
+the dominant Generic class has high precision but moderate recall,
+pulling weighted precision above weighted F1.*
 
-### CSE-CIC-IDS-2018 (2 classes captured, 20 features)
+### CSE-CIC-IDS-2018 (2 classes, 20 features)
 
-> **Note:** The current notebook run captured 2 classes (Benign +
-> DDoS-LOIC-HTTP) due to the chunked sampler stopping before reaching
-> files containing rarer attack types. The fix — stratified per-label
-> sampling per CSV file — has been applied to the notebook
-> (`xai_ids_multidataset.ipynb`). Results will be updated with the
-> full multi-class output once the notebook is re-run with the fix.
+> **Note:** The Kaggle dataset source contains only 2 classes
+> (Benign + DDoS-LOIC-HTTP). The stratified per-label sampling fix
+> is applied and working correctly, but cannot create classes that
+> don't exist in the source data. Full 14+ class results require
+> a different dataset source with all attack types.
 
 | Model | Accuracy | Precision | Recall | F1-Score |
 |-------|----------|-----------|--------|----------|
-| **XGBoost** | **0.9998** | **0.9998** | **0.9998** | **0.9998** |
-| VotingEnsemble | 0.9998 | 0.9998 | 0.9998 | 0.9998 |
+| **XGBoost** | **0.9990** | **0.9990** | **0.9990** | **0.9990** |
 | RandomForest | 0.9993 | 0.9993 | 0.9993 | 0.9992 |
+| Ensemble | 0.9993 | 0.9993 | 0.9993 | 0.9992 |
 | LightGBM | 0.9990 | 0.9990 | 0.9990 | 0.9990 |
 
 ---
@@ -91,10 +90,10 @@ per-sample data and `scripts/recompute_xcs.py` for the computation code.
 
 | Dataset | Mean Jaccard (SHAP–LIME top-5 features) |
 |---------|-----------------------------------------|
-| CIC-IDS-2017 | 0.296 |
-| UNSW-NB15 | 0.204 |
-| CSE-CIC-IDS-2018 | 0.548 |
-| **Overall** | **0.324** |
+| CIC-IDS-2017 | 0.180 |
+| UNSW-NB15 | 0.111 |
+| CSE-CIC-IDS-2018 | 0.429 |
+| **Overall** | **0.216** |
 
 Jaccard = |SHAP_top5 ∩ LIME_top5| / |SHAP_top5 ∪ LIME_top5|.
 1.0 = methods fully agree, 0.0 = no overlap.

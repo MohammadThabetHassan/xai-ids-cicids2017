@@ -24,7 +24,7 @@
 - **Production IDS deployment**: This is not a production-ready intrusion detection system
 - **Real-time network monitoring**: The pipeline is designed for batch analysis, not real-time inference
 - **Standalone security decision-making**: Should be used as part of a defense-in-depth strategy
-- **Datasets not evaluated on**: Models trained on CIC-IDS-2017 may not generalize to other datasets (cross-dataset Jaccard = 0.324)
+- **Datasets not evaluated on**: Models trained on CIC-IDS-2017 may not generalize to other datasets (cross-dataset Jaccard = 0.216)
 
 ## Datasets
 
@@ -119,7 +119,7 @@ XCS = 0.4 × Confidence + 0.3 × (1 - SHAP_Instability) + 0.3 × Jaccard(SHAP, L
 ```
 
 - **Threshold**: XCS > 0.3 for acceptable explanation reliability
-- **Cross-dataset Jaccard similarity**: 0.324
+- **Cross-dataset Jaccard similarity**: 0.216
 
 ### XCS Results (v2 — full LIME formula, synthetic test sets, n=100)
 
@@ -137,7 +137,7 @@ during XCS computation. Recomputed with `scripts/recompute_xcs.py`; see
 
 1. **Class Imbalance**: Severe imbalance in CIC-IDS-2017 (~600:1 ratio) causes poor detection of minority attack classes even with balanced class weights.
 
-2. **Dataset Specificity**: Cross-dataset feature importance shows low Jaccard similarity (0.324), meaning models trained on one dataset do not generalize well to others.
+2. **Dataset Specificity**: Cross-dataset feature importance shows low Jaccard similarity (0.216), meaning models trained on one dataset do not generalize well to others.
 
 3. **Feature Selection**: The Kaggle notebook uses 20 features per dataset (selected by importance), while the main pipeline uses all 78 CIC-IDS-2017 features. Results are not directly comparable.
 

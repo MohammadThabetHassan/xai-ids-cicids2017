@@ -292,18 +292,18 @@ Where:
 - XCS 0.3–0.7: Moderate confidence, use with caution
 - XCS < 0.3: Low-confidence explanation, do not trust
 
-#### XCS Results Summary (v2 — full LIME formula)
+#### XCS Results Summary (real data — Kaggle run)
 
-| Dataset | Mean XCS | Mean Confidence | Mean SHAP Instability | Mean Jaccard | Flagged (< 0.3) |
-|---------|----------|-----------------|----------------------|--------------|-----------------|
-| CIC-IDS-2017 | 0.420 | 0.478 | 0.416 | 0.178 | 0 / 100 (0%) |
-| UNSW-NB15 | 0.386 | 0.310 | 0.253 | 0.126 | 5 / 100 (5%) |
-| CSE-CIC-IDS-2018 | 0.675 | 0.999 | 0.226 | 0.143 | 0 / 100 (0%) |
+| Dataset | Mean XCS | Correct XCS | Wrong XCS | Flagged (< 0.3) |
+|---------|----------|-------------|-----------|-----------------|
+| CIC-IDS-2017 | 0.517 | 0.526 | 0.469 | 0 / 74 (0%) |
+| UNSW-NB15 | 0.424 | 0.469 | 0.360 | 14 / 80 (17.5%) |
+| CSE-CIC-IDS-2018 | 0.550 | 0.550 | N/A | 0 / 86 (0%) |
 
-Key finding: wrong predictions have lower XCS than correct ones in all
-datasets, confirming XCS as a trustworthiness signal for security analysts.
-Values computed with full XCS formula on synthetic test sets (n=100).
-See `explanations/xcs_*_v2.csv` for per-sample data.
+Key finding: wrong predictions have lower XCS than correct ones across
+all datasets, confirming XCS as a trustworthiness signal.
+Values computed on real data with full XCS formula (n=74–86 per dataset).
+See `explanations/xcs_*.csv` for per-sample data.
 
 ![XCS Distribution](plots/xcs_CICIDS2017.png)
 
@@ -315,12 +315,12 @@ The Jaccard similarity between SHAP and LIME top-k features measures how consist
 
 | Dataset | Mean Jaccard (SHAP–LIME top-5) |
 |---------|-------------------------------|
-| CIC-IDS-2017 | 0.296 |
-| UNSW-NB15 | 0.204 |
-| CSE-CIC-IDS-2018 | 0.548 |
-| **Overall** | **0.324** |
+| CIC-IDS-2017 | 0.180 |
+| UNSW-NB15 | 0.111 |
+| CSE-CIC-IDS-2018 | 0.429 |
+| **Overall** | **0.216** |
 
-Cross-dataset Jaccard similarity: **0.324** — indicating dataset-specific feature patterns.
+Cross-dataset Jaccard similarity: **0.216** — indicating dataset-specific feature patterns.
 
 ---
 
@@ -465,7 +465,7 @@ Tests include:
 
 3. **Synthetic vs Real Data**: Default `run_pipeline.py` uses synthetic data. Real data requires download via `--download` or running the Kaggle notebook.
 
-4. **Dataset Generalization**: Cross-dataset feature importance shows low Jaccard similarity (0.324), meaning models trained on one dataset may not generalize well to others.
+4. **Dataset Generalization**: Cross-dataset feature importance shows low Jaccard similarity (0.216), meaning models trained on one dataset may not generalize well to others.
 
 5. **Research-Grade**: This is a research/educational system, not a production-ready IDS. It should be used as part of a defense-in-depth strategy.
 

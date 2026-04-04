@@ -2,7 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
-## [3.0.0] - 2026-04-07
+## [3.0.2] - 2026-04-07
+
+### Changed
+- **Real Kaggle run results**: All documentation updated with actual
+  numbers from the Kaggle multi-dataset notebook run. CICIDS2017 F1=0.9964,
+  UNSWNB15 F1=0.7982, CICIDS2018 F1=0.9990 (2 classes).
+- **Jaccard similarity updated**: Overall SHAP-LIME Jaccard = 0.216
+  (was 0.324 from synthetic data). Per-dataset: CICIDS2017=0.180,
+  UNSWNB15=0.111, CICIDS2018=0.429.
+- **XCS results updated**: Real data values — CICIDS2017 mean=0.517,
+  UNSWNB15 mean=0.424 (14/80 flagged), CICIDS2018 mean=0.550.
+
+### Note
+- CICIDS2018 still has 2 classes (Benign + DDoS-LOIC-HTTP) — the Kaggle
+  dataset source only contains these two classes. The stratified sampling
+  fix works correctly but cannot create classes absent from source data.
+
+---
+
+## [3.0.1] - 2026-04-07
 
 ### Added
 - **Real-time XCS in API**: `/explain` endpoint now computes full

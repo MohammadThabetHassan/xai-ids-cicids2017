@@ -234,7 +234,7 @@ The project has strong foundations - with targeted improvements it can achieve r
 - **SMOTE oversampling** introduces synthetic minority samples that may create artificial decision boundaries not present in real data.
 
 ### External Validity
-- **Do results generalize beyond these 3 datasets?** Cross-dataset generalization experiments show significant performance drops (FIX 4), suggesting models are dataset-specific. The 0.324 Jaccard similarity between top features across datasets confirms this.
+- **Do results generalize beyond these 3 datasets?** Cross-dataset generalization experiments show significant performance drops (FIX 4), suggesting models are dataset-specific. The 0.216 Jaccard similarity between top features across datasets confirms this.
 - **Temporal generalization?** Models trained on 2017/2018 data may not detect modern attack variants. The temporal drift analysis (IMPROVE 5) quantifies this degradation.
 - **Synthetic vs real data gap?** The main pipeline uses synthetic data by default. Real data results come only from the Kaggle notebook.
 
