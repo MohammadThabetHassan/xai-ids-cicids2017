@@ -5,9 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>XAI-IDS | Explainable AI Intrusion Detection System</title>
   <meta name="description" content="Explainable AI-based Intrusion Detection System using SHAP, LIME, and XCS on CIC-IDS-2017, UNSW-NB15, and CSE-CIC-IDS-2018">
+  <meta property="og:title" content="XAI-IDS | Explainable AI Intrusion Detection System">
+  <meta property="og:description" content="Multi-dataset evaluation using SHAP, LIME, and a novel XAI Confidence Score across CIC-IDS-2017, UNSW-NB15, and CSE-CIC-IDS-2018.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://mohammadthabethassan.github.io/xai-ids-cicids2017/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="XAI-IDS | Explainable AI Intrusion Detection">
+  <meta name="twitter:description" content="Multi-dataset XAI-IDS with SHAP, LIME, and XCS scoring.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>" type="image/svg+xml">
   <style>
     :root {
       --bg: #000000;
@@ -464,6 +472,17 @@
     .delay-1 { transition-delay: 0.1s; }
     .delay-2 { transition-delay: 0.2s; }
     .delay-3 { transition-delay: 0.3s; }
+
+    .back-to-top {
+      position: fixed; bottom: 24px; right: 24px; width: 44px; height: 44px;
+      border-radius: 50%; background: var(--accent); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; opacity: 0; visibility: hidden; transition: var(--transition);
+      border: none; z-index: 99; box-shadow: 0 0 20px var(--accent-glow);
+    }
+    .back-to-top.visible { opacity: 1; visibility: visible; }
+    .back-to-top:hover { transform: translateY(-4px); box-shadow: 0 0 30px var(--accent-glow); }
+    .back-to-top svg { width: 20px; height: 20px; }
 
     @media (max-width: 768px) {
       .nav-links { display: none; }
