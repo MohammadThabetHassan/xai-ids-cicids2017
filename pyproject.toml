@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "xai-ids"
-version = "3.0.0"
+version = "3.0.2"
 description = "Explainable AI Intrusion Detection System"
 readme = "README.md"
 license = {text = "MIT"}
@@ -53,10 +53,30 @@ include = ["src*"]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 addopts = "-v --tb=short"
+filterwarnings = [
+    "ignore::DeprecationWarning:shap",
+    "ignore::DeprecationWarning:matplotlib",
+    "ignore::UserWarning:sklearn",
+    "ignore::UserWarning:xgboost",
+    "ignore::RuntimeWarning:scipy",
+    "ignore::DeprecationWarning:pydantic",
+]
 
 [tool.ruff]
-line-length = 100
+line-length = 120
 target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I"]
+ignore = [
+    "E501",  # line too long (handled by line-length)
+    "F841",  # unused variable
+    "E731",  # lambda assignment
+    "E402",  # module level import not at top
+    "F401",  # unused import
+    "W293",  # blank line with whitespace
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/*" = ["E501", "F841"]

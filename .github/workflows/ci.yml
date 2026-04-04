@@ -51,7 +51,7 @@ jobs:
       - name: Lint with ruff
         run: |
           pip install ruff
-          ruff check src/ tests/ api/ run_pipeline.py --select E,F,W,I --exit-zero
+          ruff check src/ tests/ api/ run_pipeline.py --select E,F,W,I --line-length 120
 
       - name: Run tests with coverage
         run: |

@@ -614,6 +614,66 @@ async def explain(input_data: PredictionInput):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+class BatchPredictionInput(BaseModel):
+    features: List[List[float]] = Field(
+        ...,
+        description="List of network flow feature vectors",
+        min_length=1,
+        max_length=100,
+    )
+
+
+class BatchPredictionOutput(BaseModel):
+    predictions: List[str]
+    confidences: List[float]
+    xcs_scores: List[float]
+
+
+@app.post("/predict-batch", response_model=BatchPredictionOutput)
+async def predict_batch(input_data: BatchPredictionInput):
+    """Make predictions for a batch of network flows.
+
+    Parameters
+    ----------
+    input_data : BatchPredictionInput
+        List of feature vectors.
+
+    Returns
+    -------
+    BatchPredictionOutput
+        Batch predictions with confidences and fast-path XCS scores.
+    """
+    if not models:
+        raise HTTPException(status_code=503, detail="Models not loaded")
+    if scaler is None:
+        raise HTTPException(status_code=503, detail="Scaler not loaded")
+    if label_encoder is None:
+        raise HTTPException(status_code=503, detail="Label encoder not loaded")
+
+    try:
+        features = np.array(input_data.features)
+        features_scaled = scaler.transform(features)
+
+        model = models.get("random_forest") or models.get("xgboost") or models.get("lightgbm")
+        if not model:
+            raise HTTPException(status_code=503, detail="No prediction model loaded")
+
+        predictions = model.predict(features_scaled)
+        probabilities = model.predict_proba(features_scaled)
+
+        preds = [str(label_encoder.inverse_transform([p])[0]) for p in predictions]
+        confs = [float(probabilities[i, predictions[i]]) for i in range(len(predictions))]
+        xcs = [round(0.4 * c, 4) for c in confs]
+
+        return BatchPredictionOutput(predictions=preds, confidences=confs, xcs_scores=xcs)
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid input: {e}")
+    except Exception as e:
+        logger.error(f"Batch prediction error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get("/classes")
 async def get_classes():
     """Get list of available classes."""
