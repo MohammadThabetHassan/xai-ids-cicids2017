@@ -22,6 +22,7 @@ only, ~10ms) and /explain for full XCS with explanations.
 
 import os
 import sys
+import json
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -47,6 +48,27 @@ scaler = None
 label_encoder = None
 feature_names = None
 training_stats = None  # Stored feature bounds for drift detection
+xcs_weights = None      # Learned XCS weights from pipeline
+
+
+def _load_learned_xcs_weights():
+    """Load learned XCS weights if available."""
+    global xcs_weights
+    for weights_path in [
+        Path("outputs/reports/learned_xcs_weights.json"),
+        Path("reports/learned_xcs_weights.json"),
+    ]:
+        if weights_path.exists():
+            try:
+                with open(weights_path) as f:
+                    data = json.load(f)
+                xcs_weights = data.get("normalized_weights", [0.4, 0.3, 0.3])
+                logger.info(f"Loaded learned XCS weights: {xcs_weights}")
+                return
+            except Exception as e:
+                logger.warning(f"Failed to load learned XCS weights: {e}")
+    xcs_weights = [0.4, 0.3, 0.3]
+    logger.info("Using default XCS weights: [0.4, 0.3, 0.3]")
 
 
 class PredictionInput(BaseModel):
@@ -56,11 +78,6 @@ class PredictionInput(BaseModel):
         min_length=1,
         max_length=100,
     )
-
-    class Config:
-        json_schema_extra = {
-            "example": {"features": [0.0] * 78}
-        }
 
 
 class PredictionOutput(BaseModel):
@@ -361,7 +378,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="XAI-IDS API",
     description="Explainable AI Intrusion Detection System API",
-    version="2.0.2",
+    version="3.0.2",
     lifespan=lifespan,
 )
 
@@ -371,7 +388,7 @@ async def root():
     """Root endpoint."""
     return {
         "name": "XAI-IDS API",
-        "version": "2.0.2",
+        "version": "3.0.2",
         "models_loaded": list(models.keys()),
         "scaler_loaded": scaler is not None,
         "label_encoder_loaded": label_encoder is not None,
@@ -616,7 +633,8 @@ async def xcs_summary():
         for suffix in ["_v2", ""]:
             csv_path = Path(f"explanations/xcs_{ds}{suffix}.csv")
             if csv_path.exists():
-                rows = list(csv.DictReader(open(csv_path)))
+                with open(csv_path) as f:
+                    rows = list(csv.DictReader(f))
                 if rows:
                     xcs_vals = [float(r["xcs"]) for r in rows]
                     correct = [float(r["xcs"]) for r in rows if r["correct"] == "True"]

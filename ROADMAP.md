@@ -1,6 +1,6 @@
 # XAI-IDS Enhancement Roadmap
 
-**Version:** 3.0  
+**Version:** 3.0.2  
 **Last Updated:** April 2026
 
 ---

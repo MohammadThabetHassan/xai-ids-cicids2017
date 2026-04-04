@@ -203,27 +203,3 @@ def load_dataset(
     logger.info(f"Merged dataset: {merged.shape[0]} rows, {merged.shape[1]} columns")
 
     return merged
-
-
-def load_processed_dataset(
-    filepath: str = "data/processed/cleaned_dataset.csv",
-) -> pd.DataFrame:
-    """
-    Load the preprocessed dataset.
-
-    Parameters
-    ----------
-    filepath : str
-        Path to the processed CSV.
-
-    Returns
-    -------
-    pd.DataFrame
-        Processed DataFrame.
-    """
-    if not os.path.exists(filepath):
-        raise FileNotFoundError(f"Processed dataset not found: {filepath}")
-
-    df = pd.read_csv(filepath, low_memory=False)
-    logger.info(f"Loaded processed dataset: {df.shape[0]} rows, {df.shape[1]} columns")
-    return df

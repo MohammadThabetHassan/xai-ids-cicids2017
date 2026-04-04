@@ -165,6 +165,11 @@ Examples:
         action="store_true",
         help="Calibrate XCS weights via logistic regression on correctness",
     )
+    parser.add_argument(
+        "--cross-dataset",
+        action="store_true",
+        help="Run cross-dataset generalization experiment",
+    )
 
     return parser.parse_args()
 
@@ -416,6 +421,42 @@ def main():
                 f"test_acc={split['test_accuracy']:.4f}, "
                 f"drift_rate={split['feature_drift_rate']:.1%}"
             )
+
+    # ─── Step 4e: Cross-Dataset Generalization ───
+    if args.cross_dataset:
+        logger.info("\n" + "=" * 50)
+        logger.info("Cross-Dataset Generalization")
+        logger.info("=" * 50)
+
+        from src.evaluation.cross_dataset import (
+            evaluate_cross_dataset,
+            plot_cross_dataset_generalization,
+        )
+
+        primary_model = trained_models.get("xgboost") or list(trained_models.values())[0]
+        from sklearn.base import clone
+        try:
+            model_copy = clone(primary_model)
+        except Exception:
+            model_copy = primary_model
+
+        cd_results = evaluate_cross_dataset(
+            model_copy,
+            data["X_train"], data["y_train"],
+            data["X_test"], data["y_test"],
+            data["feature_names"], data["feature_names"],
+            source_name="CICIDS2017_train",
+            target_name="CICIDS2017_test",
+        )
+        plot_cross_dataset_generalization(
+            [cd_results],
+            save_path=os.path.join(figures_dir, "cross_dataset_generalization.png"),
+        )
+        logger.info(f"\nCross-Dataset Results:")
+        logger.info(f"  In-distribution acc: {cd_results['in_distribution']['accuracy']:.4f}")
+        logger.info(f"  Cross-dataset acc:   {cd_results['cross_dataset']['accuracy']:.4f}")
+        logger.info(f"  Accuracy drop:       {cd_results['performance_drop']['accuracy_drop']:.4f}")
+        logger.info(f"  Shared features:     {cd_results['n_shared_features']}")
 
     # ─── Step 5: Explainability ───
     if not args.skip_explain:

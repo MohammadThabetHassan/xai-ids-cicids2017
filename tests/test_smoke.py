@@ -40,7 +40,7 @@ class TestImports:
         assert callable(generate_sample_dataset)
 
     def test_import_models(self):
-        from src.models.train import train_model, train_all_models, MODEL_CONFIGS
+        from src.models.train import train_model, MODEL_CONFIGS
 
         assert "logistic_regression" in MODEL_CONFIGS
         assert "random_forest" in MODEL_CONFIGS
