@@ -1,7 +1,7 @@
 # XAI-IDS Project Status
 
-**Version:** 1.1  
-**Last Updated:** March 2026
+**Version:** 2.0.2  
+**Last Updated:** April 2026
 
 ---
 
@@ -83,6 +83,23 @@
 | Preprocessing | ✅ Complete | 2 tests |
 | Mini pipeline | ✅ Complete | 1 test |
 | **Evaluation** | ✅ Complete | 11 tests (CV, calibration, failure) |
+| **Model prediction** | ✅ Complete | 5 tests — fixed dict-vs-bare-model assumption |
+
+### XCS (XAI Confidence Score)
+| Feature | Status | Notes |
+|---------|--------|-------|
+| XCS formula implementation | ✅ Complete | Full formula with LIME |
+| XCS v2 recomputation | ✅ Complete | scripts/recompute_xcs.py — LIME Jaccard now non-zero |
+| XCS per-sample CSVs | ✅ Complete | explanations/xcs_*_v2.csv |
+| XCS visualization | ✅ Complete | scripts/generate_xcs_plots.py |
+| API /xcs-summary endpoint | ✅ Complete | Returns offline XCS evaluation summary |
+
+### Utility Scripts
+| Script | Status | Notes |
+|--------|--------|-------|
+| scripts/recompute_xcs.py | ✅ Complete | Full XCS recomputation with LIME |
+| scripts/verify_results.py | ✅ Complete | Model artifact integrity checker |
+| scripts/generate_xcs_plots.py | ✅ Complete | Regenerate XCS plots from v2 CSVs |
 
 ---
 

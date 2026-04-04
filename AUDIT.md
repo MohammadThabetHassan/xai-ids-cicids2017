@@ -197,3 +197,25 @@ The project has strong foundations - with targeted improvements it can achieve r
 ---
 
 *This audit was performed as part of project enhancement initiative.*
+
+---
+
+## v2.0.2 Audit Update (April 2026)
+
+### Resolved Issues
+
+| Issue | Status |
+|-------|--------|
+| XCS LIME component was 0 in all CSVs | ✅ Fixed — scripts/recompute_xcs.py |
+| test_model_prediction assumed dict wrapper | ✅ Fixed — tests now pass |
+| Model saves used .pkl, Kaggle used .joblib | ✅ Fixed — standardised to .joblib |
+| API /xcs-summary endpoint missing | ✅ Added |
+
+### Remaining Research Limitations
+
+| Limitation | Severity | Status |
+|-----------|----------|--------|
+| CICIDS2018 has 2 classes (14+ available) | HIGH | Pending Kaggle re-run |
+| UNSWNB15 Normal class FPR = 14.7% | MEDIUM | Documented |
+| Models trained on 2017/2018 data (temporal drift) | MEDIUM | Documented |
+| XCS computed on synthetic test set (not real data) | MEDIUM | Noted in scripts/

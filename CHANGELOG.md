@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.2] - 2026-04-06
+
+### Fixed
+- **XCS recomputed with full formula**: LIME per-sample Jaccard
+  component was 0 in v2.0.1 CSVs because LIME never ran during
+  XCS computation. Added scripts/recompute_xcs.py which runs the
+  complete XCS = 0.4×Conf + 0.3×(1-Instab) + 0.3×Jaccard formula
+  and commits the corrected explanations/xcs_*_v2.csv files.
+- **test_model_prediction.py**: fixed dict-vs-bare-model assumption;
+  tests now pass on the committed bare-model joblib files.
+- **Documentation**: all XCS tables updated with v2 recomputed values.
+
+### Added
+- **scripts/recompute_xcs.py** — full XCS recomputation with LIME
+- **scripts/verify_results.py** — model artifact integrity checker
+- **scripts/generate_xcs_plots.py** — regenerate XCS plots from v2 CSVs
+- **api: /xcs-summary endpoint** returns offline XCS evaluation summary
+
+### Changed
+- Standardised model save format from .pkl to .joblib throughout
+- Updated README.md, RESULTS.md, MODEL_CARD.md, AUDIT.md, PROJECT_STATUS.md
+
+---
+
 ## [2.0.1] - 2026-04-05
 
 ### Fixed

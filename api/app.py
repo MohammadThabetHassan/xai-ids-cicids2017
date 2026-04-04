@@ -53,9 +53,10 @@ class PredictionOutput(BaseModel):
     xcs_score: Optional[float] = Field(
         None,
         description=(
-            "XAI Confidence Score (fast-path: confidence component only). "
-            "Full XCS = 0.4*Conf + 0.3*(1-SHAP_Instability) + 0.3*Jaccard(SHAP,LIME) "
-            "is computed offline in the Kaggle evaluation notebook."
+            "XAI Confidence Score (fast-path: confidence component only = 0.4×Conf). "
+            "Full XCS = 0.4×Conf + 0.3×(1-SHAP_Instability) + 0.3×Jaccard(SHAP,LIME) "
+            "is computed offline. See explanations/xcs_*_v2.csv for per-sample results. "
+            "XCS < 0.3 flags predictions for human analyst review."
         )
     )
 
@@ -361,6 +362,41 @@ async def get_classes():
         raise HTTPException(status_code=503, detail="Label encoder not loaded")
 
     return {"classes": [str(c) for c in label_encoder.classes_]}
+
+
+@app.get("/xcs-summary")
+async def xcs_summary():
+    """Return XCS evaluation summary from offline computation."""
+    import csv
+
+    summary = {}
+    for ds in ["CICIDS2017", "UNSWNB15", "CICIDS2018"]:
+        for suffix in ["_v2", ""]:
+            csv_path = Path(f"explanations/xcs_{ds}{suffix}.csv")
+            if csv_path.exists():
+                rows = list(csv.DictReader(open(csv_path)))
+                if rows:
+                    xcs_vals = [float(r["xcs"]) for r in rows]
+                    correct = [float(r["xcs"]) for r in rows if r["correct"] == "True"]
+                    wrong = [float(r["xcs"]) for r in rows if r["correct"] == "False"]
+                    flagged = sum(1 for r in rows if r["flag_review"] == "True")
+                    summary[ds] = {
+                        "n_samples": len(rows),
+                        "mean_xcs": round(sum(xcs_vals) / len(xcs_vals), 4),
+                        "flagged": flagged,
+                        "flag_pct": round(flagged / len(rows) * 100, 1),
+                        "correct_xcs": round(sum(correct) / len(correct), 4) if correct else None,
+                        "wrong_xcs": round(sum(wrong) / len(wrong), 4) if wrong else None,
+                        "source": str(csv_path),
+                    }
+                break
+
+    return {
+        "xcs_formula": "XCS = 0.4*Conf + 0.3*(1-SHAP_Instability) + 0.3*Jaccard(SHAP,LIME)",
+        "threshold": 0.3,
+        "interpretation": "XCS < 0.3 → flag for human analyst review",
+        "datasets": summary,
+    }
 
 
 if __name__ == "__main__":

@@ -121,6 +121,18 @@ XCS = 0.4 × Confidence + 0.3 × (1 - SHAP_Instability) + 0.3 × Jaccard(SHAP, L
 - **Threshold**: XCS > 0.3 for acceptable explanation reliability
 - **Cross-dataset Jaccard similarity**: 0.324
 
+### XCS Results (v2 — full LIME formula, synthetic test sets, n=100)
+
+| Dataset | Mean XCS | Mean Confidence | Mean SHAP Instability | Mean Jaccard | Flagged (< 0.3) |
+|---------|----------|-----------------|----------------------|--------------|-----------------|
+| CIC-IDS-2017 | 0.420 | 0.478 | 0.416 | 0.178 | 0 / 100 (0%) |
+| UNSW-NB15 | 0.386 | 0.310 | 0.253 | 0.126 | 5 / 100 (5%) |
+| CSE-CIC-IDS-2018 | 0.675 | 0.999 | 0.226 | 0.143 | 0 / 100 (0%) |
+
+Previous v2.0.1 CSVs had jaccard_sl=0 for all samples because LIME never ran
+during XCS computation. Recomputed with `scripts/recompute_xcs.py`; see
+`explanations/xcs_*_v2.csv` for per-sample data.
+
 ## Limitations and Biases
 
 1. **Class Imbalance**: Severe imbalance in CIC-IDS-2017 (~600:1 ratio) causes poor detection of minority attack classes even with balanced class weights.

@@ -27,7 +27,7 @@ class TestModelLoading:
         assert len(model_files) > 0, "No model files found in models/"
 
         # Check for expected model patterns
-        has_xgb = any("xgboost" in f for f in model_files)
+        has_xgb = any("xgb_" in f for f in model_files)
         has_rf = any("rf_" in f or "random_forest" in f for f in model_files)
         has_lgbm = any("lightgbm" in f or "lgb_" in f for f in model_files)
 
@@ -41,17 +41,16 @@ class TestModelLoading:
         if not os.path.exists(models_dir):
             pytest.skip("models/ directory not found")
 
-        # Find any xgboost model file
-        model_files = [f for f in os.listdir(models_dir) if "xgboost" in f and f.endswith(".joblib")]
+        # Find any xgb model file
+        model_files = [f for f in os.listdir(models_dir) if f.startswith("xgb_") and f.endswith(".joblib")]
         if not model_files:
-            pytest.skip("No xgboost model files found")
+            pytest.skip("No xgb model files found")
 
         model_path = os.path.join(models_dir, model_files[0])
-        artifacts = joblib.load(model_path)
+        model = joblib.load(model_path)
 
-        assert "model" in artifacts, "Model artifact missing 'model' key"
-        assert hasattr(artifacts["model"], "predict"), "Loaded object has no predict method"
-        assert hasattr(artifacts["model"], "predict_proba"), "Loaded object has no predict_proba method"
+        assert hasattr(model, "predict"), "Loaded object has no predict method"
+        assert hasattr(model, "predict_proba"), "Loaded object has no predict_proba method"
 
     def test_load_scaler(self):
         """Test loading a saved scaler."""
@@ -83,13 +82,12 @@ class TestPrediction:
         if not os.path.exists(models_dir):
             pytest.skip("models/ directory not found")
 
-        model_files = [f for f in os.listdir(models_dir) if "xgboost" in f and f.endswith(".joblib")]
+        model_files = [f for f in os.listdir(models_dir) if f.startswith("xgb_") and f.endswith(".joblib")]
         if not model_files:
-            pytest.skip("No xgboost model files found")
+            pytest.skip("No xgb model files found")
 
         model_path = os.path.join(models_dir, model_files[0])
-        artifacts = joblib.load(model_path)
-        model = artifacts["model"]
+        model = joblib.load(model_path)
 
         # Create dummy input matching expected feature count
         n_features = model.n_features_in_ if hasattr(model, "n_features_in_") else 20
@@ -116,12 +114,11 @@ class TestPrediction:
         datasets = ["CICIDS2017", "UNSWNB15", "CICIDS2018"]
         for dataset in datasets:
             scaler_files = [f for f in os.listdir(models_dir) if f"scaler_{dataset}" in f]
-            model_files = [f for f in os.listdir(models_dir) if f"xgboost_{dataset}" in f]
+            model_files = [f for f in os.listdir(models_dir) if f"xgb_{dataset}" in f]
 
             if scaler_files and model_files:
                 scaler = joblib.load(os.path.join(models_dir, scaler_files[0]))
-                artifacts = joblib.load(os.path.join(models_dir, model_files[0]))
-                model = artifacts["model"]
+                model = joblib.load(os.path.join(models_dir, model_files[0]))
 
                 n_features = scaler.n_features_in_
                 dummy_input = np.zeros((1, n_features))

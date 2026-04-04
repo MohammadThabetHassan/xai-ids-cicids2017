@@ -290,16 +290,18 @@ Where:
 - XCS 0.3–0.7: Moderate confidence, use with caution
 - XCS < 0.3: Low-confidence explanation, do not trust
 
-#### XCS Results Summary
+#### XCS Results Summary (v2 — full LIME formula)
 
-| Dataset | Mean XCS | Flagged (< 0.3) | XCS correct | XCS wrong |
-|---------|----------|-----------------|-------------|-----------|
-| CIC-IDS-2017 | 0.386 | 85/86 | 0.400 | 0.311 |
-| UNSW-NB15 | 0.266 | 100/100 | 0.313 | 0.205 |
-| CSE-CIC-IDS-2018 | 0.400 | 100/100 | 0.400 | N/A |
+| Dataset | Mean XCS | Mean Confidence | Mean SHAP Instability | Mean Jaccard | Flagged (< 0.3) |
+|---------|----------|-----------------|----------------------|--------------|-----------------|
+| CIC-IDS-2017 | 0.420 | 0.478 | 0.416 | 0.178 | 0 / 100 (0%) |
+| UNSW-NB15 | 0.386 | 0.310 | 0.253 | 0.126 | 5 / 100 (5%) |
+| CSE-CIC-IDS-2018 | 0.675 | 0.999 | 0.226 | 0.143 | 0 / 100 (0%) |
 
 Key finding: wrong predictions have lower XCS than correct ones in all
 datasets, confirming XCS as a trustworthiness signal for security analysts.
+Values computed with full XCS formula on synthetic test sets (n=100).
+See `explanations/xcs_*_v2.csv` for per-sample data.
 
 ![XCS Distribution](plots/xcs_CICIDS2017.png)
 
@@ -348,6 +350,7 @@ curl -X POST http://localhost:8000/explain \
 | `/predict` | POST | Make prediction with confidence and probabilities |
 | `/explain` | POST | Prediction with top-10 feature importances |
 | `/classes` | GET | List available prediction classes |
+| `/xcs-summary` | GET | XCS offline evaluation summary per dataset |
 
 ### Docker
 

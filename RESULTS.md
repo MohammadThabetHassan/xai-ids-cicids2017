@@ -26,6 +26,10 @@ Results from the multi-dataset evaluation using XGBoost, Random Forest, LightGBM
 | RandomForest | 0.7635 | 0.8202 | 0.7635 | 0.7848 |
 | LightGBM | 0.7630 | 0.8291 | 0.7630 | 0.7863 |
 
+*Note: Weighted precision < weighted F1 on UNSWNB15 is expected
+under class imbalance — the Generic class (dominant) has high recall
+but moderate precision, pulling the weighted average.*
+
 ### CSE-CIC-IDS-2018 (2 classes captured, 20 features)
 
 > **Note:** The current notebook run captured 2 classes (Benign +
@@ -69,16 +73,17 @@ Results from the main pipeline using synthetic CIC-IDS-2017 data (50K samples, 7
 
 XCS = 0.4 x Confidence + 0.3 x (1 - SHAP_Instability) + 0.3 x Jaccard(SHAP, LIME)
 
-| Dataset | Model | Mean XCS | Flagged for review | XCS correct preds | XCS wrong preds |
-|---------|-------|----------|--------------------|-------------------|-----------------|
-| CIC-IDS-2017 | XGBoost | 0.386 | 85 / 86 (99%) | 0.400 | 0.311 |
-| UNSW-NB15 | XGBoost | 0.266 | 100 / 100 (100%) | 0.313 | 0.205 |
-| CSE-CIC-IDS-2018 | XGBoost | 0.400 | 100 / 100 (100%) | 0.400 | N/A |
+| Dataset | Model | Mean XCS | Mean Confidence | Mean SHAP Instability | Mean Jaccard | Flagged for review |
+|---------|-------|----------|-----------------|----------------------|--------------|--------------------|
+| CIC-IDS-2017 | XGBoost | 0.420 | 0.478 | 0.416 | 0.178 | 0 / 100 (0%) |
+| UNSW-NB15 | XGBoost | 0.386 | 0.310 | 0.253 | 0.126 | 5 / 100 (5%) |
+| CSE-CIC-IDS-2018 | XGBoost | 0.675 | 0.999 | 0.226 | 0.143 | 0 / 100 (0%) |
 
 Flag threshold: XCS < 0.3 → human analyst review required.
-Key finding: wrong predictions have consistently lower XCS than correct ones,
-validating XCS as a per-prediction trustworthiness signal.
-Full per-sample data in `explanations/xcs_*.csv`.
+Values computed on synthetic test sets (n=100 per dataset) using the full XCS formula
+with LIME per-sample explanations. Previous v2.0.1 CSVs had jaccard_sl=0 for all samples
+because LIME never ran during XCS computation. See `explanations/xcs_*_v2.csv` for corrected
+per-sample data and `scripts/recompute_xcs.py` for the computation code.
 
 ---
 

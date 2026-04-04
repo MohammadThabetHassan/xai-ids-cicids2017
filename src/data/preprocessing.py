@@ -111,7 +111,7 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
 def encode_labels(
     df: pd.DataFrame,
     label_col: str = "Label",
-    save_path: Optional[str] = "outputs/models/label_encoder.pkl",
+    save_path: Optional[str] = "outputs/models/label_encoder.joblib",
 ) -> Tuple[pd.DataFrame, LabelEncoder, Dict[str, int]]:
     """
     Encode string labels to integers.
@@ -153,7 +153,7 @@ def scale_features(
     X_train: pd.DataFrame,
     X_val: pd.DataFrame,
     X_test: pd.DataFrame,
-    save_path: Optional[str] = "outputs/models/scaler.pkl",
+    save_path: Optional[str] = "outputs/models/scaler.joblib",
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, StandardScaler]:
     """
     Standardize features using StandardScaler (fit on train only).
@@ -314,7 +314,7 @@ def run_preprocessing(
     df, le, label_mapping = encode_labels(
         df,
         label_col=label_col,
-        save_path=os.path.join(models_dir, "label_encoder.pkl"),
+        save_path=os.path.join(models_dir, "label_encoder.joblib"),
     )
 
     # Split
@@ -328,7 +328,7 @@ def run_preprocessing(
         X_train,
         X_val,
         X_test,
-        save_path=os.path.join(models_dir, "scaler.pkl"),
+        save_path=os.path.join(models_dir, "scaler.joblib"),
     )
 
     # Save processed data info

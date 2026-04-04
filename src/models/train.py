@@ -159,7 +159,7 @@ def train_model(
 
     # Save model
     Path(save_dir).mkdir(parents=True, exist_ok=True)
-    model_path = os.path.join(save_dir, f"{model_name}.pkl")
+    model_path = os.path.join(save_dir, f"{model_name}.joblib")
     joblib.dump(model, model_path)
     logger.info(f"  Saved model to {model_path}")
 
