@@ -731,6 +731,70 @@
   </div>
 </section>
 
+<section id="how-it-works">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label">Methodology</div>
+      <h2 class="section-title">How It Works</h2>
+      <p class="section-desc">From raw network traffic to explainable predictions.</p>
+    </div>
+    <div class="grid grid-4">
+      <div class="card reveal">
+        <div class="card-number">01</div>
+        <h3>Data Collection</h3>
+        <p>Network flows captured from CIC-IDS-2017, UNSW-NB15, and CSE-CIC-IDS-2018 datasets with 78+ features per flow.</p>
+      </div>
+      <div class="card reveal delay-1">
+        <div class="card-number">02</div>
+        <h3>Model Training</h3>
+        <p>XGBoost, Random Forest, LightGBM, and VotingEnsemble trained on 20 selected features with SMOTE for class balance.</p>
+      </div>
+      <div class="card reveal delay-2">
+        <div class="card-number">03</div>
+        <h3>SHAP + LIME</h3>
+        <p>SHAP provides global feature importance. LIME explains individual predictions. Jaccard similarity measures agreement.</p>
+      </div>
+      <div class="card reveal delay-3">
+        <div class="card-number">04</div>
+        <h3>XCS Scoring</h3>
+        <p>XCS = 0.4×Confidence + 0.3×SHAP Stability + 0.3×Jaccard. Scores > 0.3 indicate reliable explanations.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how-it-works">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label">Methodology</div>
+      <h2 class="section-title">How It Works</h2>
+      <p class="section-desc">From raw network traffic to explainable predictions.</p>
+    </div>
+    <div class="grid grid-4">
+      <div class="card reveal">
+        <div class="card-number">01</div>
+        <h3>Data Collection</h3>
+        <p>Network flows captured from CIC-IDS-2017, UNSW-NB15, and CSE-CIC-IDS-2018 datasets with 78+ features per flow.</p>
+      </div>
+      <div class="card reveal delay-1">
+        <div class="card-number">02</div>
+        <h3>Model Training</h3>
+        <p>XGBoost, Random Forest, LightGBM, and VotingEnsemble trained on 20 selected features with SMOTE for class balance.</p>
+      </div>
+      <div class="card reveal delay-2">
+        <div class="card-number">03</div>
+        <h3>SHAP + LIME</h3>
+        <p>SHAP provides global feature importance. LIME explains individual predictions. Jaccard similarity measures agreement.</p>
+      </div>
+      <div class="card reveal delay-3">
+        <div class="card-number">04</div>
+        <h3>XCS Scoring</h3>
+        <p>XCS = 0.4×Confidence + 0.3×SHAP Stability + 0.3×Jaccard. Scores > 0.3 indicate reliable explanations.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="demo" class="demo-section">
   <div class="container">
     <div class="section-header reveal">
@@ -860,6 +924,8 @@
   let activeScenario = null;
   let currentFeatures = new Array(20).fill(0);
   let predictionDebounce = null;
+  let predictionHistory = [];
+  const MAX_HISTORY = 5;
 
   async function loadDemoData() {
     try {
@@ -875,7 +941,7 @@
     const container = document.getElementById('scenarioBtns');
     container.innerHTML = demoData.scenarios.map(s =>
       `<button class="scenario-btn" data-id="${s.id}" onclick="selectScenario('${s.id}', this)">${s.icon} ${s.label}</button>`
-    ).join('');
+    ).join('') + `<button class="scenario-btn" onclick="randomizeFeatures()" style="margin-left:auto;">🎲 Random</button>`;
   }
 
   function selectScenario(id, btn) {
@@ -887,8 +953,19 @@
     updatePrediction();
   }
 
+  function randomizeFeatures() {
+    document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+    activeScenario = null;
+    currentFeatures = XAIIDS.FEATURES.map((_, i) => {
+      const [min, max] = [0, Math.max(...demoData.scenarios.map(s => s.features[i])) * 1.5];
+      return Math.random() * max;
+    });
+    renderFeatureInputs();
+    updatePrediction();
+  }
+
   function renderFeatureInputs() {
-    if (!activeScenario) return;
+    if (!activeScenario && currentFeatures.every(f => f === 0)) return;
     const container = document.getElementById('featureInputs');
     container.innerHTML = XAIIDS.FEATURES.map((f, i) => {
       const val = currentFeatures[i];
@@ -922,6 +999,14 @@
 
   function updatePrediction() {
     const result = XAIIDS.predict(currentFeatures);
+    predictionHistory.unshift({
+      prediction: result.prediction,
+      confidence: result.confidence,
+      xcs: result.xcs,
+      verdict: result.verdict,
+      timestamp: new Date().toLocaleTimeString()
+    });
+    if (predictionHistory.length > MAX_HISTORY) predictionHistory.pop();
     renderResults(result);
   }
 
@@ -930,6 +1015,12 @@
     const xcsColor = r.xcs > 0.7 ? '#10b981' : r.xcs > 0.4 ? '#f59e0b' : '#ef4444';
     const shapColors = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#06b6d4'];
     const maxShap = Math.max(...r.shap_top5.map(s => s.value), 0.001);
+
+    // All classes scores
+    const classScores = Object.entries(r.allScores)
+      .map(([cls, data]) => ({ class: cls, score: data.score, isBest: cls === r.prediction }))
+      .sort((a, b) => b.score - a.score);
+    const maxScore = Math.max(...classScores.map(c => c.score));
 
     document.getElementById('demoResults').innerHTML = `
       <div class="result-verdict ${r.verdict}" style="animation: fadeUp 0.3s ease;">
@@ -975,12 +1066,35 @@
           </div>
         `).join('')}
       </div>
+      <div class="shap-chart" style="margin-top:16px;">
+        <div class="label">All Class Scores</div>
+        ${classScores.map((c, i) => `
+          <div class="shap-bar">
+            <span class="feature" style="color: ${c.isBest ? 'var(--accent-light)' : 'var(--text-muted)'}; font-weight: ${c.isBest ? '600' : '400'};">${c.class}</span>
+            <div class="bar-wrap"><div class="bar-fill" style="width: ${(c.score / maxScore * 100).toFixed(0)}%; background: ${c.isBest ? 'var(--accent)' : 'var(--text-muted)'}; opacity: ${c.isBest ? '1' : '0.4'};"></div></div>
+            <span class="val">${(c.score * 100).toFixed(0)}%</span>
+          </div>
+        `).join('')}
+      </div>
+      ${predictionHistory.length > 1 ? `
+      <div class="shap-chart" style="margin-top:16px;">
+        <div class="label">Prediction History</div>
+        ${predictionHistory.slice(0, 5).map((h, i) => `
+          <div class="shap-bar" style="opacity: ${1 - i * 0.15};">
+            <span class="feature" style="color: ${h.verdict === 'safe' ? 'var(--green)' : '#ef4444'};">${h.prediction}</span>
+            <div class="bar-wrap"><div class="bar-fill" style="width: ${(h.confidence * 100).toFixed(0)}%; background: ${h.verdict === 'safe' ? 'var(--green)' : '#ef4444'};"></div></div>
+            <span class="val">${h.timestamp}</span>
+          </div>
+        `).join('')}
+      </div>
+      ` : ''}
     `;
   }
 
   function resetDemo() {
     activeScenario = null;
     currentFeatures = new Array(20).fill(0);
+    predictionHistory = [];
     document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('featureInputs').innerHTML = '';
     document.getElementById('demoResults').innerHTML = '<div class="demo-placeholder"><div class="icon">⚡</div><p>Select a scenario or adjust feature sliders to see live predictions.</p></div>';
