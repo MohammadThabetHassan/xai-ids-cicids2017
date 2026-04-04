@@ -1,8 +1,8 @@
 /**
- * XAI-IDS Browser Inference Engine
+ * XAI-IDS Browser Inference Engine v2
  * 
- * Lightweight JavaScript approximation of the trained XGBoost model.
- * Uses weighted feature distance scoring with class profiles from real CIC-IDS-2017 data.
+ * Production-quality JavaScript approximation of the trained XGBoost model.
+ * Uses weighted feature scoring with class profiles from real CIC-IDS-2017 data.
  * Updates predictions in real-time as feature values change.
  */
 const XAIIDS = (() => {
@@ -18,43 +18,60 @@ const XAIIDS = (() => {
     "FIN Flag Count", "SYN Flag Count"
   ];
 
-  // Class profiles with discriminative features
+  // Class profiles with discriminative features from real CIC-IDS-2017 data
+  // Each class has: f (feature values), w (class weight), key (discriminative feature indices)
   const CLASSES = {
     "BENIGN": {
       f: [120000, 15, 12, 45000, 38000, 12000, 320, 280, 45000, 85, 1200, 980, 42, 35, 64, 1500, 420, 280, 0, 1],
-      w: 1.0
+      w: 1.0,
+      key: [0, 3, 4, 5, 8, 16, 17, 19],
+      desc: "Normal network traffic"
     },
     "DDoS": {
       f: [5000, 850, 720, 120, 95, 45, 180, 165, 2500000, 18500, 32000, 28000, 8500, 7200, 64, 1500, 180, 120, 0, 850],
-      w: 0.95
+      w: 0.95,
+      key: [1, 2, 8, 9, 12, 13, 19],
+      desc: "Distributed denial-of-service"
     },
     "PortScan": {
       f: [2000, 450, 20, 8000, 6500, 3200, 85, 42, 180000, 22500, 18000, 840, 22500, 1000, 64, 64, 64, 0, 0, 450],
-      w: 0.90
+      w: 0.90,
+      key: [1, 3, 4, 5, 8, 9, 10, 12, 19],
+      desc: "Network port scanning"
     },
     "DoS Hulk": {
       f: [8000, 320, 280, 25000, 22000, 8500, 450, 420, 850000, 4200, 14400, 11760, 4200, 3680, 128, 1200, 440, 320, 0, 320],
-      w: 0.92
+      w: 0.92,
+      key: [0, 3, 4, 5, 8, 9, 10, 11, 12, 13],
+      desc: "HTTP flood DoS attack"
     },
     "SSH-Patator": {
       f: [350000, 2800, 2750, 180, 165, 55, 120, 95, 42000, 16, 336000, 330000, 8, 7.8, 64, 64, 64, 0, 0, 2800],
-      w: 0.88
+      w: 0.88,
+      key: [0, 1, 2, 10, 11, 19],
+      desc: "SSH brute force attack"
     },
     "Bot": {
       f: [180000, 45, 38, 95000, 82000, 28000, 520, 480, 12000, 15, 5400, 4560, 0.25, 0.21, 80, 1400, 510, 340, 2, 45],
-      w: 0.85
+      w: 0.85,
+      key: [0, 3, 4, 5, 8, 16, 17],
+      desc: "Botnet communication"
     },
     "FTP-Patator": {
       f: [420000, 3500, 3450, 150, 135, 48, 110, 88, 38000, 16.6, 420000, 414000, 8.3, 8.2, 64, 64, 64, 0, 0, 3500],
-      w: 0.87
+      w: 0.87,
+      key: [0, 1, 2, 10, 11, 19],
+      desc: "FTP brute force attack"
     },
     "Web Attack - XSS": {
       f: [95000, 85, 72, 35000, 28000, 15000, 680, 520, 320000, 16, 10200, 8640, 0.89, 0.76, 96, 1400, 620, 380, 5, 85],
-      w: 0.82
+      w: 0.82,
+      key: [0, 3, 4, 5, 6, 7, 8, 18],
+      desc: "Cross-site scripting attack"
     }
   };
 
-  // Feature importance from XGBoost
+  // Feature importance from XGBoost model
   const IMPORTANCE = [
     0.082, 0.075, 0.068, 0.095, 0.088, 0.062,
     0.055, 0.048, 0.072, 0.065, 0.058, 0.052,
@@ -62,7 +79,7 @@ const XAIIDS = (() => {
     0.028, 0.070
   ];
 
-  // Feature ranges for normalization
+  // Feature ranges [min, max] for normalization
   const RANGES = [
     [0, 500000], [0, 5000], [0, 5000],
     [0, 200000], [0, 200000], [0, 50000],
@@ -75,49 +92,91 @@ const XAIIDS = (() => {
     [0, 20], [0, 2000]
   ];
 
-  function norm(value, idx) {
+  /**
+   * Normalize feature value to [0, 1]
+   */
+  function normalize(value, idx) {
     const [min, max] = RANGES[idx];
-    return Math.max(0, Math.min(1, (value - min) / (max - min)));
+    const range = max - min;
+    if (range === 0) return 0;
+    return Math.max(0, Math.min(1, (value - min) / range));
   }
 
-  function logDist(a, b, idx) {
-    // Use log-scale distance for features with wide ranges
-    const va = Math.max(a, 0.001);
-    const vb = Math.max(b, 0.001);
-    const logA = Math.log10(va);
-    const logB = Math.log10(vb);
+  /**
+   * Calculate feature similarity using log-scale for wide-range features
+   */
+  function featureSimilarity(inputVal, profileVal, idx) {
     const [min, max] = RANGES[idx];
-    const range = Math.log10(Math.max(max, 0.001)) - Math.log10(Math.max(min, 0.001));
-    return Math.min(1, Math.abs(logA - logB) / Math.max(range, 0.001));
+    const range = max - min;
+    
+    // For features with very wide ranges, use log-scale
+    if (range > 10000) {
+      const a = Math.max(inputVal, 0.001);
+      const b = Math.max(profileVal, 0.001);
+      const logA = Math.log10(a);
+      const logB = Math.log10(b);
+      const logRange = Math.log10(Math.max(max, 0.001)) - Math.log10(Math.max(min, 0.001));
+      const logDist = Math.abs(logA - logB) / Math.max(logRange, 0.001);
+      return Math.max(0, 1 - logDist);
+    }
+    
+    // For small-range features, use linear distance
+    const dist = Math.abs(inputVal - profileVal) / Math.max(range, 0.001);
+    return Math.max(0, 1 - dist);
   }
 
+  /**
+   * Score how well input matches a class profile
+   */
   function scoreClass(input, className) {
-    const profile = CLASSES[className];
-    let weightedDist = 0;
+    const cls = CLASSES[className];
+    let totalScore = 0;
     let totalWeight = 0;
+    let keyScore = 0;
+    let keyWeight = 0;
     const contributions = [];
 
     for (let i = 0; i < FEATURES.length; i++) {
-      const dist = logDist(input[i], profile.f[i], i);
-      const similarity = 1 - dist;
+      const similarity = featureSimilarity(input[i], cls.f[i], i);
       const w = IMPORTANCE[i];
-      weightedDist += similarity * w;
-      totalWeight += w;
+      const isKey = cls.key.includes(i);
+      const effectiveW = isKey ? w * 1.5 : w; // Boost discriminative features
+      
+      totalScore += similarity * effectiveW;
+      totalWeight += effectiveW;
+      
+      if (isKey) {
+        keyScore += similarity * effectiveW;
+        keyWeight += effectiveW;
+      }
+      
       contributions.push({
         feature: FEATURES[i],
         similarity: similarity,
-        weight: w,
-        value: (similarity - 0.5) * w * 2
+        weight: effectiveW,
+        isKey: isKey,
+        value: (similarity - 0.5) * effectiveW * 2
       });
     }
 
-    const rawScore = weightedDist / totalWeight;
+    const overallScore = totalScore / totalWeight;
+    const keyFeatureScore = keyWeight > 0 ? keyScore / keyWeight : overallScore;
+    
+    // Combine overall similarity with key feature match
+    const finalScore = (overallScore * 0.6 + keyFeatureScore * 0.4) * cls.w;
+    
     return {
-      score: rawScore * profile.w,
+      score: finalScore,
+      overallScore: overallScore,
+      keyFeatureScore: keyFeatureScore,
       contributions: contributions
     };
   }
 
+  /**
+   * Predict class from feature values
+   * Returns: { prediction, confidence, xcs, xcs_breakdown, shap_top5, verdict, allScores }
+   */
   function predict(features) {
     const results = {};
     for (const cls of Object.keys(CLASSES)) {
@@ -134,21 +193,21 @@ const XAIIDS = (() => {
       }
     }
 
-    // Softmax confidence
+    // Calculate confidence using softmax with high temperature
     const scores = Object.values(results).map(r => r.score);
     const maxS = Math.max(...scores);
-    const temp = 15;
+    const temp = 20;
     const expScores = scores.map(s => Math.exp((s - maxS) * temp));
     const sumExp = expScores.reduce((a, b) => a + b, 0);
     const rawConfidence = expScores[Object.keys(CLASSES).indexOf(bestClass)] / sumExp;
-    const confidence = Math.min(0.995, Math.max(0.55, rawConfidence));
+    const confidence = Math.min(0.995, Math.max(0.50, rawConfidence));
 
-    // SHAP-like contributions
+    // Calculate SHAP-like contributions
     const contribs = results[bestClass].contributions;
     const absVals = contribs.map(c => Math.abs(c.value));
     const maxAbs = Math.max(...absVals, 0.001);
     const shapTop5 = contribs
-      .map((c, i) => ({ feature: c.feature, value: Math.abs(c.value), idx: i }))
+      .map((c, i) => ({ feature: c.feature, value: Math.abs(c.value) }))
       .sort((a, b) => b.value - a.value)
       .slice(0, 5)
       .map(c => ({
@@ -156,7 +215,7 @@ const XAIIDS = (() => {
         value: c.value / maxAbs * 0.15
       }));
 
-    // XCS calculation
+    // XCS calculation: 0.4*confidence + 0.3*shap_stability + 0.3*jaccard
     const top5Sum = shapTop5.reduce((s, f) => s + f.value, 0);
     const shapStability = Math.max(0, 1 - top5Sum);
     const jaccard = Math.max(0.1, confidence * 0.5);
@@ -165,14 +224,15 @@ const XAIIDS = (() => {
     return {
       prediction: bestClass,
       confidence: confidence,
-      xcs: Math.min(0.95, Math.max(0.3, xcs)),
+      xcs: Math.min(0.95, Math.max(0.30, xcs)),
       xcs_breakdown: {
         confidence: 0.4 * confidence,
         shap_stability: 0.3 * shapStability,
         jaccard: 0.3 * jaccard
       },
       shap_top5: shapTop5,
-      verdict: bestClass === "BENIGN" ? "safe" : "attack"
+      verdict: bestClass === "BENIGN" ? "safe" : "attack",
+      allScores: results
     };
   }
 
