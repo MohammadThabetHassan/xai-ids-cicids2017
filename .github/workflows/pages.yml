@@ -36,6 +36,10 @@ jobs:
           # Copy Kaggle notebook plots (plots/)
           cp plots/*.png _site/plots/ 2>/dev/null || echo "No Kaggle plots"
 
+          # Copy SVGs and images from repo root
+          cp *.svg _site/ 2>/dev/null || echo "No SVGs"
+          cp *.png _site/ 2>/dev/null || echo "No PNGs in root"
+
           # Copy demo data
           cp -r docs/site/data _site/data/ 2>/dev/null || echo "No demo data"
 
@@ -43,6 +47,8 @@ jobs:
           cp docs/site/CNAME _site/CNAME 2>/dev/null || echo "No CNAME file"
 
           echo "=== Site build complete ==="
+          echo "Root images/SVGs:"
+          ls -la _site/*.svg _site/*.png 2>/dev/null || echo "  (none)"
           echo "Figures (outputs/figures):"
           ls -la _site/outputs/figures/ 2>/dev/null || echo "  (none)"
           echo "Plots:"
