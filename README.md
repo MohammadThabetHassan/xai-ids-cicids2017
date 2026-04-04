@@ -1,7 +1,7 @@
 # XAI-IDS: Explainable AI Intrusion Detection System
 
-[![CI](https://github.com/MohammadThabetHassan/xai-ids-cicids2017/actions/workflows/ci.yml/badge.svg)](https://github.com/MohammadThabetHassan/xai-ids-cicids2017/actions/workflows/ci.yml)
-[![Pages](https://github.com/MohammadThabetHassan/xai-ids-cicids2017/actions/workflows/pages.yml/badge.svg)](https://mohammadthabethassan.github.io/xai-ids-cicids2017/)
+[![CI](https://github.com/MohammadThabetHassan/xai-ids/actions/workflows/ci.yml/badge.svg)](https://github.com/MohammadThabetHassan/xai-ids/actions/workflows/ci.yml)
+[![Pages](https://github.com/MohammadThabetHassan/xai-ids/actions/workflows/pages.yml/badge.svg)](https://mohammadthabethassan.github.io/xai-ids/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Datasets](https://img.shields.io/badge/datasets-CICIDS2017%20%7C%20UNSW--NB15%20%7C%20CICIDS2018-orange.svg)](RESULTS.md)
