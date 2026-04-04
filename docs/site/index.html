@@ -613,6 +613,51 @@
   </div>
 </section>
 
+<section id="architecture">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label">System Design</div>
+      <h2 class="section-title">Architecture</h2>
+      <p class="section-desc">End-to-end pipeline from raw traffic to explainable predictions.</p>
+    </div>
+    <div class="card reveal" style="padding: 32px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; line-height: 2; overflow-x: auto;">
+      <pre style="margin: 0; white-space: pre-wrap; color: var(--text-secondary);">
+┌─────────────┐    ┌──────────────┐    ┌──────────────┐    ┌─────────────┐
+│  Raw PCAP   │───▶│ CICFlowMeter │───▶│  Preprocess  │───▶│   Models    │
+│  Traffic    │    │  (78 feats)  │    │ (20 selected)│    │ XGB/RF/LGBM │
+└─────────────┘    └──────────────┘    └──────────────┘    └──────┬──────┘
+                                                                  │
+┌─────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────▼──────┐
+│  XCS Score  │◀───│  Jaccard Sim │◀───│ SHAP + LIME  │◀───│ Predictions │
+│ (0.4/0.3/0.3)│    │ (SHAP∩LIME)  │    │ Explanations │    │ + Confidence│
+└─────────────┘    └──────────────┘    └──────────────┘    └─────────────┘
+      </pre>
+    </div>
+    <div class="grid grid-4" style="margin-top: 32px;">
+      <div class="card reveal">
+        <div class="card-number">01</div>
+        <h3>Data Ingestion</h3>
+        <p>Raw PCAP files processed by CICFlowMeter to extract 78 network flow features.</p>
+      </div>
+      <div class="card reveal delay-1">
+        <div class="card-number">02</div>
+        <h3>Feature Selection</h3>
+        <p>Top 20 features selected by XGBoost importance. RobustScaler applied (no data leakage).</p>
+      </div>
+      <div class="card reveal delay-2">
+        <div class="card-number">03</div>
+        <h3>Model Training</h3>
+        <p>XGBoost, Random Forest, LightGBM trained with SMOTE. VotingEnsemble combines all three.</p>
+      </div>
+      <div class="card reveal delay-3">
+        <div class="card-number">04</div>
+        <h3>Explainability</h3>
+        <p>SHAP for global importance, LIME for local explanations. XCS measures reliability.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="how-it-works">
   <div class="container">
     <div class="section-header reveal">
