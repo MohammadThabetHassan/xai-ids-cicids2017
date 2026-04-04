@@ -17,8 +17,8 @@ from src.evaluation.adversarial import (
 class TestAdversarialRobustness:
     """Test adversarial robustness evaluation."""
 
-    def test_returns_dict_on_missing_art(self):
-        """If ART is not installed, should return error dict gracefully."""
+    def test_returns_dict_on_non_gradient_model(self):
+        """If model doesn't support gradients, should return error dict gracefully."""
         rng = np.random.RandomState(42)
         X = rng.randn(100, 10).astype(np.float32)
         y = rng.choice([0, 1], size=100)
@@ -29,7 +29,7 @@ class TestAdversarialRobustness:
 
         result = evaluate_adversarial_robustness(model, X, y)
         assert isinstance(result, dict)
-        assert "epsilons" in result or "error" in result
+        assert "error" in result or "epsilons" in result
 
     def test_compute_xcs_on_adversarial(self):
         """XCS comparison between clean and adversarial samples."""

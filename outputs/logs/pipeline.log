@@ -494,3 +494,19 @@ logistic_regression Evaluation Results:
 2026-04-04 16:17:45 | xai_ids.evaluation.stats | INFO     | Paired t-test: t=0.0000, p=1.000000
 2026-04-04 16:17:45 | xai_ids.evaluation.stats | INFO     | Paired t-test: t=8937644551631322.0000, p=0.000000
 2026-04-04 16:17:45 | xai_ids.evaluation.stats | INFO     | Paired t-test: t=8937644551631322.0000, p=0.000000
+2026-04-04 16:24:46 | xai_ids.evaluation.adversarial | WARNING  | adversarial-robustness-toolbox not installed; skipping
+2026-04-04 16:24:47 | xai_ids.evaluation.adversarial | INFO     | XCS on adversarial: clean=0.3380, adv=0.2980, drop=0.0400
+2026-04-04 16:24:47 | xai_ids.evaluation.stats | INFO     | McNemar's test: chi2=0.0000, p=1.000000 (n01=44, n10=45)
+2026-04-04 16:24:47 | xai_ids.evaluation.stats | INFO     | Paired t-test: t=0.1057, p=0.915897
+2026-04-04 16:24:47 | xai_ids.evaluation.adversarial | WARNING  | adversarial-robustness-toolbox not installed; skipping
+2026-04-04 16:24:47 | xai_ids.evaluation.drift | INFO     | Feature drift: 0/5 features drifted (0.0%)
+2026-04-04 16:24:47 | xai_ids.evaluation.drift | INFO     | Split 1: train_acc=0.9100, test_acc=0.5100, f1=0.4972, drift_rate=0.0%
+2026-04-04 16:24:47 | xai_ids.evaluation.drift | INFO     | Feature drift: 0/5 features drifted (0.0%)
+2026-04-04 16:24:47 | xai_ids.evaluation.drift | INFO     | Split 2: train_acc=0.9450, test_acc=0.4500, f1=0.4415, drift_rate=0.0%
+2026-04-04 16:24:47 | xai_ids.evaluation.drift | INFO     | Feature drift: 0/5 features drifted (0.0%)
+2026-04-04 16:24:47 | xai_ids.evaluation.drift | INFO     | Split 3: train_acc=0.9367, test_acc=0.5600, f1=0.5436, drift_rate=0.0%
+2026-04-04 16:24:47 | xai_ids.evaluation.drift | INFO     | Feature drift: 1/5 features drifted (20.0%)
+2026-04-04 16:24:47 | xai_ids.evaluation.drift | INFO     | Split 4: train_acc=0.9325, test_acc=0.5500, f1=0.5475, drift_rate=20.0%
+2026-04-04 16:24:47 | xai_ids.explainability.counterfactual | WARNING  | DiCE failed (No module named 'dice_ml'), using fallback counterfactual generation
+2026-04-04 16:24:47 | xai_ids.evaluation.cross_dataset | INFO     | Feature mapping: 5/5 shared features
+2026-04-04 16:24:47 | xai_ids.evaluation.cross_dataset | INFO     | Cross-dataset source -> target: ID acc=0.9550, CD acc=0.5700, drop=0.3850

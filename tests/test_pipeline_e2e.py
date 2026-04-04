@@ -30,7 +30,7 @@ class TestPipelineFlags:
         assert "mcnemar_p" in results["model_a"]["model_b"]
 
     def test_adversarial_flag_no_art(self):
-        """--adversarial flag should return error dict gracefully when ART missing."""
+        """--adversarial flag should return error dict when model doesn't support gradients."""
         from src.evaluation.adversarial import evaluate_adversarial_robustness
 
         from sklearn.ensemble import RandomForestClassifier
@@ -42,7 +42,7 @@ class TestPipelineFlags:
 
         result = evaluate_adversarial_robustness(model, X, y)
         assert isinstance(result, dict)
-        assert "epsilons" in result or "error" in result
+        assert "error" in result or "epsilons" in result
 
     def test_drift_flag(self):
         """--drift flag should run temporal drift detection."""

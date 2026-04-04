@@ -58,8 +58,12 @@ def evaluate_adversarial_robustness(
         clip_values = (float(X_test.min()), float(X_test.max()))
 
     # Wrap model for ART
-    art_model = SklearnClassifier(model=model, clip_values=clip_values)
-    fgsm = FastGradientMethod(estimator=art_model, eps=1.0)  # eps set per-attack
+    try:
+        art_model = SklearnClassifier(model=model, clip_values=clip_values)
+        fgsm = FastGradientMethod(estimator=art_model, eps=1.0)
+    except Exception as e:
+        logger.warning(f"ART FGSM attack failed (model may not support gradients): {e}")
+        return {"error": f"ART FGSM not supported for this model: {e}", "epsilons": epsilons}
 
     baseline_acc = np.mean(model.predict(X_test) == y_test)
 
