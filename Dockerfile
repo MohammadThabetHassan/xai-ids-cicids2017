@@ -2,7 +2,7 @@ FROM python:3.10-slim
 
 LABEL maintainer="Mohammad Thabet Hassan"
 LABEL description="XAI-IDS: Explainable AI Intrusion Detection System"
-LABEL version="2.0.0"
+LABEL version="3.0.0"
 
 WORKDIR /app
 

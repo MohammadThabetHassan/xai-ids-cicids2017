@@ -168,10 +168,6 @@ See `plots/cross_dataset_comparison.png` for visual comparison.
 6. **Ensemble methods improve robustness** on UNSW-NB15 but offer marginal gains on CIC-IDS-2017
 7. **Temporal drift detection reveals** that model performance degrades as the time gap between training and test data increases
 8. **Adversarial robustness evaluation shows** XCS correctly drops on FGSM-adversarial inputs, providing an early warning signal for attack evasion attempts
-3. **CSE-CIC-IDS-2018 near-perfect on captured classes** — all models exceed 99.9% on the 2 classes currently captured. Full multi-class results pending notebook re-run with stratified sampling fix.
-4. **UNSW-NB15 is the most challenging dataset** (80% accuracy vs 99.6% for CIC-IDS-2017)
-5. **Class imbalance remains the primary challenge** for minority attack detection
-6. **Cross-dataset feature importance differs significantly** (Jaccard = 0.324), confirming dataset-specific patterns
 
 ---
 

@@ -42,10 +42,26 @@ jobs:
           python -c "from src.models.train import MODEL_CONFIGS; print('Models OK')"
           python -c "from src.evaluation.metrics import compute_metrics; print('Evaluation OK')"
           python -c "from src.explainability.explain import compute_shap_explanations; print('Explainability OK')"
+          python -c "from src.evaluation.stats import mcnemar_test; print('Stats OK')"
+          python -c "from src.evaluation.drift import detect_feature_drift; print('Drift OK')"
+          python -c "from src.evaluation.adversarial import evaluate_adversarial_robustness; print('Adversarial OK')"
+          python -c "from src.evaluation.cross_dataset import evaluate_cross_dataset; print('Cross-dataset OK')"
+          python -c "from src.explainability.counterfactual import generate_counterfactuals; print('Counterfactuals OK')"
 
-      - name: Run tests
+      - name: Lint with ruff
         run: |
-          python -m pytest tests/ -v --tb=short
+          pip install ruff
+          ruff check src/ tests/ api/ run_pipeline.py --select E,F,W,I --exit-zero
+
+      - name: Run tests with coverage
+        run: |
+          python -m pytest tests/ -v --tb=short --cov=src --cov-report=xml --cov-report=term-missing
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
 
       - name: Smoke test - generate sample data
         run: |

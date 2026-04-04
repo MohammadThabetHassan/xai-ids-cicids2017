@@ -21,10 +21,13 @@ Supervisor:
 """
 
 import argparse
+import json
 import os
 import sys
 import time
 from pathlib import Path
+
+import numpy as np
 
 # Add project root to path
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -126,6 +129,42 @@ Examples:
         action="store_true",
         help="Generate failure analysis report",
     )
+    parser.add_argument(
+        "--smote",
+        action="store_true",
+        help="Apply SMOTE oversampling for minority classes",
+    )
+    parser.add_argument(
+        "--smote-min-samples",
+        type=int,
+        default=200,
+        help="Minimum samples per class for SMOTE (default: 200)",
+    )
+    parser.add_argument(
+        "--stats",
+        action="store_true",
+        help="Run statistical significance tests (McNemar, paired t-test)",
+    )
+    parser.add_argument(
+        "--adversarial",
+        action="store_true",
+        help="Evaluate adversarial robustness (FGSM attacks via ART)",
+    )
+    parser.add_argument(
+        "--drift",
+        action="store_true",
+        help="Run temporal drift detection analysis",
+    )
+    parser.add_argument(
+        "--counterfactuals",
+        action="store_true",
+        help="Generate counterfactual explanations (DiCE)",
+    )
+    parser.add_argument(
+        "--learned-xcs",
+        action="store_true",
+        help="Calibrate XCS weights via logistic regression on correctness",
+    )
 
     return parser.parse_args()
 
@@ -212,6 +251,8 @@ def main():
             data["X_val"],
             data["y_val"],
             save_dir=models_dir,
+            use_smote=args.smote,
+            smote_min_samples=args.smote_min_samples,
         )
         trained_models[model_name] = model
 
@@ -290,6 +331,92 @@ def main():
             save_dir=reports_dir,
         )
 
+    # ─── Step 4b: Statistical Significance Testing ───
+    if args.stats and len(trained_models) >= 2:
+        logger.info("\n" + "=" * 50)
+        logger.info("Statistical Significance Testing")
+        logger.info("=" * 50)
+
+        from src.evaluation.stats import compare_models_statistically
+
+        predictions = {}
+        for name, model in trained_models.items():
+            predictions[name] = model.predict(data["X_test"])
+
+        stats_results = compare_models_statistically(
+            data["y_test"], predictions, alpha=0.05
+        )
+
+        logger.info("\nPairwise Model Comparisons:")
+        logger.info("-" * 70)
+        for name_a, comparisons in stats_results.items():
+            for name_b, result in comparisons.items():
+                sig_marker = "*" if result["mcnemar_sig"] else " "
+                logger.info(
+                    f"  {name_a} vs {name_b}: acc={result['acc_a']:.4f} vs "
+                    f"{result['acc_b']:.4f}, McNemar p={result['mcnemar_p']:.6f}{sig_marker}"
+                )
+
+    # ─── Step 4c: Adversarial Robustness ───
+    if args.adversarial:
+        logger.info("\n" + "=" * 50)
+        logger.info("Adversarial Robustness Evaluation")
+        logger.info("=" * 50)
+
+        from src.evaluation.adversarial import (
+            compute_xcs_on_adversarial,
+            evaluate_adversarial_robustness,
+            plot_adversarial_results,
+        )
+
+        primary_model = trained_models.get("xgboost") or list(trained_models.values())[0]
+        adv_results = evaluate_adversarial_robustness(
+            primary_model, data["X_test"], data["y_test"]
+        )
+        if "error" not in adv_results:
+            plot_adversarial_results(
+                adv_results,
+                save_path=os.path.join(figures_dir, "adversarial_robustness.png"),
+            )
+            logger.info(f"\nAdversarial Results:")
+            logger.info(f"  Baseline accuracy: {adv_results['baseline_accuracy']:.4f}")
+            for eps_result in adv_results["epsilons"]:
+                logger.info(
+                    f"  FGSM eps={eps_result['epsilon']}: "
+                    f"acc={eps_result['adversarial_accuracy']:.4f}, "
+                    f"drop={eps_result['accuracy_drop']:.4f}"
+                )
+
+    # ─── Step 4d: Temporal Drift Detection ───
+    if args.drift:
+        logger.info("\n" + "=" * 50)
+        logger.info("Temporal Drift Detection")
+        logger.info("=" * 50)
+
+        from src.evaluation.drift import plot_temporal_drift, simulate_temporal_drift
+
+        primary_model = trained_models.get("xgboost") or list(trained_models.values())[0]
+        from sklearn.base import clone
+        try:
+            model_copy = clone(primary_model)
+        except Exception:
+            model_copy = primary_model
+
+        drift_results = simulate_temporal_drift(
+            model_copy, data["X_train"], data["y_train"], n_splits=5
+        )
+        plot_temporal_drift(
+            drift_results,
+            save_path=os.path.join(figures_dir, "temporal_drift_CICIDS2017.png"),
+        )
+        logger.info(f"\nTemporal Drift Results:")
+        for split in drift_results["splits"]:
+            logger.info(
+                f"  Split: train_acc={split['train_accuracy']:.4f}, "
+                f"test_acc={split['test_accuracy']:.4f}, "
+                f"drift_rate={split['feature_drift_rate']:.1%}"
+            )
+
     # ─── Step 5: Explainability ───
     if not args.skip_explain:
         logger.info("\n" + "=" * 50)
@@ -311,6 +438,120 @@ def main():
         )
     else:
         logger.info("\nSkipping explainability analysis (--skip-explain)")
+
+    # ─── Step 5b: Counterfactual Explanations ───
+    if args.counterfactuals:
+        logger.info("\n" + "=" * 50)
+        logger.info("Counterfactual Explanations")
+        logger.info("=" * 50)
+
+        from src.explainability.counterfactual import generate_counterfactuals_for_classes
+
+        primary_model = trained_models.get("xgboost") or list(trained_models.values())[0]
+        cf_results = generate_counterfactuals_for_classes(
+            primary_model,
+            data["X_test"],
+            data["y_test"],
+            data["feature_names"],
+            label_names,
+            n_per_class=3,
+        )
+
+        logger.info(f"\nCounterfactual Results:")
+        for cls_name, cf_data in cf_results.items():
+            n_cf = len(cf_data.get("counterfactuals", []))
+            logger.info(f"  {cls_name}: {n_cf} counterfactuals generated ({cf_data['method']})")
+
+    # ─── Step 5c: Learned XCS Weights Calibration ───
+    if args.learned_xcs:
+        logger.info("\n" + "=" * 50)
+        logger.info("Learned XCS Weights Calibration")
+        logger.info("=" * 50)
+
+        from src.explainability.explain import compute_shap_explanations
+        from sklearn.linear_model import LogisticRegression
+        import shap
+        import lime.lime_tabular
+
+        primary_model = trained_models.get("xgboost") or list(trained_models.values())[0]
+        n_cal = min(200, len(data["X_test"]))
+        X_cal = data["X_test"][:n_cal]
+        y_cal = data["y_test"][:n_cal]
+        y_pred_cal = primary_model.predict(X_cal)
+        y_proba_cal = primary_model.predict_proba(X_cal)
+        correct = (y_pred_cal == y_cal).astype(float)
+
+        # Compute XCS components for calibration set
+        confidences = np.max(y_proba_cal, axis=1)
+
+        # SHAP instability (simplified: single run, use variance across features as proxy)
+        explainer = shap.TreeExplainer(primary_model)
+        sv = explainer.shap_values(X_cal)
+        if isinstance(sv, list):
+            sv = np.array([sv[p][i] for i, p in enumerate(y_pred_cal)])
+        elif sv.ndim == 3:
+            sv = np.array([sv[i, :, p] for i, p in enumerate(y_pred_cal)])
+        else:
+            sv = sv
+
+        shap_instability = np.std(np.abs(sv), axis=0).mean()
+        shap_instability_norm = np.minimum(shap_instability / max(np.mean(np.abs(sv)), 1e-8), 0.5)
+        instab_array = np.full(n_cal, shap_instability_norm)
+
+        # LIME-SHAP Jaccard (sample of 20 for speed)
+        n_lime = min(20, n_cal)
+        jaccard_array = np.zeros(n_cal)
+        try:
+            lime_exp = lime.lime_tabular.LimeTabularExplainer(
+                X_cal[:n_lime],
+                feature_names=data["feature_names"],
+                mode="classification",
+            )
+            for i in range(n_lime):
+                shap_top = set(np.argsort(np.abs(sv[i]))[-5:])
+                shap_top_names = {data["feature_names"][j] for j in shap_top}
+                exp = lime_exp.explain_instance(
+                    X_cal[i], primary_model.predict_proba,
+                    num_features=5, num_samples=200,
+                )
+                as_map = exp.as_map()
+                name_to_w = {}
+                for cls_id in as_map:
+                    for fidx, w in as_map[cls_id]:
+                        name_to_w[data["feature_names"][int(fidx)]] = \
+                            name_to_w.get(data["feature_names"][int(fidx)], 0) + abs(w)
+                lime_top = set(sorted(name_to_w, key=lambda k: name_to_w[k], reverse=True)[:5])
+                if shap_top_names or lime_top:
+                    jaccard_array[i] = len(shap_top_names & lime_top) / len(shap_top_names | lime_top)
+        except Exception as e:
+            logger.warning(f"LIME Jaccard computation failed: {e}")
+
+        # Fit logistic regression
+        X_features = np.column_stack([confidences, 1 - instab_array, jaccard_array])
+        lr = LogisticRegression(random_state=42, max_iter=1000)
+        lr.fit(X_features, correct)
+
+        learned_weights = lr.coef_[0]
+        learned_weights_norm = learned_weights / learned_weights.sum()
+
+        logger.info(f"\nLearned XCS Weights vs Hand-Tuned:")
+        logger.info(f"  {'Component':<20} {'Learned':>10} {'Hand-Tuned':>10}")
+        logger.info(f"  {'Confidence':<20} {learned_weights_norm[0]:>10.4f} {0.4:>10.4f}")
+        logger.info(f"  {'1-Instability':<20} {learned_weights_norm[1]:>10.4f} {0.3:>10.4f}")
+        logger.info(f"  {'Jaccard':<20} {learned_weights_norm[2]:>10.4f} {0.3:>10.4f}")
+        logger.info(f"  LR Accuracy: {lr.score(X_features, correct):.4f}")
+
+        # Save learned weights
+        import json
+        weights_path = os.path.join(reports_dir, "learned_xcs_weights.json")
+        with open(weights_path, "w") as f:
+            json.dump({
+                "learned_weights": learned_weights.tolist(),
+                "normalized_weights": learned_weights_norm.tolist(),
+                "hand_tuned": [0.4, 0.3, 0.3],
+                "lr_accuracy": float(lr.score(X_features, correct)),
+            }, f, indent=2)
+        logger.info(f"  Saved learned weights to {weights_path}")
 
     # ─── Summary ───
     elapsed = time.time() - start_time

@@ -1,6 +1,6 @@
 # XAI-IDS Project Status
 
-**Version:** 2.0.2  
+**Version:** 3.0.0  
 **Last Updated:** April 2026
 
 ---
