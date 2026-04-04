@@ -782,33 +782,33 @@
   </div>
 </section>
 
-<section id="how-it-works">
+<section id="reproduce" style="background: var(--bg-secondary);">
   <div class="container">
     <div class="section-header reveal">
-      <div class="section-label">Methodology</div>
-      <h2 class="section-title">How It Works</h2>
-      <p class="section-desc">From raw network traffic to explainable predictions.</p>
+      <div class="section-label">Reproducibility</div>
+      <h2 class="section-title">Reproduce Results</h2>
+      <p class="section-desc">Get the same results on your machine.</p>
     </div>
     <div class="grid grid-4">
       <div class="card reveal">
         <div class="card-number">01</div>
-        <h3>Data Collection</h3>
-        <p>Network flows captured from CIC-IDS-2017, UNSW-NB15, and CSE-CIC-IDS-2018 datasets with 78+ features per flow.</p>
+        <h3>Clone & Install</h3>
+        <p><code style="font-size:0.75rem; color:var(--accent-light);">git clone</code> the repo and run <code style="font-size:0.75rem; color:var(--accent-light);">pip install -r requirements.txt</code></p>
       </div>
       <div class="card reveal delay-1">
         <div class="card-number">02</div>
-        <h3>Model Training</h3>
-        <p>XGBoost, Random Forest, LightGBM, and VotingEnsemble trained on 20 selected features with SMOTE for class balance.</p>
+        <h3>Run Pipeline</h3>
+        <p>Run <code style="font-size:0.75rem; color:var(--accent-light);">python run_pipeline.py</code> for synthetic data or <code style="font-size:0.75rem; color:var(--accent-light);">--download</code> for real data.</p>
       </div>
       <div class="card reveal delay-2">
         <div class="card-number">03</div>
-        <h3>SHAP + LIME</h3>
-        <p>SHAP provides global feature importance. LIME explains individual predictions. Jaccard similarity measures agreement.</p>
+        <h3>Kaggle Notebook</h3>
+        <p>Open <code style="font-size:0.75rem; color:var(--accent-light);">xai_ids_multidataset.ipynb</code> on Kaggle with GPU (Tesla T4) for full multi-dataset evaluation.</p>
       </div>
       <div class="card reveal delay-3">
         <div class="card-number">04</div>
-        <h3>XCS Scoring</h3>
-        <p>XCS = 0.4×Confidence + 0.3×SHAP Stability + 0.3×Jaccard. Scores > 0.3 indicate reliable explanations.</p>
+        <h3>View Results</h3>
+        <p>Check <code style="font-size:0.75rem; color:var(--accent-light);">RESULTS.md</code> for full tables and <code style="font-size:0.75rem; color:var(--accent-light);">model_metadata.json</code> for raw metrics.</p>
       </div>
     </div>
   </div>
