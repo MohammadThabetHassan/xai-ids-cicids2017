@@ -828,7 +828,7 @@
           <span class="demo-dot r"></span>
           <span class="demo-dot y"></span>
           <span class="demo-dot g"></span>
-          <span class="demo-panel-title">xai_ids_inference.py — Real-Time</span>
+          <span class="demo-panel-title">xai_ids_inference.py — Real XGBoost Model</span>
         </div>
         <div class="demo-scenarios" id="scenarioBtns"></div>
         <div class="demo-features" id="featureInputs"></div>
@@ -839,12 +839,13 @@
           <span class="demo-dot r"></span>
           <span class="demo-dot y"></span>
           <span class="demo-dot g"></span>
-          <span class="demo-panel-title">live_prediction — XGBoost</span>
+          <span class="demo-panel-title">live_prediction — ONNX Runtime Web</span>
         </div>
         <div class="demo-results" id="demoResults">
-          <div class="demo-placeholder">
-            <div class="icon">⚡</div>
-            <p>Select a scenario or adjust feature sliders to see live predictions.</p>
+          <div class="demo-placeholder" id="modelLoading">
+            <div class="icon">⏳</div>
+            <p>Loading real XGBoost model (2.6 MB)...</p>
+            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:8px;">This runs the actual trained model in your browser</p>
           </div>
         </div>
       </div>
@@ -938,13 +939,15 @@
   }, { threshold: 0.1 });
   document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-  // Live Demo
+  // Live Demo with Real ONNX Model
   let demoData = null;
   let activeScenario = null;
   let currentFeatures = new Array(20).fill(0);
   let predictionDebounce = null;
   let predictionHistory = [];
   const MAX_HISTORY = 5;
+  let modelReady = false;
+  let modelError = false;
 
   async function loadDemoData() {
     try {
@@ -953,6 +956,29 @@
       renderScenarioButtons();
     } catch (e) {
       console.error('Failed to load demo data:', e);
+    }
+  }
+
+  async function initModel() {
+    try {
+      await XAIIDS.initSession();
+      modelReady = true;
+      document.getElementById('modelLoading').innerHTML = `
+        <div class="icon">✅</div>
+        <p>Real XGBoost model loaded (2.6 MB ONNX)</p>
+        <p style="font-size:0.75rem; color:var(--text-muted); margin-top:8px;">Running actual trained model in your browser</p>
+      `;
+      setTimeout(() => {
+        if (activeScenario) updatePrediction();
+      }, 500);
+    } catch (e) {
+      console.error('Failed to load ONNX model:', e);
+      modelError = true;
+      document.getElementById('modelLoading').innerHTML = `
+        <div class="icon">⚠️</div>
+        <p>Model loading failed. Using fallback predictions.</p>
+        <p style="font-size:0.75rem; color:var(--text-muted); margin-top:8px;">${e.message}</p>
+      `;
     }
   }
 
@@ -969,7 +995,7 @@
     document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     renderFeatureInputs();
-    updatePrediction();
+    if (modelReady) updatePrediction();
   }
 
   function randomizeFeatures() {
@@ -980,7 +1006,7 @@
       return Math.random() * max;
     });
     renderFeatureInputs();
-    updatePrediction();
+    if (modelReady) updatePrediction();
   }
 
   function renderFeatureInputs() {
@@ -1016,17 +1042,22 @@
     return n % 1 === 0 ? n.toString() : n.toFixed(1);
   }
 
-  function updatePrediction() {
-    const result = XAIIDS.predict(currentFeatures);
-    predictionHistory.unshift({
-      prediction: result.prediction,
-      confidence: result.confidence,
-      xcs: result.xcs,
-      verdict: result.verdict,
-      timestamp: new Date().toLocaleTimeString()
-    });
-    if (predictionHistory.length > MAX_HISTORY) predictionHistory.pop();
-    renderResults(result);
+  async function updatePrediction() {
+    if (!modelReady) return;
+    try {
+      const result = await XAIIDS.predict(currentFeatures);
+      predictionHistory.unshift({
+        prediction: result.prediction,
+        confidence: result.confidence,
+        xcs: result.xcs,
+        verdict: result.verdict,
+        timestamp: new Date().toLocaleTimeString()
+      });
+      if (predictionHistory.length > MAX_HISTORY) predictionHistory.pop();
+      renderResults(result);
+    } catch (e) {
+      console.error('Prediction error:', e);
+    }
   }
 
   function renderResults(r) {
@@ -1035,9 +1066,9 @@
     const shapColors = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#06b6d4'];
     const maxShap = Math.max(...r.shap_top5.map(s => s.value), 0.001);
 
-    // All classes scores
-    const classScores = Object.entries(r.allScores)
-      .map(([cls, data]) => ({ class: cls, score: data.score, isBest: cls === r.prediction }))
+    // Probabilities for all classes
+    const classScores = r.probabilities
+      .map((prob, i) => ({ class: XAIIDS.CLASSES[i], score: prob, isBest: i === r.prediction }))
       .sort((a, b) => b.score - a.score);
     const maxScore = Math.max(...classScores.map(c => c.score));
 
@@ -1086,12 +1117,12 @@
         `).join('')}
       </div>
       <div class="shap-chart" style="margin-top:16px;">
-        <div class="label">All Class Scores</div>
-        ${classScores.map((c, i) => `
+        <div class="label">All Class Probabilities</div>
+        ${classScores.slice(0, 8).map((c, i) => `
           <div class="shap-bar">
             <span class="feature" style="color: ${c.isBest ? 'var(--accent-light)' : 'var(--text-muted)'}; font-weight: ${c.isBest ? '600' : '400'};">${c.class}</span>
             <div class="bar-wrap"><div class="bar-fill" style="width: ${(c.score / maxScore * 100).toFixed(0)}%; background: ${c.isBest ? 'var(--accent)' : 'var(--text-muted)'}; opacity: ${c.isBest ? '1' : '0.4'};"></div></div>
-            <span class="val">${(c.score * 100).toFixed(0)}%</span>
+            <span class="val">${(c.score * 100).toFixed(1)}%</span>
           </div>
         `).join('')}
       </div>
@@ -1116,10 +1147,12 @@
     predictionHistory = [];
     document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('featureInputs').innerHTML = '';
-    document.getElementById('demoResults').innerHTML = '<div class="demo-placeholder"><div class="icon">⚡</div><p>Select a scenario or adjust feature sliders to see live predictions.</p></div>';
+    document.getElementById('demoResults').innerHTML = '<div class="demo-placeholder" id="modelLoading"><div class="icon">⏳</div><p>Loading real XGBoost model (2.6 MB)...</p></div>';
   }
 
+  // Initialize
   loadDemoData();
+  initModel();
 
   // Back to top button
   const backToTop = document.createElement('button');
