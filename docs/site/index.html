@@ -961,7 +961,7 @@
 
   async function initModel() {
     try {
-      await XAIIDS.initSession();
+      await xaiInitSession();
       modelReady = true;
       document.getElementById('modelLoading').innerHTML = `
         <div class="icon">✅</div>
@@ -1001,7 +1001,7 @@
   function randomizeFeatures() {
     document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
     activeScenario = null;
-    currentFeatures = XAIIDS.FEATURES.map((_, i) => {
+    currentFeatures = XAI_FEATURES.map((_, i) => {
       const [min, max] = [0, Math.max(...demoData.scenarios.map(s => s.features[i])) * 1.5];
       return Math.random() * max;
     });
@@ -1012,7 +1012,7 @@
   function renderFeatureInputs() {
     if (!activeScenario && currentFeatures.every(f => f === 0)) return;
     const container = document.getElementById('featureInputs');
-    container.innerHTML = XAIIDS.FEATURES.map((f, i) => {
+    container.innerHTML = XAI_FEATURES.map((f, i) => {
       const val = currentFeatures[i];
       const [min, max] = [0, Math.max(val * 2, 100)];
       return `<div class="feature-row">
@@ -1045,7 +1045,7 @@
   async function updatePrediction() {
     if (!modelReady) return;
     try {
-      const result = await XAIIDS.predict(currentFeatures);
+      const result = await xaiPredict(currentFeatures);
       predictionHistory.unshift({
         prediction: result.prediction,
         confidence: result.confidence,
@@ -1068,7 +1068,7 @@
 
     // Probabilities for all classes
     const classScores = r.probabilities
-      .map((prob, i) => ({ class: XAIIDS.CLASSES[i], score: prob, isBest: i === r.prediction }))
+      .map((prob, i) => ({ class: XAI_CLASSES[i], score: prob, isBest: i === r.prediction }))
       .sort((a, b) => b.score - a.score);
     const maxScore = Math.max(...classScores.map(c => c.score));
 
