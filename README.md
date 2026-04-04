@@ -35,6 +35,10 @@ An Explainable AI-based Intrusion Detection System that combines machine learnin
 
 ![XAI-IDS Architecture](xai_ids_Architecture.svg)
 
+## Pipeline
+
+![XAI-IDS Pipeline](xai_ids_pipeline.svg)
+
 ---
 
 ## Datasets
