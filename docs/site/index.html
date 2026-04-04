@@ -744,14 +744,10 @@
           <span class="demo-dot r"></span>
           <span class="demo-dot y"></span>
           <span class="demo-dot g"></span>
-          <span class="demo-panel-title">xai_ids_demo.py — CIC-IDS-2017</span>
+          <span class="demo-panel-title">xai_ids_inference.py — Real-Time</span>
         </div>
         <div class="demo-scenarios" id="scenarioBtns"></div>
         <div class="demo-features" id="featureInputs"></div>
-        <div class="demo-actions">
-          <button class="demo-btn demo-btn-primary" onclick="runDemo()">▶ Run Prediction</button>
-          <button class="demo-btn demo-btn-secondary" onclick="resetDemo()">Reset</button>
-        </div>
       </div>
 
       <div class="demo-panel">
@@ -759,12 +755,12 @@
           <span class="demo-dot r"></span>
           <span class="demo-dot y"></span>
           <span class="demo-dot g"></span>
-          <span class="demo-panel-title">prediction_output</span>
+          <span class="demo-panel-title">live_prediction — XGBoost</span>
         </div>
         <div class="demo-results" id="demoResults">
           <div class="demo-placeholder">
-            <div class="icon">🔍</div>
-            <p>Select a scenario and click "Run Prediction" to see results.</p>
+            <div class="icon">⚡</div>
+            <p>Select a scenario or adjust feature sliders to see live predictions.</p>
           </div>
         </div>
       </div>
@@ -844,6 +840,7 @@
   </div>
 </footer>
 
+<script src="data/xai_ids_model.js"></script>
 <script>
   function switchTab(id, btn) {
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -857,9 +854,11 @@
   }, { threshold: 0.1 });
   document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-  // Demo
+  // Live Demo
   let demoData = null;
   let activeScenario = null;
+  let currentFeatures = new Array(20).fill(0);
+  let predictionDebounce = null;
 
   async function loadDemoData() {
     try {
@@ -880,111 +879,110 @@
 
   function selectScenario(id, btn) {
     activeScenario = demoData.scenarios.find(s => s.id === id);
+    currentFeatures = [...activeScenario.features];
     document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     renderFeatureInputs();
+    updatePrediction();
   }
 
   function renderFeatureInputs() {
     if (!activeScenario) return;
     const container = document.getElementById('featureInputs');
-    container.innerHTML = demoData.features.map((f, i) => {
-      const val = activeScenario.features[i];
-      const max = Math.max(val * 1.5, 100);
+    container.innerHTML = XAIIDS.FEATURES.map((f, i) => {
+      const val = currentFeatures[i];
+      const [min, max] = [0, Math.max(val * 2, 100)];
       return `<div class="feature-row">
         <span class="feature-name">${f}</span>
-        <input type="range" class="feature-slider" min="0" max="${max}" value="${val}" data-idx="${i}" oninput="updateFeatureVal(this)">
+        <input type="range" class="feature-slider" min="${min}" max="${max}" value="${val}" data-idx="${i}" oninput="onSliderChange(this)">
         <span class="feature-value" id="fv-${i}">${formatNum(val)}</span>
       </div>`;
     }).join('');
   }
 
-  function updateFeatureVal(slider) {
-    const idx = slider.dataset.idx;
-    document.getElementById('fv-' + idx).textContent = formatNum(parseFloat(slider.value));
+  function onSliderChange(slider) {
+    const idx = parseInt(slider.dataset.idx);
+    const val = parseFloat(slider.value);
+    currentFeatures[idx] = val;
+    document.getElementById('fv-' + idx).textContent = formatNum(val);
+    debouncedPrediction();
+  }
+
+  function debouncedPrediction() {
+    if (predictionDebounce) clearTimeout(predictionDebounce);
+    predictionDebounce = setTimeout(updatePrediction, 80);
   }
 
   function formatNum(n) {
     if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
     if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
-    return n.toString();
+    return n % 1 === 0 ? n.toString() : n.toFixed(1);
   }
 
-  function runDemo() {
-    if (!activeScenario) {
-      alert('Please select a scenario first.');
-      return;
-    }
-    const s = activeScenario;
-    const isSafe = s.verdict === 'safe';
-    const xcsColor = s.xcs > 0.7 ? '#10b981' : s.xcs > 0.4 ? '#f59e0b' : '#ef4444';
-    const barColor = isSafe ? '#10b981' : '#ef4444';
+  function updatePrediction() {
+    const result = XAIIDS.predict(currentFeatures);
+    renderResults(result);
+  }
 
+  function renderResults(r) {
+    const isSafe = r.verdict === 'safe';
+    const xcsColor = r.xcs > 0.7 ? '#10b981' : r.xcs > 0.4 ? '#f59e0b' : '#ef4444';
     const shapColors = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#06b6d4'];
+    const maxShap = Math.max(...r.shap_top5.map(s => s.value), 0.001);
 
     document.getElementById('demoResults').innerHTML = `
-      <div class="result-verdict ${s.verdict}">
+      <div class="result-verdict ${r.verdict}" style="animation: fadeUp 0.3s ease;">
         <div class="label">${isSafe ? '✓ Traffic is Safe' : '⚠ Attack Detected'}</div>
-        <div class="class">${s.prediction}</div>
-        <div class="confidence">Confidence: ${(s.confidence * 100).toFixed(1)}%</div>
+        <div class="class">${r.prediction}</div>
+        <div class="confidence">Confidence: ${(r.confidence * 100).toFixed(1)}%</div>
       </div>
       <div class="result-metrics">
         <div class="result-metric">
-          <div class="value" style="color: var(--accent-light);">${(s.confidence * 100).toFixed(1)}%</div>
+          <div class="value" style="color: var(--accent-light);">${(r.confidence * 100).toFixed(1)}%</div>
           <div class="label">Confidence</div>
         </div>
         <div class="result-metric">
-          <div class="value" style="color: ${xcsColor};">${(s.xcs * 100).toFixed(0)}%</div>
+          <div class="value" style="color: ${xcsColor};">${(r.xcs * 100).toFixed(0)}%</div>
           <div class="label">XCS Score</div>
         </div>
         <div class="result-metric">
-          <div class="value" style="color: var(--text);">${s.prediction.includes('BENIGN') ? 'Safe' : 'Alert'}</div>
+          <div class="value" style="color: ${isSafe ? 'var(--green)' : '#ef4444'};">${isSafe ? 'Safe' : 'Alert'}</div>
           <div class="label">Verdict</div>
         </div>
       </div>
       <div class="xcs-gauge">
         <div class="xcs-gauge-header">
           <span class="label">XAI Confidence Score</span>
-          <span class="value" style="color: ${xcsColor};">${s.xcs.toFixed(2)}</span>
+          <span class="value" style="color: ${xcsColor};">${r.xcs.toFixed(2)}</span>
         </div>
         <div class="xcs-gauge-bar">
-          <div class="xcs-gauge-fill" style="width: 0%; background: ${xcsColor};" id="xcsFill"></div>
+          <div class="xcs-gauge-fill" style="width: ${r.xcs * 100}%; background: ${xcsColor};"></div>
         </div>
         <div class="xcs-gauge-breakdown">
-          <div class="xcs-gauge-item"><div class="val">${s.xcs_breakdown.confidence.toFixed(3)}</div><div class="lbl">Confidence</div></div>
-          <div class="xcs-gauge-item"><div class="val">${s.xcs_breakdown.shap_stability.toFixed(3)}</div><div class="lbl">SHAP Stability</div></div>
-          <div class="xcs-gauge-item"><div class="val">${s.xcs_breakdown.jaccard.toFixed(3)}</div><div class="lbl">Jaccard</div></div>
+          <div class="xcs-gauge-item"><div class="val">${r.xcs_breakdown.confidence.toFixed(3)}</div><div class="lbl">Confidence</div></div>
+          <div class="xcs-gauge-item"><div class="val">${r.xcs_breakdown.shap_stability.toFixed(3)}</div><div class="lbl">SHAP Stability</div></div>
+          <div class="xcs-gauge-item"><div class="val">${r.xcs_breakdown.jaccard.toFixed(3)}</div><div class="lbl">Jaccard</div></div>
         </div>
       </div>
       <div class="shap-chart">
         <div class="label">Top SHAP Features</div>
-        ${s.shap_top5.map((f, i) => `
+        ${r.shap_top5.map((f, i) => `
           <div class="shap-bar">
             <span class="feature">${f.feature}</span>
-            <div class="bar-wrap"><div class="bar-fill" style="width: 0%; background: ${shapColors[i]};" data-width="${(f.value * 100 / s.shap_top5[0].value).toFixed(0)}"></div></div>
+            <div class="bar-wrap"><div class="bar-fill" style="width: ${(f.value / maxShap * 100).toFixed(0)}%; background: ${shapColors[i]};"></div></div>
             <span class="val">${f.value.toFixed(3)}</span>
           </div>
         `).join('')}
       </div>
     `;
-
-    // Animate
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        const xcsFill = document.getElementById('xcsFill');
-        if (xcsFill) xcsFill.style.width = (s.xcs * 100) + '%';
-        document.querySelectorAll('.bar-fill').forEach(bar => {
-          bar.style.width = bar.dataset.width + '%';
-        });
-      }, 50);
-    });
   }
 
   function resetDemo() {
     activeScenario = null;
+    currentFeatures = new Array(20).fill(0);
     document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('featureInputs').innerHTML = '';
-    document.getElementById('demoResults').innerHTML = '<div class="demo-placeholder"><div class="icon">🔍</div><p>Select a scenario and click "Run Prediction" to see results.</p></div>';
+    document.getElementById('demoResults').innerHTML = '<div class="demo-placeholder"><div class="icon">⚡</div><p>Select a scenario or adjust feature sliders to see live predictions.</p></div>';
   }
 
   loadDemoData();
