@@ -1002,8 +1002,10 @@
     document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
     activeScenario = null;
     currentFeatures = XAI_FEATURES.map((_, i) => {
-      const [min, max] = [0, Math.max(...demoData.scenarios.map(s => s.features[i])) * 1.5];
-      return Math.random() * max;
+      const vals = demoData.scenarios.map(s => s.features[i]);
+      const min = Math.min(...vals);
+      const max = Math.max(...vals) * 2;
+      return min + Math.random() * (max - min);
     });
     renderFeatureInputs();
     if (modelReady) updatePrediction();
@@ -1014,7 +1016,9 @@
     const container = document.getElementById('featureInputs');
     container.innerHTML = XAI_FEATURES.map((f, i) => {
       const val = currentFeatures[i];
-      const [min, max] = [0, Math.max(val * 2, 100)];
+      const allVals = demoData.scenarios.map(s => s.features[i]);
+      const min = Math.min(...allVals) * 0.5;
+      const max = Math.max(...allVals) * 2;
       return `<div class="feature-row">
         <span class="feature-name">${f}</span>
         <input type="range" class="feature-slider" min="${min}" max="${max}" value="${val}" data-idx="${i}" oninput="onSliderChange(this)">
