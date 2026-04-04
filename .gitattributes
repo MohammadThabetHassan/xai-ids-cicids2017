@@ -1,0 +1,50 @@
+# Image files are binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg text
+
+# Model files are binary
+*.pkl binary
+*.joblib binary
+*.h5 binary
+*.onnx binary
+
+# CSV files are text with LF
+*.csv text eol=lf
+
+# Python files use LF
+*.py text eol=lf
+*.ipynb text eol=lf
+
+# Config files use LF
+*.yaml text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.toml text eol=lf
+*.cfg text eol=lf
+*.ini text eol=lf
+
+# Markdown and text files use LF
+*.md text eol=lf
+*.txt text eol=lf
+*.rst text eol=lf
+
+# Shell scripts use LF
+*.sh text eol=lf eol=lf
+*.bash text eol=lf
+
+# HTML/CSS/JS use LF
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+
+# Docker files
+Dockerfile text eol=lf
+.dockerignore text eol=lf
+
+# Git files
+.gitattributes text eol=lf
+.gitignore text eol=lf
